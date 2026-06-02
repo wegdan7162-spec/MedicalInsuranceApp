@@ -1,0 +1,225 @@
+﻿@model MedicalInsuranceApp1.Models.ViewModels.DashboardVM
+@{
+    ViewData["Title"] = "لوحة التحكم";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css">
+}
+
+<!-- KPI Cards -->
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-icon green"><i class="ti ti-gavel"></i></div>
+        <div>
+            <div class="kpi-val">@Model.TotalCourtCases.ToString("N0")</div>
+            <div class="kpi-label">مطالبات القضايا</div>
+            <div class="kpi-trend"><i class="ti ti-trending-up"></i> إجمالي</div>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon gold"><i class="ti ti-handshake"></i></div>
+        <div>
+            <div class="kpi-val">@Model.TotalFriendly.ToString("N0")</div>
+            <div class="kpi-label">الصلح الودي</div>
+            <div class="kpi-trend"><i class="ti ti-trending-up"></i> إجمالي</div>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon blue"><i class="ti ti-check"></i></div>
+        <div>
+            <div class="kpi-val">@Model.TotalSettled.ToString("N0")</div>
+            <div class="kpi-label">إجمالي المسدد</div>
+            <div class="kpi-trend"><i class="ti ti-coin"></i> دينار</div>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon red"><i class="ti ti-cash"></i></div>
+        <div>
+            <div class="kpi-val">@Model.TotalReserve.ToString("N0")</div>
+            <div class="kpi-label">إجمالي الاحتياطي</div>
+            <div class="kpi-trend"><i class="ti ti-coin"></i> دينار</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="charts-row">
+    <div class="chart-card">
+        <div class="chart-hdr">
+            <div>
+                <div class="chart-title">المطالبات الشهرية</div>
+                <div class="chart-sub">آخر 6 أشهر</div>
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#1B4332"></div>قضايا
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#c9a84c"></div>صلح
+                </div>
+            </div>
+        </div>
+        <div class="bar-chart" id="barChart"></div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-hdr">
+            <div>
+                <div class="chart-title">توزيع المطالبات</div>
+                <div class="chart-sub">حسب النوع</div>
+            </div>
+        </div>
+        <div class="donut-wrap">
+            <div class="donut-legend">
+                <div class="donut-item">
+                    <div class="donut-dot" style="background:#1B4332"></div>
+                    <span class="donut-text">قضايا</span>
+                    <span class="donut-val">@Model.TotalCourtCases.ToString("N0")</span>
+                </div>
+                <div class="donut-item">
+                    <div class="donut-dot" style="background:#c9a84c"></div>
+                    <span class="donut-text">صلح ودي</span>
+                    <span class="donut-val">@Model.TotalFriendly.ToString("N0")</span>
+                </div>
+                <div class="donut-item">
+                    <div class="donut-dot" style="background:#6a6860"></div>
+                    <span class="donut-text">المستخدمون</span>
+                    <span class="donut-val">@Model.TotalUsers.ToString("N0")</span>
+                </div>
+            </div>
+            @{
+                var total = Model.TotalClaims > 0 ? Model.TotalClaims : 1;
+                var c1 = (double)Model.TotalCourtCases / total * 314;
+                var c2 = (double)Model.TotalFriendly / total * 314;
+            }
+            <svg viewBox="0 0 100 100" width="130" height="130">
+                <circle cx="50" cy="50" r="38" fill="none" stroke="#1B4332"
+                        stroke-width="16"
+                        stroke-dasharray="@c1 314"
+                        stroke-dashoffset="0"
+                        transform="rotate(-90 50 50)" />
+                <circle cx="50" cy="50" r="38" fill="none" stroke="#c9a84c"
+                        stroke-width="16"
+                        stroke-dasharray="@c2 314"
+                        stroke-dashoffset="@(-c1)"
+                        transform="rotate(-90 50 50)" />
+                <text x="50" y="47" text-anchor="middle" font-size="11"
+                      font-weight="bold" fill="#1B4332"
+                      font-family="Cairo">@Model.TotalClaims.ToString("N0")</text>
+                <text x="50" y="59" text-anchor="middle" font-size="8"
+                      fill="#9a9890" font-family="Cairo">مطالبة</text>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Table -->
+<div class="table-card">
+    <div class="table-hdr">
+        <div class="chart-title">آخر المطالبات المسجلة</div>
+        <div style="display:flex;gap:8px">
+            <a href="/CourtCases" class="btn-sm">
+                <i class="ti ti-list"></i> عرض الكل
+            </a>
+            <a href="/CourtCases/Create" class="btn-sm primary">
+                <i class="ti ti-plus"></i> مطالبة جديدة
+            </a>
+        </div>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>رقم المطالبة</th>
+                <th>المدعي</th>
+                <th>النوع</th>
+                <th>الفرع</th>
+                <th>الاحتياطي</th>
+                <th>الحالة</th>
+                <th>التاريخ</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.RecentClaims.Any())
+            {
+                @foreach (var c in Model.RecentClaims)
+                {
+                    <tr>
+                        <td><strong style="color:#1B4332">@c.ClaimNumber</strong></td>
+                        <td>@c.Plaintiff</td>
+                        <td><span class="badge badge-courts">@c.ClaimType</span></td>
+                        <td>@c.Branch</td>
+                        <td>@c.Reserve.ToString("N0")</td>
+                        <td><span class="badge badge-courts">@c.Status</span></td>
+                        <td style="font-size:12px;color:#9a9890">
+                            @c.RegDate.ToString("yyyy/MM/dd")
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7"
+                        style="text-align:center;color:#9a9890;padding:30px">
+                        لا توجد مطالبات مسجلة بعد
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        var stats = @Html.Raw(
+                    System.Text.Json.JsonSerializer.Serialize(Model.MonthlyStats));
+
+    var chart  = document.getElementById('barChart');
+
+        var maxVal = Math.max(
+            ...stats.map(function(s) {
+                return Math.max(
+                    s.Courts   || s.courts   || 0,
+                    s.Friendly || s.friendly || 0
+                );
+            }), 1);
+
+        stats.forEach(function(s) {
+            var courts   = s.Courts   || s.courts   || 0;
+            var friendly = s.Friendly || s.friendly || 0;
+            var month    = s.Month    || s.month    || "";
+
+            var hCourts   = courts   / maxVal * 120;
+            var hFriendly = friendly / maxVal * 120;
+
+            var g = document.createElement('div');
+            g.className = 'bar-group';
+            g.style.cssText = 'display:flex;flex-direction:column;align-items:center;flex:1;gap:4px';
+
+            // الأشرطة جنب بعض
+            var barsWrap = document.createElement('div');
+            barsWrap.style.cssText =
+                'display:flex;align-items:flex-end;gap:3px;height:120px;width:100%';
+
+            var b1 = document.createElement('div');
+            b1.style.cssText =
+                'flex:1;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#2d6a4f,#1B4332);' +
+                'height:' + hCourts + 'px;min-height:2px;transition:height 0.5s ease';
+
+            var b2 = document.createElement('div');
+            b2.style.cssText =
+                'flex:1;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#e8c96d,#c9a84c);' +
+                'height:' + hFriendly + 'px;min-height:2px;transition:height 0.5s ease';
+
+            var lbl = document.createElement('div');
+            lbl.style.cssText = 'font-size:10px;color:#9a9890;margin-top:4px';
+            lbl.textContent = month;
+
+            barsWrap.appendChild(b1);
+            barsWrap.appendChild(b2);
+            g.appendChild(barsWrap);
+            g.appendChild(lbl);
+            chart.appendChild(g);
+        });
+    </script>
+}

@@ -1,0 +1,74 @@
+﻿@model MedicalInsuranceApp1.Models.ViewModels.RoleUsersVM
+@{
+    ViewData["Title"] = $"مستخدمو دور {Model.RoleName}";
+}
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/Roles/Index" class="btn-back">
+        <i class="ti ti-arrow-right"></i>
+    </a>
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#1B4332">
+            مستخدمو دور: @Model.RoleName
+        </h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">
+            إجمالي @Model.Users.Count مستخدم
+        </p>
+    </div>
+</div>
+
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>المستخدم</th>
+                <th>المسمى الوظيفي</th>
+                <th>الحالة</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Users.Any())
+            {
+                @foreach (var u in Model.Users)
+                {
+                    <tr>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:10px">
+                                <div class="user-av-sm">
+                                    @u.UserName.Substring(0, 1).ToUpper()
+                                </div>
+                                <div>
+                                    <div style="font-weight:600;color:#2a2820">
+                                        @u.FullName
+                                    </div>
+                                    <div style="font-size:12px;color:#9a9890">
+                                        @u.UserName
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>@u.UserJob</td>
+                        <td>
+                            <span class="status-badge @(u.IsActive ? "active" : "inactive")">
+                                @(u.IsActive ? "فعال" : "معطل")
+                            </span>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="3"
+                        style="text-align:center;color:#9a9890;padding:30px">
+                        لا يوجد مستخدمون في هذا الدور
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+}

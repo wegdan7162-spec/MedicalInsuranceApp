@@ -1,0 +1,63 @@
+﻿@model MedicalInsuranceApp1.Data.MigrationResult
+@{
+    ViewData["Title"] = "نتيجة النقل";
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <title>نتيجة نقل المستخدمين</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/migration.css">
+</head>
+<body>
+    <h2>نتيجة نقل المستخدمين</h2>
+
+    <div class="stats">
+        <div class="stat green">
+            <div class="stat-num">@Model.Succeeded</div>
+            <div class="stat-lbl">نجح</div>
+        </div>
+        <div class="stat red">
+            <div class="stat-num">@Model.Failed</div>
+            <div class="stat-lbl">فشل</div>
+        </div>
+        <div class="stat gray">
+            <div class="stat-num">@Model.Skipped</div>
+            <div class="stat-lbl">تم تخطيه</div>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID القديم</th>
+                <th>اسم الدخول</th>
+                <th>الاسم الكامل</th>
+                <th>الدور</th>
+                <th>كلمة المرور</th>
+                <th>الحالة</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in Model.Details)
+            {
+                <tr>
+                    <td>@d.OldId</td>
+                    <td><strong>@d.UserName</strong></td>
+                    <td>@d.FullName</td>
+                    <td>@d.AssignedRole</td>
+                    <td style="font-family:monospace">@d.TempPassword</td>
+                    <td>@d.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="note">
+        ⚠️ كلمة المرور المؤقتة لجميع المستخدمين: <strong>123456</strong> — يجب تغييرها عند أول دخول
+    </div>
+
+    <a href="/Account/Login" class="btn">انتقل لصفحة الدخول</a>
+</body>
+</html>

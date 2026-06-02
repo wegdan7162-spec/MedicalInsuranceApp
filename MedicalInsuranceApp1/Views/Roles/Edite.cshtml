@@ -1,0 +1,60 @@
+﻿@model MedicalInsuranceApp1.Models.ViewModels.EditRoleVM
+@{
+    ViewData["Title"] = "تعديل الدور";
+}
+
+<div style="max-width:500px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <a href="/Roles/Index" class="btn-back">
+            <i class="ti ti-arrow-right"></i>
+        </a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#1B4332">تعديل الدور</h2>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id">
+
+            <div asp-validation-summary="ModelOnly" class="error-box"></div>
+
+            <div class="form-group" style="margin-bottom:16px">
+                <label asp-for="Name">اسم الدور <span class="req">*</span></label>
+                <input asp-for="Name" class="form-input">
+                <span asp-validation-for="Name" class="field-error"></span>
+            </div>
+
+            <div class="form-group" style="margin-bottom:16px">
+                <label asp-for="Description">الوصف</label>
+                <input asp-for="Description" class="form-input">
+            </div>
+
+            <div class="form-group" style="margin-bottom:24px;
+                         display:flex;align-items:center;gap:10px">
+                <input asp-for="IsActive" type="checkbox"
+                       style="width:18px;height:18px;accent-color:#1B4332">
+                <label asp-for="IsActive" style="margin:0;font-size:14px">
+                    الدور مفعل
+                </label>
+            </div>
+
+            <div style="display:flex;gap:12px;justify-content:flex-end">
+                <a href="/Roles/Index" class="btn-cancel">إلغاء</a>
+                <button type="submit" class="btn-save">
+                    <i class="ti ti-device-floppy"></i> حفظ التعديلات
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+}
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,154 @@
+﻿@model MedicalInsuranceApp1.Models.ViewModels.FriendlyClaimCreateVM
+@{
+    ViewData["Title"] = "تسجيل مطالبة صلح ودي جديدة";
+}
+
+<div style="max-width:700px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <a href="/FriendlyClaims" class="btn-back">
+            <i class="ti ti-arrow-right"></i>
+        </a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#ffffff">
+                تسجيل مطالبة صلح ودي جديدة
+            </h2>
+            <p style="font-size:13px;color:#9a9890">أدخل بيانات المطالبة</p>
+        </div>
+    </div>
+
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="error-box"></div>
+
+        <div class="form-card">
+            <div class="form-section-title">
+                <i class="ti ti-user"></i> بيانات المدعي والواقعة
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="PlaintiffNameId">
+                        المدعي <span class="req">*</span>
+                    </label>
+                    <select asp-for="PlaintiffNameId"
+                            asp-items="Model.Plaintiffs" class="form-select">
+                        <option value="">-- اختر المدعي --</option>
+                    </select>
+                    <span asp-validation-for="PlaintiffNameId" class="field-error"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="BranchId">الفرع <span class="req">*</span></label>
+                    <select asp-for="BranchId"
+                            asp-items="Model.Branches" class="form-select">
+                        <option value="">-- اختر الفرع --</option>
+                    </select>
+                    <span asp-validation-for="BranchId" class="field-error"></span>
+                </div>
+                <div class="form-group" style="grid-column:span 2">
+                    <label asp-for="Place">
+                        مكان الواقعة <span class="req">*</span>
+                    </label>
+                    <input asp-for="Place" class="form-input"
+                           placeholder="أدخل مكان الواقعة">
+                    <span asp-validation-for="Place" class="field-error"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="IncidentDate">
+                        تاريخ الواقعة <span class="req">*</span>
+                    </label>
+                    <input asp-for="IncidentDate" type="date" class="form-input">
+                    <span asp-validation-for="IncidentDate" class="field-error"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="RegDate">تاريخ التسجيل</label>
+                    <input asp-for="RegDate" type="date" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label asp-for="AgentName">اسم الوكيل</label>
+                    <input asp-for="AgentName" class="form-input"
+                           placeholder="اسم الوكيل أو المحامي">
+                </div>
+                <div class="form-group">
+                    <label asp-for="Subject">الموضوع</label>
+                    <input asp-for="Subject" class="form-input"
+                           placeholder="موضوع المطالبة">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-section-title">
+                <i class="ti ti-cash"></i> البيانات المالية والحالة
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="Reserve">قيمة الاحتياطي</label>
+                    <input asp-for="Reserve" type="number"
+                           step="0.01" class="form-input" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label asp-for="Setteld">المبلغ المسدد</label>
+                    <input asp-for="Setteld" type="number"
+                           step="0.01" class="form-input" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label asp-for="ClaimStatus">حالة المطالبة</label>
+                    <select asp-for="ClaimStatus" class="form-select">
+                        @foreach (var s in Model.StatusList)
+                        {
+                            <option value="@s">@s</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label asp-for="FileStatus">حالة الملف</label>
+                    <select asp-for="FileStatus" class="form-select">
+                        @foreach (var s in Model.FileStatusList)
+                        {
+                            <option value="@s">@s</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label asp-for="CourtId">المحكمة (اختياري)</label>
+                    <select asp-for="CourtId" asp-items="Model.Courts"
+                            class="form-select">
+                        <option value="">-- لا يوجد --</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-section-title">
+                <i class="ti ti-notes"></i> ملاحظات ومرفقات
+            </div>
+            <div class="form-group" style="margin-bottom:16px">
+                <label asp-for="Note">الملاحظات</label>
+                <textarea asp-for="Note" class="form-textarea" rows="3"
+                          placeholder="أدخل أي ملاحظات..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>رفع مرفق</label>
+                <input type="file" name="file" class="form-file"
+                       accept=".pdf,.jpg,.jpeg,.png">
+            </div>
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:flex-end">
+            <a href="/FriendlyClaims" class="btn-cancel">إلغاء</a>
+            <button type="submit" class="btn-save">
+                <i class="ti ti-device-floppy"></i> حفظ المطالبة
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+}
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

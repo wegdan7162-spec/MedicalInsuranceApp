@@ -1,0 +1,144 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewData["Title"] — منظومة مطالبات فرع التامين الطبي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+    <link rel="stylesheet" href="~/css/site.css">
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="layout">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <img src="/image/Medical.jpg" alt="شعار" class="brand-logo" />
+                <div class="brand-text">
+                    <h3>منظومة المطالبات</h3>
+                    <span>فرع التامين الطبي</span>
+                </div>
+            </div>
+
+            @{
+                var ctrl   = ViewContext.RouteData.Values["controller"]?.ToString();
+                var action = ViewContext.RouteData.Values["action"]?.ToString();
+                var isTrash = ctrl == "Trash";
+            }
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">الرئيسية</div>
+                <a href="/Dashboard/Index" class="nav-item @(ctrl == "Dashboard" ? "active" : "")">
+                    <i class="ti ti-layout-dashboard"></i> لوحة التحكم
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">المطالبات</div>
+                <a href="/OutterClaims" class="nav-item @(ctrl == "OutterClaims" && action != "Inventory" ? "active" : "")">
+                    <i class="ti ti-gavel"></i> مطالبات القضايا
+                </a>
+                <a href="/FriendlyClaims" class="nav-item @(ctrl == "FriendlyClaims" ? "active" : "")">
+                    <i class="ti ti-handshake"></i> مطالبات الصلح الودي
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">الادارة</div>
+                <a href="/Branches" class="nav-item @(ctrl == "Branches" ? "active" : "")">
+                    <i class="ti ti-building"></i> الفروع
+                </a>
+                <a href="/Courts" class="nav-item @(ctrl == "Courts" ? "active" : "")">
+                    <i class="ti ti-building-courthouse"></i> المحاكم
+                </a>
+                <a href="/Plaintiffs" class="nav-item @(ctrl == "Plaintiffs" ? "active" : "")">
+                    <i class="ti ti-user-search"></i> المدعين
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">الاعدادات</div>
+                <a href="/Users/Index" class="nav-item @(ctrl == "Users" ? "active" : "")">
+                    <i class="ti ti-users"></i> المستخدمون
+                </a>
+                <a href="/Roles" class="nav-item @(ctrl == "Roles" ? "active" : "")">
+                    <i class="ti ti-key"></i> الادوار والصلاحيات
+                </a>
+                <a href="/Activity" class="nav-item @(ctrl == "Activity" ? "active" : "")">
+                    <i class="ti ti-activity"></i> حركة المستخدمين
+                </a>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-label">سلة المحذوفات</div>
+                <a href="/Trash/OutterClaims" class="nav-item @(isTrash && action == "OutterClaims" ? "active" : "")">
+                    <i class="ti ti-gavel"></i> مطالبات القضايا
+                </a>
+                <a href="/Trash/FriendlyClaims" class="nav-item @(isTrash && action == "FriendlyClaims" ? "active" : "")">
+                    <i class="ti ti-handshake"></i> الصلح الودي
+                </a>
+                <a href="/Trash/Branches" class="nav-item @(isTrash && action == "Branches" ? "active" : "")">
+                    <i class="ti ti-building"></i> الفروع
+                </a>
+                <a href="/Trash/Courts" class="nav-item @(isTrash && action == "Courts" ? "active" : "")">
+                    <i class="ti ti-building-courthouse"></i> المحاكم
+                </a>
+                <a href="/Trash/Plaintiffs" class="nav-item @(isTrash && action == "Plaintiffs" ? "active" : "")">
+                    <i class="ti ti-user-search"></i> المدعين
+                </a>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="user-mini">
+                    <div class="user-av">
+                        @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "U")
+                    </div>
+                    <div class="user-info">
+                        <div class="uname">@User.Identity?.Name</div>
+                        <div class="ujob">مستخدم النظام</div>
+                    </div>
+                    <form asp-controller="Account" asp-action="Logout" method="post" style="margin-right:auto">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" style="background:none;border:none;cursor:pointer;padding:4px">
+                            <i class="ti ti-logout" style="font-size:16px;color:#6a6a50"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <div class="main">
+            <div class="topbar">
+                <div class="topbar-title">@ViewData["Title"]</div>
+                <div class="topbar-spacer"></div>
+                <a asp-controller="Account" asp-action="Profile" class="tb-btn">
+                    <i class="ti ti-user"></i>
+                </a>
+                <div class="tb-btn">
+                    <i class="ti ti-bell"></i>
+                    <span class="notif-dot"></span>
+                </div>
+            </div>
+
+            <div class="page-content">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert-success">@TempData["Success"]</div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert-danger">@TempData["Error"]</div>
+                }
+                @RenderBody()
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

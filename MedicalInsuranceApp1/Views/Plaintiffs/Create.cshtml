@@ -1,0 +1,49 @@
+@model MedicalInsuranceApp1.Models.Entities.PlaintiffName
+@{
+    ViewData["Title"] = "إضافة مدعي جديد";
+}
+
+<div style="max-width:600px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <a href="/Plaintiffs" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#ffffff">إضافة مدعي جديد</h2>
+            <p style="font-size:13px;color:#9a9890">أدخل بيانات المدعي</p>
+        </div>
+    </div>
+
+    <form method="post" action="/Plaintiffs/Create">
+        @Html.AntiForgeryToken()
+        <div class="form-card">
+            <div class="form-group">
+                <label class="form-label">اسم المدعي <span style="color:red">*</span></label>
+                <input name="PlainitiffName" class="form-control" placeholder="أدخل اسم المدعي" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">المهنة</label>
+                <input name="Job" class="form-control" placeholder="المهنة" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">الهاتف</label>
+                <input name="Phone" class="form-control" placeholder="رقم الهاتف" type="number" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">البريد الإلكتروني</label>
+                <input name="Email" class="form-control" placeholder="البريد الإلكتروني" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">العنوان</label>
+                <input name="Address" class="form-control" placeholder="العنوان" />
+            </div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:20px">
+            <button type="submit" class="btn-primary"><i class="ti ti-device-floppy"></i> حفظ</button>
+            <a href="/Plaintiffs" style="display:flex;align-items:center;gap:6px;padding:0 16px;height:40px;border-radius:8px;border:1px solid #d0d0c0;color:#546B41;text-decoration:none;font-size:13px">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+}

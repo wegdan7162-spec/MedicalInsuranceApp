@@ -1,0 +1,111 @@
+@model List<MedicalInsuranceApp1.Models.Entities.PlaintiffName>
+@{
+    ViewData["Title"] = "المدعين";
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">إدارة المدعين</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">إجمالي @Model.Count مدعي</p>
+    </div>
+    <a href="/Plaintiffs/Create" class="btn-sm primary">
+        <i class="ti ti-plus"></i> مدعي جديد
+    </a>
+</div>
+
+@Html.AntiForgeryToken()
+
+<div class="table-card">
+    <div class="table-hdr">
+        <div class="chart-title">قائمة المدعين</div>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>اسم المدعي</th>
+                <th>المهنة</th>
+                <th>الهاتف</th>
+                <th>البريد</th>
+                <th>العنوان</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                int i = 1;
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td style="color:#9a9890">@(i++)</td>
+                        <td><strong style="color:#1B4332">@p.PlainitiffName</strong></td>
+                        <td>@(p.Job ?? "-")</td>
+                        <td>@(p.Phone?.ToString() ?? "-")</td>
+                        <td>@(p.Email ?? "-")</td>
+                        <td>@(p.Address ?? "-")</td>
+                        <td>
+                            <div style="display:flex;gap:6px">
+                                <a href="/Plaintiffs/Edit/@p.Id" class="btn-sm" title="تعديل">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                                <button type="button" class="btn-sm" style="color:#c0392b;border-color:#f5c6c6"
+                                        onclick="showDelete(@p.Id, '@p.PlainitiffName')">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="7" style="text-align:center;color:#9a9890;padding:40px">
+                        <i class="ti ti-inbox" style="font-size:32px;display:block;margin-bottom:8px"></i>
+                        لا يوجد مدعون
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Delete Modal -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:28px;width:420px;max-width:90vw">
+        <h3 style="font-size:16px;font-weight:700;color:#1B4332;margin-bottom:8px">تأكيد الحذف</h3>
+        <p style="font-size:13px;color:#6a6a50;margin-bottom:16px">هل أنت متأكد من حذف <strong id="deleteName"></strong>؟</p>
+        <form id="deleteForm" method="post" action="/Plaintiffs/Delete">
+            <input type="hidden" name="__RequestVerificationToken" id="modalToken" />
+            <input type="hidden" name="id" id="deleteId" />
+            <div style="margin-bottom:16px">
+                <label style="font-size:13px;font-weight:600;color:#3a4a28;display:block;margin-bottom:6px">سبب الحذف</label>
+                <input type="text" name="reason" id="deleteReason" placeholder="أدخل سبب الحذف..." style="width:100%;padding:10px 12px;border:1px solid #e0e0d8;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px" />
+            </div>
+            <div style="display:flex;gap:10px">
+                <button type="submit" style="flex:1;padding:10px;background:#c0392b;color:#fff;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">حذف</button>
+                <button type="button" onclick="closeModal()" style="flex:1;padding:10px;background:#f5f5f0;color:#3a4a28;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showDelete(id, name) {
+    document.getElementById('deleteName').textContent = name;
+    document.getElementById('deleteId').value = id;
+    document.getElementById('deleteReason').value = '';
+    var t = document.querySelector('input[name=__RequestVerificationToken]');
+    if (t) document.getElementById('modalToken').value = t.value;
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+function closeModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+</script>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+}

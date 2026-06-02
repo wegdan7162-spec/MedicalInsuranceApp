@@ -1,0 +1,153 @@
+@model List<MedicalInsuranceApp1.Models.ViewModels.OutterClaimListVM>
+@{
+    ViewData["Title"] = "جرد أولى - مطالبات القضايا";
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#1B4332">جرد أولى - مطالبات القضايا</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">
+            إجمالي @ViewBag.Total مطالبة
+        </p>
+    </div>
+    <button onclick="window.print()" class="btn-primary">
+        <i class="ti ti-printer"></i> طباعة
+    </button>
+</div>
+
+<!-- بطاقات الإجماليات -->
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+    <div style="background:#fff;border-radius:12px;padding:20px;border:1px solid #e8e8e0;text-align:center">
+        <div style="font-size:13px;color:#6a6a50;margin-bottom:6px">إجمالي المطالبات</div>
+        <div style="font-size:26px;font-weight:700;color:#3a4a28">@ViewBag.Total</div>
+    </div>
+    <div style="background:#fff;border-radius:12px;padding:20px;border:1px solid #e8e8e0;text-align:center">
+        <div style="font-size:13px;color:#6a6a50;margin-bottom:6px">إجمالي الاحتياطي</div>
+        <div style="font-size:22px;font-weight:700;color:#546B41">@(((double)ViewBag.TotalReserve).ToString("N2"))</div>
+    </div>
+    <div style="background:#fff;border-radius:12px;padding:20px;border:1px solid #e8e8e0;text-align:center">
+        <div style="font-size:13px;color:#6a6a50;margin-bottom:6px">إجمالي المسوى</div>
+        <div style="font-size:22px;font-weight:700;color:#9AB17A">@(((double)ViewBag.TotalSettled).ToString("N2"))</div>
+    </div>
+</div>
+
+<!-- فلاتر -->
+<div class="filter-card" style="margin-bottom:20px">
+    <form method="get" action="/OutterClaims/Inventory">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <input type="text" name="search" value="@ViewBag.Search"
+                       class="filter-input" placeholder="بحث باسم المدعي أو المكان...">
+            </div>
+            <div class="filter-group">
+                <select name="branchId" class="filter-select">
+                    <option value="">كل الفروع</option>
+                    @foreach (var b in ViewBag.Branches)
+                    {
+                        <option value="@b.Id" selected="@(ViewBag.BranchId == b.Id)">@b.BranchName</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <input type="number" name="year" value="@ViewBag.Year"
+                       class="filter-input" placeholder="السنة...">
+            </div>
+            <div class="filter-group" style="display:flex;gap:8px">
+                <button type="submit" class="btn-primary" style="flex:1">
+                    <i class="ti ti-search"></i> بحث
+                </button>
+                <a href="/OutterClaims/Inventory" class="btn-secondary" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;border:1px solid #d0d0c0;color:#546B41;text-decoration:none;font-size:13px;padding:0 12px">
+                    <i class="ti ti-x"></i> إعادة
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- الجدول -->
+<div style="background:#fff;border-radius:12px;border:1px solid #e8e8e0;overflow:hidden">
+    <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+                <tr style="background:#546B41;color:#fff">
+                    <th style="padding:12px 14px;text-align:right;font-weight:600">#</th>
+                    <th style="padding:12px 14px;text-align:right;font-weight:600">رقم المطالبة</th>
+                    <th style="padding:12px 14px;text-align:right;font-weight:600">السنة</th>
+                    <th style="padding:12px 14px;text-align:right;font-weight:600">اسم المدعي</th>
+                    <th style="padding:12px 14px;text-align:right;font-weight:600">الفرع</th>
+                    <th style="padding:12px 14px;text-align:right;font-weight:600">المحكمة</th>
+                    <th style="padding:12px 14px;text-align:right;font-weight:600">مكان الواقعة</th>
+                    <th style="padding:12px 14px;text-align:right;font-weight:600">تاريخ الواقعة</th>
+                    <th style="padding:12px 14px;text-align:right;font-weight:600">الاحتياطي</th>
+                    <th style="padding:12px 14px;text-align:right;font-weight:600">المسوى</th>
+                    <th style="padding:12px 14px;text-align:right;font-weight:600">حالة المطالبة</th>
+                    <th style="padding:12px 14px;text-align:right;font-weight:600">تاريخ التسجيل</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="12" style="text-align:center;padding:40px;color:#a8a88a">
+                            <i class="ti ti-database-off" style="font-size:32px;display:block;margin-bottom:8px"></i>
+                            لا توجد بيانات
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    int rowNum = 1;
+                    @foreach (var item in Model)
+                    {
+                        <tr style="border-bottom:1px solid #f0f0e8;@(rowNum % 2 == 0 ? "background:#fafaf7" : "")">
+                            <td style="padding:10px 14px;color:#a8a88a">@rowNum</td>
+                            <td style="padding:10px 14px;font-weight:600;color:#3a4a28">@item.ClaimNumber</td>
+                            <td style="padding:10px 14px">@item.Year</td>
+                            <td style="padding:10px 14px">@item.PlaintiffName</td>
+                            <td style="padding:10px 14px">@item.BranchName</td>
+                            <td style="padding:10px 14px">@item.CourtName</td>
+                            <td style="padding:10px 14px">@item.Place</td>
+                            <td style="padding:10px 14px">@(item.IncidentDate.HasValue ? item.IncidentDate.Value.ToString("yyyy/MM/dd") : "-")</td>
+                            <td style="padding:10px 14px;font-weight:600;color:#546B41">@item.Reserve.ToString("N2")</td>
+                            <td style="padding:10px 14px;font-weight:600;color:#9AB17A">@item.Setteld.ToString("N2")</td>
+                            <td style="padding:10px 14px">
+                                @{
+                                    var statusColor = item.ClaimStatus switch {
+                                        "Settled" or "مسواة" => "#e8f5ee",
+                                        "UnderSettlement" or "تحت التسوية" => "#fff8e8",
+                                        _ => "#f5f5f0"
+                                    };
+                                    var statusTextColor = item.ClaimStatus switch {
+                                        "Settled" or "مسواة" => "#2d6a4f",
+                                        "UnderSettlement" or "تحت التسوية" => "#92711a",
+                                        _ => "#6a6a50"
+                                    };
+                                }
+                                <span style="background:@statusColor;color:@statusTextColor;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">
+                                    @item.ClaimStatus
+                                </span>
+                            </td>
+                            <td style="padding:10px 14px;color:#6a6a50">@item.RegDate.ToString("yyyy/MM/dd")</td>
+                        </tr>
+                        rowNum++;
+                    }
+                    <!-- صف الإجماليات -->
+                    <tr style="background:#546B41;color:#fff;font-weight:700">
+                        <td colspan="8" style="padding:12px 14px;text-align:left">الإجمالي</td>
+                        <td style="padding:12px 14px">@(((double)ViewBag.TotalReserve).ToString("N2"))</td>
+                        <td style="padding:12px 14px">@(((double)ViewBag.TotalSettled).ToString("N2"))</td>
+                        <td colspan="2" style="padding:12px 14px"></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .sidebar, .topbar, .filter-card, button { display: none !important; }
+        .main { margin: 0 !important; }
+        body { background: white !important; }
+    }
+</style>

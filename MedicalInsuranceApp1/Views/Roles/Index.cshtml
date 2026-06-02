@@ -1,0 +1,67 @@
+﻿@model List<MedicalInsuranceApp1.Models.ViewModels.RoleListVM>
+@{
+    ViewData["Title"] = "إدارة الأدوار";
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#1B4332">الأدوار والصلاحيات</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">إجمالي @Model.Count دور</p>
+    </div>
+    <a href="/Roles/Create" class="btn-primary">
+        <i class="ti ti-plus"></i> دور جديد
+    </a>
+</div>
+
+<div class="roles-cards">
+    @foreach (var r in Model)
+    {
+        <div class="role-card">
+            <div class="role-card-header">
+                <div class="role-icon">
+                    <i class="ti ti-shield-check"></i>
+                </div>
+                <div class="role-info">
+                    <div class="role-name">@r.Name</div>
+                    <div class="role-desc">@(string.IsNullOrEmpty(r.Description) ? "بدون وصف" : r.Description)</div>
+                </div>
+                <span class="status-badge @(r.IsActive ? "active" : "inactive")">
+                    @(r.IsActive ? "فعال" : "معطل")
+                </span>
+            </div>
+
+            <div class="role-card-body">
+                <div class="role-stat">
+                    <i class="ti ti-users"></i>
+                    <span>@r.UserCount مستخدم</span>
+                </div>
+                <div class="role-stat">
+                    <i class="ti ti-calendar"></i>
+                    <span>@r.CreatedAt.ToString("yyyy/MM/dd")</span>
+                </div>
+            </div>
+
+            <div class="role-card-footer">
+                <a href="/Roles/Users/@r.Id" class="btn-icon" title="عرض المستخدمين">
+                    <i class="ti ti-users"></i>
+                </a>
+                <a href="/Roles/Edit/@r.Id" class="btn-icon" title="تعديل">
+                    <i class="ti ti-edit"></i>
+                </a>
+                <form action="/Roles/Delete" method="post" style="display:inline"
+                      onsubmit="return confirm('هل أنت متأكد من حذف هذا الدور؟')">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@r.Id">
+                    <button type="submit" class="btn-icon danger" title="حذف">
+                        <i class="ti ti-trash"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/roles.css">
+}

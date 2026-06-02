@@ -1,0 +1,199 @@
+﻿@model MedicalInsuranceApp1.Models.ViewModels.LoginVM
+@{
+    Layout = null;
+    ViewData["Title"] = "منظومة المطالبات لفرع التامين الطبي";
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewData["Title"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Cairo, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #546B41 0%, #3a4a28 60%, #2a3a1a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: url("/image/Medical.jpg");
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: 520px auto;
+            opacity: 0.07;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .card {
+            position: relative;
+            z-index: 1;
+            background: rgba(255,255,255,0.62);
+            border: 1px solid rgba(154,177,122,0.35);
+            border-radius: 20px;
+            padding: 44px;
+            width: 100%;
+            max-width: 430px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 40px rgba(42,58,26,0.25);
+        }
+        .logo { text-align: center; margin-bottom: 28px; }
+        .logo img {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            margin-bottom: 12px;
+            filter: drop-shadow(0 2px 6px rgba(58,74,40,0.25));
+        }
+        .logo h1 { font-size: 16px; color: #3a4a28; font-weight: 700; line-height: 1.5; }
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #9AB17A, transparent);
+            margin-bottom: 24px;
+        }
+        .error-box {
+            background: rgba(192,57,43,0.08);
+            border: 1px solid rgba(192,57,43,0.25);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            color: #c0392b;
+            font-size: 13px;
+        }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 13px; color: #3a4a28; font-weight: 600; margin-bottom: 7px; }
+        .input-wrap { position: relative; }
+        .input-wrap .ico {
+            position: absolute;
+            right: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9AB17A;
+            font-size: 17px;
+            pointer-events: none;
+        }
+        input[type=text], input[type=password] {
+            width: 100%;
+            height: 46px;
+            padding: 0 42px;
+            background: rgba(228,223,181,0.3);
+            border: 1px solid rgba(154,177,122,0.4);
+            border-radius: 10px;
+            color: #3a4a28;
+            font-family: Cairo, sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        input::placeholder { color: #a8a88a; }
+        input:focus { border-color: #9AB17A; background: rgba(228,223,181,0.5); }
+        .eye-btn {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #9AB17A;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+        }
+        .options { display: flex; align-items: center; margin-bottom: 22px; }
+        .cb-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .cb-wrap input[type=checkbox] { width: 16px; height: 16px; accent-color: #9AB17A; }
+        .cb-label { font-size: 13px; color: #3a4a28; }
+        .btn-login {
+            width: 100%;
+            height: 48px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #3a4a28, #4a5220);
+            color: #FBE8CE;
+            font-family: Cairo, sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-login:hover { opacity: 0.9; transform: translateY(-1px); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">
+            <img src="/image/Medical.jpg" alt="شعار فرع التامين الطبي" />
+            <h1>منظومة المطالبات<br>لفرع التامين الطبي</h1>
+        </div>
+        <div class="divider"></div>
+
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+        {
+            <div class="error-box">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@error.ErrorMessage</div>
+                }
+            </div>
+        }
+
+        <form method="post" action="/Account/Login">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+
+            <div class="form-group">
+                <label>اسم المستخدم</label>
+                <div class="input-wrap">
+                    <i class="ti ti-user ico"></i>
+                    <input type="text" name="UserName" value="@Model.UserName"
+                           autocomplete="username" placeholder="ادخل اسم المستخدم">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <div class="input-wrap">
+                    <i class="ti ti-lock ico"></i>
+                    <input type="password" name="Password" id="passInput"
+                           autocomplete="current-password" placeholder="ادخل كلمة المرور">
+                    <button type="button" class="eye-btn" onclick="togglePass()">
+                        <i class="ti ti-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="options">
+                <label class="cb-wrap">
+                    <input type="checkbox" name="RememberMe" value="true">
+                    <span class="cb-label">تذكرني</span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn-login">تسجيل الدخول</button>
+        </form>
+    </div>
+    <script>
+        function togglePass() {
+            var inp = document.getElementById("passInput");
+            var ico = document.getElementById("eyeIcon");
+            if (inp.type === "password") {
+                inp.type = "text";
+                ico.className = "ti ti-eye-off";
+            } else {
+                inp.type = "password";
+                ico.className = "ti ti-eye";
+            }
+        }
+    </script>
+</body>
+</html>

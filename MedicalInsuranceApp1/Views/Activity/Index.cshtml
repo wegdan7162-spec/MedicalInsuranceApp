@@ -1,0 +1,132 @@
+@{
+    ViewData["Title"] = "حركة المستخدمين";
+    var sessions = ViewBag.Sessions as List<MedicalInsuranceApp1.Models.Entities.UserSession>;
+    var activities = ViewBag.Activities as List<MedicalInsuranceApp1.Models.Entities.UserActivity>;
+    var users = ViewBag.Users as List<string>;
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">حركة المستخدمين</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">سجل الدخول والخروج وزيارات الصفحات</p>
+    </div>
+</div>
+
+<!-- فلاتر -->
+<div class="filter-card" style="margin-bottom:20px">
+    <form method="get" action="/Activity">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <select name="user" class="filter-select">
+                    <option value="">كل المستخدمين</option>
+                    @if (users != null) {
+                        @foreach (var u in users) {
+                            <option value="@u" selected="@(ViewBag.User == u)">@u</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <input type="date" name="from" value="@ViewBag.From" class="filter-input" />
+            </div>
+            <div class="filter-group">
+                <input type="date" name="to" value="@ViewBag.To" class="filter-input" />
+            </div>
+            <div class="filter-group">
+                <button type="submit" class="btn-filter"><i class="ti ti-search"></i> بحث</button>
+                <a href="/Activity" class="btn-filter-clear">مسح</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- جلسات الدخول والخروج -->
+<div class="table-card" style="margin-bottom:24px">
+    <div class="table-hdr">
+        <div class="chart-title">🔐 سجل الجلسات (دخول / خروج)</div>
+        <span style="font-size:12px;color:#9a9890">آخر 100 جلسة</span>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>المستخدم</th>
+                <th>الاسم الكامل</th>
+                <th>وقت الدخول</th>
+                <th>وقت الخروج</th>
+                <th>المدة</th>
+                <th>IP</th>
+                <th>الحالة</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (sessions == null || !sessions.Any()) {
+                <tr><td colspan="7" style="text-align:center;padding:30px;color:#9a9890">لا توجد جلسات</td></tr>
+            } else {
+                @foreach (var s in sessions) {
+                    <tr>
+                        <td><strong style="color:#1B4332">@s.UserName</strong></td>
+                        <td>@s.FullName</td>
+                        <td style="font-size:12px">@s.LoginAt.ToString("yyyy/MM/dd HH:mm")</td>
+                        <td style="font-size:12px;color:#9a9890">@(s.LogoutAt?.ToString("yyyy/MM/dd HH:mm") ?? "-")</td>
+                        <td>
+                            @if (s.DurationMinutes.HasValue) {
+                                var h = s.DurationMinutes.Value / 60;
+                                var m = s.DurationMinutes.Value % 60;
+                                <span class="badge badge-courts">@(h > 0 ? $"{h}س " : "")@(m)د</span>
+                            } else {
+                                <span class="badge" style="background:#e8f5ee;color:#2d6a4f">نشط الآن</span>
+                            }
+                        </td>
+                        <td style="font-size:11px;color:#9a9890">@(s.IPAddress ?? "-")</td>
+                        <td>
+                            @if (!s.LogoutAt.HasValue) {
+                                <span class="badge" style="background:#e8f5ee;color:#2d6a4f">● متصل</span>
+                            } else {
+                                <span class="badge" style="background:#f5f5f0;color:#6a6a50">خرج</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- زيارات الصفحات -->
+<div class="table-card">
+    <div class="table-hdr">
+        <div class="chart-title">📄 سجل زيارات الصفحات</div>
+        <span style="font-size:12px;color:#9a9890">آخر 200 زيارة</span>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>المستخدم</th>
+                <th>الاسم الكامل</th>
+                <th>الصفحة</th>
+                <th>الوقت</th>
+                <th>IP</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (activities == null || !activities.Any()) {
+                <tr><td colspan="5" style="text-align:center;padding:30px;color:#9a9890">لا توجد زيارات</td></tr>
+            } else {
+                @foreach (var a in activities) {
+                    <tr>
+                        <td><strong style="color:#1B4332">@a.UserName</strong></td>
+                        <td>@a.FullName</td>
+                        <td><span class="badge badge-courts">@a.PageTitle</span></td>
+                        <td style="font-size:12px;color:#9a9890">@a.VisitedAt.ToString("yyyy/MM/dd HH:mm:ss")</td>
+                        <td style="font-size:11px;color:#9a9890">@(a.IPAddress ?? "-")</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+}

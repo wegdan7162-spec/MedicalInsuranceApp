@@ -1,0 +1,117 @@
+﻿@model MedicalInsuranceApp1.Models.ViewModels.FriendlyClaimEditVM
+@{
+    ViewData["Title"] = "تعديل مطالبة الصلح";
+}
+
+<div style="max-width:700px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <a href="/FriendlyClaims" class="btn-back">
+            <i class="ti ti-arrow-right"></i>
+        </a>
+        <h2 style="font-size:18px;font-weight:700;color:#1B4332">
+            تعديل مطالبة الصلح
+        </h2>
+    </div>
+
+    <form asp-action="Edit" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id">
+        <div asp-validation-summary="ModelOnly" class="error-box"></div>
+
+        <div class="form-card">
+            <div class="form-section-title">
+                <i class="ti ti-user"></i> بيانات المدعي والواقعة
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="PlaintiffNameId">المدعي <span class="req">*</span></label>
+                    <select asp-for="PlaintiffNameId"
+                            asp-items="Model.Plaintiffs" class="form-select">
+                        <option value="">-- اختر المدعي --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label asp-for="BranchId">الفرع <span class="req">*</span></label>
+                    <select asp-for="BranchId"
+                            asp-items="Model.Branches" class="form-select">
+                        <option value="">-- اختر الفرع --</option>
+                    </select>
+                </div>
+                <div class="form-group" style="grid-column:span 2">
+                    <label asp-for="Place">مكان الواقعة <span class="req">*</span></label>
+                    <input asp-for="Place" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label asp-for="IncidentDate">تاريخ الواقعة</label>
+                    <input asp-for="IncidentDate" type="date" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label asp-for="AgentName">الوكيل</label>
+                    <input asp-for="AgentName" class="form-input">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-section-title">
+                <i class="ti ti-cash"></i> البيانات المالية
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="Reserve">الاحتياطي</label>
+                    <input asp-for="Reserve" type="number"
+                           step="0.01" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label asp-for="Setteld">المسدد</label>
+                    <input asp-for="Setteld" type="number"
+                           step="0.01" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label asp-for="ClaimStatus">حالة المطالبة</label>
+                    <select asp-for="ClaimStatus" class="form-select">
+                        @foreach (var s in Model.StatusList)
+                        {
+                            <option value="@s">@s</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label asp-for="FileStatus">حالة الملف</label>
+                    <select asp-for="FileStatus" class="form-select">
+                        @foreach (var s in Model.FileStatusList)
+                        {
+                            <option value="@s">@s</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-section-title">
+                <i class="ti ti-notes"></i> ملاحظات
+            </div>
+            <div class="form-group">
+                <textarea asp-for="Note" class="form-textarea" rows="3"></textarea>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:flex-end">
+            <a href="/FriendlyClaims" class="btn-cancel">إلغاء</a>
+            <button type="submit" class="btn-save">
+                <i class="ti ti-device-floppy"></i> حفظ التعديلات
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+}
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

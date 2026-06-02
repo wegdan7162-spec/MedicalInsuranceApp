@@ -1,0 +1,108 @@
+﻿@model List<MedicalInsuranceApp1.Models.ViewModels.UserListVM>
+@{
+    ViewData["Title"] = "إدارة المستخدمين";
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#1B4332">المستخدمون</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">إجمالي @Model.Count مستخدم</p>
+    </div>
+    <a asp-action="Create" class="btn-primary">
+        <i class="ti ti-plus"></i> مستخدم جديد
+    </a>
+</div>
+
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>المستخدم</th>
+                <th>المسمى الوظيفي</th>
+                <th>الأدوار</th>
+                <th>الصلاحيات</th>
+                <th>آخر دخول</th>
+                <th>الحالة</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <div class="user-av-sm">
+                                @u.UserName.Substring(0, 1).ToUpper()
+                            </div>
+                            <div>
+                                <div style="font-weight:600;color:#2a2820">@u.FullName</div>
+                                <div style="font-size:12px;color:#9a9890">@u.UserName</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>@u.UserJob</td>
+                    <td>
+                        @foreach (var r in u.Roles)
+                        {
+                            <span class="role-badge">@r</span>
+                        }
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:4px;flex-wrap:wrap">
+                            @if (u.Roles.Contains("Admin") || u.Roles.Contains("SuperAdmin"))
+                            {
+                                <span class="perm-dot green" title="كل الصلاحيات">★</span>
+                            }
+                        </div>
+                    </td>
+                    <td style="font-size:12px;color:#9a9890">
+                        @(u.LastLoginAt.HasValue? u.LastLoginAt.Value.ToString("yyyy/MM/dd HH:mm") : "لم يدخل بعد")
+                    </td>
+                    <td>
+                        @if (u.IsActive)
+                        {
+                            <span class="status-badge active">فعال</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge inactive">معطل</span>
+                        }
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:6px">
+                            <a asp-action="Edit" asp-route-id="@u.Id"
+                               class="btn-icon" title="تعديل">
+                                <i class="ti ti-edit"></i>
+                            </a>
+                            <a asp-action="ResetPassword" asp-route-id="@u.Id"
+                               class="btn-icon" title="إعادة تعيين كلمة المرور">
+                                <i class="ti ti-key"></i>
+                            </a>
+                            <form asp-action="ToggleActive" method="post" style="display:inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@u.Id">
+                                <button type="submit" class="btn-icon"
+                                        title="@(u.IsActive ? "تعطيل" : "تفعيل")">
+                                    <i class="ti @(u.IsActive ? "ti-toggle-right" : "ti-toggle-left")"></i>
+                                </button>
+                            </form>
+                            <form asp-action="Delete" method="post" style="display:inline"
+                                  onsubmit="return confirm('هل أنت متأكد من حذف هذا المستخدم؟')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@u.Id">
+                                <button type="submit" class="btn-icon danger" title="حذف">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+}

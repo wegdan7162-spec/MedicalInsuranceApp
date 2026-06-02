@@ -1,0 +1,51 @@
+﻿@model MedicalInsuranceApp1.Models.ViewModels.CreateRoleVM
+@{
+    ViewData["Title"] = "دور جديد";
+}
+
+<div style="max-width:500px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <a href="/Roles/Index" class="btn-back">
+            <i class="ti ti-arrow-right"></i>
+        </a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#1B4332">إضافة دور جديد</h2>
+            <p style="font-size:13px;color:#9a9890">أدخل بيانات الدور الجديد</p>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="error-box"></div>
+
+            <div class="form-group" style="margin-bottom:16px">
+                <label asp-for="Name">اسم الدور <span class="req">*</span></label>
+                <input asp-for="Name" class="form-input" placeholder="مثال: Manager">
+                <span asp-validation-for="Name" class="field-error"></span>
+            </div>
+
+            <div class="form-group" style="margin-bottom:24px">
+                <label asp-for="Description">الوصف</label>
+                <input asp-for="Description" class="form-input" placeholder="وصف مختصر للدور">
+            </div>
+
+            <div style="display:flex;gap:12px;justify-content:flex-end">
+                <a href="/Roles/Index" class="btn-cancel">إلغاء</a>
+                <button type="submit" class="btn-save">
+                    <i class="ti ti-device-floppy"></i> حفظ الدور
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+}
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

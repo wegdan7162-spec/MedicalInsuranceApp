@@ -1,0 +1,239 @@
+﻿/* Filter */
+.filter-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #eeede8;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(15,45,31,0.04);
+}
+
+.filter-grid {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.filter-input {
+    height: 38px;
+    padding: 0 12px;
+    border: 1.5px solid #eeede8;
+    border-radius: 8px;
+    font-family: 'Cairo',sans-serif;
+    font-size: 13px;
+    color: #2a2820;
+    background: #f8f6f0;
+    outline: none;
+    min-width: 180px;
+}
+
+    .filter-input:focus {
+        border-color: #1B4332;
+        background: #fff;
+    }
+
+.filter-select {
+    height: 38px;
+    padding: 0 12px;
+    border: 1.5px solid #eeede8;
+    border-radius: 8px;
+    font-family: 'Cairo',sans-serif;
+    font-size: 13px;
+    color: #2a2820;
+    background: #f8f6f0;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+    min-width: 140px;
+}
+
+    .filter-select:focus {
+        border-color: #1B4332;
+        background: #fff;
+    }
+
+.btn-filter {
+    height: 38px;
+    padding: 0 16px;
+    background: #1B4332;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Cairo',sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+    .btn-filter:hover {
+        background: #2d6a4f;
+    }
+
+.btn-filter-clear {
+    height: 38px;
+    padding: 0 14px;
+    border: 1.5px solid #eeede8;
+    background: #fff;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #6a6860;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+    .btn-filter-clear:hover {
+        background: #f8f6f0;
+    }
+
+/* Status Badge */
+.claim-status {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(27,67,50,0.08);
+    color: #1B4332;
+}
+
+.claim-status-lg {
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 700;
+    background: rgba(27,67,50,0.1);
+    color: #1B4332;
+}
+
+/* Pagination */
+.pagination-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: #f8f6f0;
+    border-top: 1px solid #eeede8;
+}
+
+.pagination {
+    display: flex;
+    gap: 4px;
+}
+
+.page-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid #eeede8;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #6a6860;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+    .page-btn:hover {
+        background: #f8f6f0;
+    }
+
+    .page-btn.active {
+        background: #1B4332;
+        color: #fff;
+        border-color: #1B4332;
+    }
+
+/* Details */
+.details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.detail-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #9a9890;
+}
+
+.detail-value {
+    font-size: 14px;
+    color: #2a2820;
+    font-weight: 500;
+}
+
+/* Files */
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1px solid #eeede8;
+    margin-bottom: 8px;
+    transition: all 0.2s;
+}
+
+    .file-item:hover {
+        background: #f8f6f0;
+    }
+
+/* Textarea */
+.form-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #eeede8;
+    border-radius: 10px;
+    font-family: 'Cairo',sans-serif;
+    font-size: 13px;
+    color: #2a2820;
+    background: #f8f6f0;
+    outline: none;
+    resize: vertical;
+    transition: all 0.2s;
+}
+
+    .form-textarea:focus {
+        border-color: #1B4332;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(27,67,50,0.06);
+    }
+
+/* File Input */
+.form-file {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px dashed #eeede8;
+    border-radius: 10px;
+    font-family: 'Cairo',sans-serif;
+    font-size: 13px;
+    color: #6a6860;
+    background: #f8f6f0;
+    cursor: pointer;
+}
+
+    .form-file:hover {
+        border-color: #1B4332;
+    }

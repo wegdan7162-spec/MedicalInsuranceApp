@@ -1,0 +1,166 @@
+﻿@model List<MedicalInsuranceApp1.Models.ViewModels.CourtCaseListVM>
+@{
+    ViewData["Title"] = "مطالبات القضايا";
+}
+
+<!-- Header -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#1B4332">مطالبات القضايا</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">
+            إجمالي @ViewBag.Total مطالبة
+        </p>
+    </div>
+    <a href="/CourtCases/Create" class="btn-primary">
+        <i class="ti ti-plus"></i> مطالبة جديدة
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="filter-card">
+    <form method="get" action="/CourtCases">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <input type="text" name="search" value="@ViewBag.Search"
+                       class="filter-input" placeholder="بحث باسم المدعي أو الرقم...">
+            </div>
+            <div class="filter-group">
+                <select name="branchId" class="filter-select">
+                    <option value="">كل الفروع</option>
+                    @foreach (var b in ViewBag.Branches)
+                    {
+                        <option value="@b.Id" selected="@(ViewBag.BranchId == b.Id)">
+                            @b.BranchName
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <select name="status" class="filter-select">
+                    <option value="">كل الحالات</option>
+                    @foreach (var s in ViewBag.StatusList)
+                    {
+                        <option value="@s" selected="@(ViewBag.Status == s)">
+                            @s
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <input type="number" name="year" value="@ViewBag.Year"
+                       class="filter-input" placeholder="السنة">
+            </div>
+            <div class="filter-group">
+                <button type="submit" class="btn-filter">
+                    <i class="ti ti-search"></i> بحث
+                </button>
+                <a href="/CourtCases" class="btn-filter-clear">مسح</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Table -->
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>رقم المطالبة</th>
+                <th>المدعي</th>
+                <th>الفرع</th>
+                <th>المحكمة</th>
+                <th>مكان الواقعة</th>
+                <th>نوع المطالبة</th>
+                <th>الاحتياطي</th>
+                <th>المسدد</th>
+                <th>الحالة</th>
+                <th>التاريخ</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td><strong style="color:#1B4332">@c.ClaimNumber</strong></td>
+                        <td>@c.PlaintiffName</td>
+                        <td>@c.BranchName</td>
+                        <td>@c.CourtName</td>
+                        <td>@c.Place</td>
+                        <td>
+                            <span style="padding:2px 8px;border-radius:4px;font-size:12px;
+                                font-weight:600;
+                                background:@(c.ClaimType == "مغطى" ? "#d1fae5" : "#fee2e2");
+                                color:@(c.ClaimType == "مغطى" ? "#065f46" : "#991b1b")">
+                                @c.ClaimType
+                            </span>
+                        </td>
+                        <td>@c.Reserve.ToString("N0")</td>
+                        <td>@c.Setteld.ToString("N0")</td>
+                        <td><span class="claim-status">@c.ClaimStatus</span></td>
+                        <td style="font-size:12px;color:#9a9890">
+                            @c.RegDate.ToString("yyyy/MM/dd")
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:6px">
+                                <a href="/CourtCases/Details/@c.Id"
+                                   class="btn-icon" title="تفاصيل">
+                                    <i class="ti ti-eye"></i>
+                                </a>
+                                <a href="/CourtCases/Edit/@c.Id"
+                                   class="btn-icon" title="تعديل">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                                <form action="/CourtCases/Delete" method="post"
+                                      style="display:inline"
+                                      onsubmit="return confirm('هل أنت متأكد من الحذف؟')">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@c.Id">
+                                    <button type="submit" class="btn-icon danger">
+                                        <i class="ti ti-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="9"
+                        style="text-align:center;color:#9a9890;padding:40px">
+                        <i class="ti ti-inbox" style="font-size:32px;display:block;margin-bottom:8px"></i>
+                        لا توجد مطالبات
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="pagination-wrap">
+            <span style="font-size:12px;color:#9a9890">
+                صفحة @ViewBag.Page من @ViewBag.TotalPages
+            </span>
+            <div class="pagination">
+                @for (int i = 1; i <= ViewBag.TotalPages; i++)
+                {
+                    <a href="/CourtCases?page=@i&search=@ViewBag.Search&branchId=@ViewBag.BranchId&status=@ViewBag.Status"
+                       class="page-btn @(i == ViewBag.Page ? "active" : "")">
+                        @i
+                    </a>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+}

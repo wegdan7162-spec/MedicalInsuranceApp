@@ -1,0 +1,34 @@
+@model List<MedicalInsuranceApp1.Models.Entities.Court>
+@{ ViewData["Title"] = "محذوفات المحاكم"; }
+<div style="margin-bottom:20px">
+    <h2 style="font-size:18px;font-weight:700;color:#ffffff">🗑 محذوفات المحاكم</h2>
+    <p style="font-size:13px;color:#9a9890;margin-top:2px">إجمالي @Model.Count عنصر محذوف</p>
+</div>
+<div class="table-card">
+    <div class="table-hdr"><div class="chart-title">المحاكم المحذوفة</div></div>
+    <table class="data-table">
+        <thead><tr><th>اسم المحكمة</th><th>تاريخ الحذف</th><th>حذف بواسطة</th><th>السبب</th><th>إجراء</th></tr></thead>
+        <tbody>
+            @if (!Model.Any()) {
+                <tr><td colspan="5" style="text-align:center;padding:40px;color:#9a9890">لا توجد محاكم محذوفة</td></tr>
+            } else {
+                @foreach (var x in Model) {
+                    <tr>
+                        <td><strong>@x.CourtName</strong></td>
+                        <td style="font-size:12px;color:#9a9890">@x.DeletedAt?.ToString("yyyy/MM/dd HH:mm")</td>
+                        <td>@(x.DeletedBy ?? "-")</td>
+                        <td><span class="badge badge-courts">@(x.DeleteReason ?? "غير محدد")</span></td>
+                        <td>
+                            <form action="/Trash/RestoreCourt" method="post" style="display:inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@x.Id" />
+                                <button type="submit" class="btn-sm" style="color:#2d6a4f;border-color:#9AB17A"><i class="ti ti-restore"></i> استرجاع</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+@section Styles { <link rel="stylesheet" href="~/css/dashboard.css"> }

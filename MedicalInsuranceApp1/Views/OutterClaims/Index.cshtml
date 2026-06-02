@@ -1,0 +1,143 @@
+@model List<MedicalInsuranceApp1.Models.ViewModels.OutterClaimListVM>
+@{
+    ViewData["Title"] = "مطالبات قضايا";
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#1B4332">مطالبات قضايا</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">إجمالي @ViewBag.Total مطالبة</p>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="filter-card">
+    <form method="get" action="/OutterClaims">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <input type="text" name="search" value="@ViewBag.Search" class="filter-input" placeholder="بحث باسم المدعي أو المكان...">
+            </div>
+            <div class="filter-group">
+                <select name="branchId" class="filter-select">
+                    <option value="">كل الفروع</option>
+                    @foreach (var b in ViewBag.Branches)
+                    {
+                        <option value="@b.Id" selected="@(ViewBag.BranchId == b.Id)">@b.BranchName</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <select name="status" class="filter-select">
+                    <option value="">كل الحالات</option>
+                    @foreach (var s in ViewBag.StatusList)
+                    {
+                        <option value="@s" selected="@(ViewBag.Status == s)">@s</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <input type="number" name="year" value="@ViewBag.Year" class="filter-input" placeholder="السنة" style="min-width:100px">
+            </div>
+            <div class="filter-group">
+                <button type="submit" class="btn-filter"><i class="ti ti-search"></i> بحث</button>
+                <a href="/OutterClaims" class="btn-filter-clear">مسح</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Table -->
+<div class="table-card">
+    <div class="table-hdr">
+        <div class="chart-title">قائمة المطالبات</div>
+        <a href="/OutterClaims/Create" class="btn-sm primary">
+            <i class="ti ti-plus"></i> مطالبة جديدة
+        </a>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>رقم المطالبة</th>
+                <th>المدعي</th>
+                <th>الفرع</th>
+                <th>المحكمة</th>
+                <th>مكان الواقعة</th>
+                <th>الاحتياطي</th>
+                <th>الحالة</th>
+                <th>تاريخ التسجيل</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td><strong style="color:#1B4332">@c.ClaimNumber</strong></td>
+                        <td>@c.PlaintiffName</td>
+                        <td>@c.BranchName</td>
+                        <td>@c.CourtName</td>
+                        <td>@c.Place</td>
+                        <td>@c.Reserve.ToString("N0")</td>
+                        <td><span class="badge badge-courts">@c.ClaimStatus</span></td>
+                        <td style="font-size:12px;color:#9a9890">@c.RegDate.ToString("yyyy/MM/dd")</td>
+                        <td>
+                            <div style="display:flex;gap:6px">
+                                <a href="/OutterClaims/Details/@c.Id" class="btn-sm" title="تفاصيل"><i class="ti ti-eye"></i></a>
+                                <a href="/OutterClaims/Edit/@c.Id" class="btn-sm" title="تعديل"><i class="ti ti-edit"></i></a>
+                                <form action="/OutterClaims/Delete" method="post" style="display:inline" style="display:none">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@c.Id">
+                                    <button type="button" class="btn-sm" style="color:#c0392b;border-color:#f5c6c6" onclick="showDelete(@c.Id, '@c.PlaintiffName', '/OutterClaims/Delete')"><i class="ti ti-trash"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="9" style="text-align:center;color:#9a9890;padding:40px">
+                        <i class="ti ti-inbox" style="font-size:32px;display:block;margin-bottom:8px"></i>
+                        لا توجد مطالبات قضايا
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+}
+
+<!-- Delete Modal -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:28px;width:420px;max-width:90vw">
+        <h3 style="font-size:16px;font-weight:700;color:#1B4332;margin-bottom:8px">تأكيد الحذف</h3>
+        <p style="font-size:13px;color:#6a6a50;margin-bottom:16px">هل أنت متأكد من حذف <strong id="deleteName"></strong>؟</p>
+        <form id="deleteForm" method="post">
+            <input type="hidden" name="id" id="deleteId" />
+            <div style="margin-bottom:16px">
+                <label style="font-size:13px;font-weight:600;color:#3a4a28;display:block;margin-bottom:6px">سبب الحذف</label>
+                <input type="text" name="reason" placeholder="أدخل سبب الحذف..." style="width:100%;padding:10px 12px;border:1px solid #e0e0d8;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px" />
+            </div>
+            <div style="display:flex;gap:10px">
+                <button type="submit" style="flex:1;padding:10px;background:#c0392b;color:#fff;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">حذف</button>
+                <button type="button" onclick="closeModal()" style="flex:1;padding:10px;background:#f5f5f0;color:#3a4a28;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+function showDelete(id, name, action) {
+    document.getElementById("deleteName").textContent = name;
+    document.getElementById("deleteId").value = id;
+    document.getElementById("deleteForm").action = action;
+    document.getElementById("deleteModal").style.display = "flex";
+}
+function closeModal() { document.getElementById("deleteModal").style.display = "none"; }
+</script>

@@ -1,0 +1,94 @@
+@model List<MedicalInsuranceApp1.Models.Entities.Branch>
+@{
+    ViewData["Title"] = "الفروع";
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">إدارة الفروع</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">إجمالي @Model.Count فرع</p>
+    </div>
+    <a href="/Branches/Create" class="btn-primary">
+        <i class="ti ti-plus"></i> فرع جديد
+    </a>
+</div>
+
+@Html.AntiForgeryToken()
+
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>اسم الفرع</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                int i = 1;
+                @foreach (var b in Model)
+                {
+                    <tr>
+                        <td style="color:#9a9890">@(i++)</td>
+                        <td><strong>@b.BranchName</strong></td>
+                        <td>
+                            <div style="display:flex;gap:6px">
+                                <a href="/Branches/Edit/@b.Id" class="btn-icon" title="تعديل">
+                                    <i class="ti ti-edit"></i>
+                                </a>
+                                <button type="button" class="btn-icon danger"
+                                        onclick="showDelete(@b.Id, '@b.BranchName', '/Branches/Delete')">
+                                    <i class="ti ti-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="3" style="text-align:center;color:#9a9890;padding:40px">
+                        <i class="ti ti-inbox" style="font-size:32px;display:block;margin-bottom:8px"></i>
+                        لا توجد فروع — أضف فرعاً جديداً
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+}
+
+<!-- Delete Modal -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:28px;width:420px;max-width:90vw">
+        <h3 style="font-size:16px;font-weight:700;color:#1B4332;margin-bottom:8px">تأكيد الحذف</h3>
+        <p style="font-size:13px;color:#6a6a50;margin-bottom:16px">هل أنت متأكد من حذف <strong id="deleteName"></strong>؟</p>
+        <form id="deleteForm" method="post">
+            <input type="hidden" name="id" id="deleteId" />
+            <div style="margin-bottom:16px">
+                <label style="font-size:13px;font-weight:600;color:#3a4a28;display:block;margin-bottom:6px">سبب الحذف</label>
+                <input type="text" name="reason" placeholder="أدخل سبب الحذف..." style="width:100%;padding:10px 12px;border:1px solid #e0e0d8;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px" />
+            </div>
+            <div style="display:flex;gap:10px">
+                <button type="submit" style="flex:1;padding:10px;background:#c0392b;color:#fff;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">حذف</button>
+                <button type="button" onclick="closeModal()" style="flex:1;padding:10px;background:#f5f5f0;color:#3a4a28;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+function showDelete(id, name, action) {
+    document.getElementById("deleteName").textContent = name;
+    document.getElementById("deleteId").value = id;
+    document.getElementById("deleteForm").action = action;
+    document.getElementById("deleteModal").style.display = "flex";
+}
+function closeModal() { document.getElementById("deleteModal").style.display = "none"; }
+</script>

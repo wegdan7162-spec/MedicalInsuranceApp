@@ -1,0 +1,15 @@
+﻿@{
+    ViewData["Title"] = "نقل المستخدمين";
+}
+<div style="max-width:600px;margin:60px auto;text-align:center;font-family:Cairo,sans-serif">
+    <h2 style="color:#1B4332">نقل بيانات المستخدمين</h2>
+    <p style="color:#666">سيتم نقل جميع المستخدمين من TblUsers إلى نظام Identity الجديد</p>
+    <form method="post" action="/Migration/RunMigration">
+        @Html.AntiForgeryToken()
+        <button type="submit"
+                style="padding:12px 40px;background:#1B4332;color:white;border:none;
+                   border-radius:8px;font-size:16px;cursor:pointer;font-family:Cairo,sans-serif">
+            ابدأ النقل
+        </button>
+    </form>
+</div>

@@ -1,0 +1,34 @@
+@model MedicalInsuranceApp1.Models.Entities.Court
+@{
+    ViewData["Title"] = "تعديل المحكمة";
+}
+
+<div style="max-width:500px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <a href="/Courts" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+        <h2 style="font-size:18px;font-weight:700;color:#1B4332">تعديل المحكمة</h2>
+    </div>
+
+    <form action="/Courts/Edit/@Model.Id" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Id">
+        <div class="form-card">
+            <div class="form-group">
+                <label for="CourtName">اسم المحكمة <span class="req">*</span></label>
+                <input type="text" id="CourtName" name="CourtName"
+                       class="form-input" value="@Model.CourtName" required>
+            </div>
+        </div>
+        <div style="display:flex;gap:12px;justify-content:flex-end">
+            <a href="/Courts" class="btn-cancel">إلغاء</a>
+            <button type="submit" class="btn-save">
+                <i class="ti ti-device-floppy"></i> حفظ التعديلات
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+}

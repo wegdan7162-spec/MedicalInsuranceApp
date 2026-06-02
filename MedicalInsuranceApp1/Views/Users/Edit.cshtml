@@ -1,0 +1,121 @@
+﻿@model MedicalInsuranceApp1.Models.ViewModels.EditUserVM
+@{
+    ViewData["Title"] = "تعديل مستخدم";
+}
+
+<div style="max-width:700px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <a asp-action="Index" class="btn-back">
+            <i class="ti ti-arrow-right"></i>
+        </a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#1B4332">تعديل المستخدم</h2>
+        </div>
+    </div>
+
+    <form asp-action="Edit" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id">
+
+        <div asp-validation-summary="ModelOnly" class="error-box"></div>
+
+        <div class="form-card">
+            <div class="form-section-title">
+                <i class="ti ti-user"></i> البيانات الأساسية
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="FullName">الاسم الكامل <span class="req">*</span></label>
+                    <input asp-for="FullName" class="form-input">
+                    <span asp-validation-for="FullName" class="field-error"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="UserJob">المسمى الوظيفي <span class="req">*</span></label>
+                    <select asp-for="UserJob" class="form-select">
+                        <option value="">-- اختر --</option>
+                        <option>موظف بيانات</option>
+                        <option>رئيس قسم</option>
+                        <option>مدير إدارة</option>
+                        <option>مدير عام</option>
+                        <option>مسؤول نظام</option>
+                    </select>
+                    <span asp-validation-for="UserJob" class="field-error"></span>
+                </div>
+                <div class="form-group" style="display:flex;align-items:center;gap:10px;padding-top:28px">
+                    <input asp-for="IsActive" type="checkbox"
+                           style="width:18px;height:18px;accent-color:#1B4332">
+                    <label asp-for="IsActive" style="margin:0;font-size:14px">الحساب مفعل</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-section-title">
+                <i class="ti ti-key"></i> الأدوار
+            </div>
+            <div class="roles-grid">
+                @foreach (var role in Model.AvailableRoles)
+                {
+                    <label class="role-check">
+                        <input type="checkbox" name="SelectedRoles"
+                               value="@role.RoleName"
+                               @(role.IsSelected ? "checked" : "")>
+                        <div class="role-check-box">
+                            <i class="ti ti-shield-check"></i>
+                            <span>@role.RoleName</span>
+                        </div>
+                    </label>
+                }
+            </div>
+        </div>
+
+        <div class="form-card">
+            <div class="form-section-title">
+                <i class="ti ti-lock"></i> الصلاحيات التفصيلية
+            </div>
+            <div class="perms-grid">
+                <label class="perm-check">
+                    <input asp-for="InsertP" type="checkbox">
+                    <i class="ti ti-plus" style="color:#1a7a4a"></i>
+                    <span>إضافة</span>
+                </label>
+                <label class="perm-check">
+                    <input asp-for="UpdateP" type="checkbox">
+                    <i class="ti ti-edit" style="color:#1a5276"></i>
+                    <span>تعديل</span>
+                </label>
+                <label class="perm-check">
+                    <input asp-for="PrintP" type="checkbox">
+                    <i class="ti ti-printer" style="color:#8a6a00"></i>
+                    <span>طباعة</span>
+                </label>
+                <label class="perm-check">
+                    <input asp-for="UsersP" type="checkbox">
+                    <i class="ti ti-users" style="color:#c0392b"></i>
+                    <span>المستخدمون</span>
+                </label>
+                <label class="perm-check">
+                    <input asp-for="SettingsP" type="checkbox">
+                    <i class="ti ti-settings" style="color:#6a6860"></i>
+                    <span>الإعدادات</span>
+                </label>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:12px;justify-content:flex-end">
+            <a asp-action="Index" class="btn-cancel">إلغاء</a>
+            <button type="submit" class="btn-save">
+                <i class="ti ti-device-floppy"></i> حفظ التعديلات
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+}
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

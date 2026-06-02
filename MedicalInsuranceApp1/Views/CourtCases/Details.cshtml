@@ -1,0 +1,155 @@
+﻿@model MedicalInsuranceApp1.Models.ViewModels.CourtCaseDetailsVM
+@{
+    ViewData["Title"] = $"مطالبة {Model.Year}-{Model.Num:D4}";
+}
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/CourtCases" class="btn-back">
+        <i class="ti ti-arrow-right"></i>
+    </a>
+    <div style="flex:1">
+        <h2 style="font-size:18px;font-weight:700;color:#1B4332">
+            مطالبة رقم @Model.Year-@Model.Num.ToString("D4")
+        </h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">
+            @Model.RegDate.ToString("yyyy/MM/dd")
+        </p>
+    </div>
+    <a href="/CourtCases/Edit/@Model.Id" class="btn-primary">
+        <i class="ti ti-edit"></i> تعديل
+    </a>
+</div>
+
+<div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px">
+
+    <!-- بيانات المطالبة -->
+    <div>
+        <div class="form-card">
+            <div class="form-section-title">
+                <i class="ti ti-info-circle"></i> بيانات المطالبة
+            </div>
+            <div class="details-grid">
+                <div class="detail-item">
+                    <span class="detail-label">اسم المدعي</span>
+                    <span class="detail-value">@Model.PlaintiffName</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">الفرع</span>
+                    <span class="detail-value">@Model.BranchName</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">المحكمة</span>
+                    <span class="detail-value">@Model.CourtName</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">نوع المطالبة</span>
+                    <span class="detail-value">@Model.ClaimType</span>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Place))
+                {
+                    <div class="detail-item">
+                        <span class="detail-label">مكان الواقعة</span>
+                        <span class="detail-value">@Model.Place</span>
+                    </div>
+                }
+                @if (Model.IncidentDate.HasValue)
+                {
+                    <div class="detail-item">
+                        <span class="detail-label">تاريخ الواقعة</span>
+                        <span class="detail-value">@Model.IncidentDate.Value.ToString("yyyy/MM/dd")</span>
+                    </div>
+                }
+                <div class="detail-item">
+                    <span class="detail-label">حالة الملف</span>
+                    <span class="detail-value">@Model.FileStatus</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">سجل بواسطة</span>
+                    <span class="detail-value">@Model.CreatedBy</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">الاحتياطي</span>
+                    <span class="detail-value">@Model.Reserve.ToString("N0")</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">المسدد</span>
+                    <span class="detail-value">@Model.Setteld.ToString("N0")</span>
+                </div>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Note))
+            {
+                <div style="margin-top:16px;padding:12px;background:#f8f6f0;
+                                 border-radius:10px;font-size:13px;color:#6a6860">
+                    <strong>الملاحظات:</strong> @Model.Note
+                </div>
+            }
+        </div>
+
+        <!-- المرفقات -->
+        <div class="form-card">
+            <div class="form-section-title">
+                <i class="ti ti-paperclip"></i> المرفقات (@Model.Files.Count)
+            </div>
+            @if (Model.Files.Any())
+            {
+                @foreach (var f in Model.Files)
+                {
+                    <div class="file-item">
+                        <i class="ti ti-file" style="font-size:20px;color:#c9a84c"></i>
+                        <span style="flex:1;font-size:13px">@f.FileName</span>
+                        <a href="/CourtCases/DownloadFile/@f.Id"
+                           class="btn-icon" title="تحميل">
+                            <i class="ti ti-download"></i>
+                        </a>
+                    </div>
+                }
+            }
+            else
+            {
+                <p style="font-size:13px;color:#9a9890;text-align:center;padding:16px">
+                    لا توجد مرفقات
+                </p>
+            }
+        </div>
+    </div>
+
+    <!-- الحالة -->
+    <div>
+        <div class="form-card">
+            <div class="form-section-title">
+                <i class="ti ti-activity"></i> حالة المطالبة
+            </div>
+            <div style="margin-bottom:16px">
+                <span class="claim-status-lg">@Model.ClaimStatus</span>
+            </div>
+            <form action="/CourtCases/UpdateStatus" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id">
+                <div class="form-group" style="margin-bottom:12px">
+                    <label style="font-size:12px;font-weight:600;color:#6a6860">
+                        تغيير الحالة
+                    </label>
+                    <select name="status" class="form-select">
+                        @foreach (var s in new[] {
+                                                "تحت التسوية","قيد المراجعة","محالة للقانوني",
+                                                "جلسات المحكمة","حكم لصالح الشركة","حكم ضد الشركة",
+                                                "محالة للمالية","مسددة","مغلقة"})
+                        {
+                            <option value="@s" selected="@(Model.ClaimStatus == s)">
+                                @s
+                            </option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn-save" style="width:100%">
+                    <i class="ti ti-refresh"></i> تحديث الحالة
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+}
