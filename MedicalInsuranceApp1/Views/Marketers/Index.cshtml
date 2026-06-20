@@ -1,0 +1,132 @@
+@model List<MedicalInsuranceApp1.Models.Entities.Marketer>
+@{
+    ViewData["Title"] = "المسوقون";
+    var totals = ViewBag.TotalsDict as Dictionary<int, decimal> ?? new Dictionary<int, decimal>();
+}
+
+<!-- شريط الأدوات -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#ffffff">المسوقون</h2>
+            <p style="font-size:13px;color:#9a9890;margin-top:2px">إدارة بيانات المسوقين وكشوف عمولاتهم</p>
+        </div>
+    </div>
+    <a href="/Marketers/Create" class="btn-primary" style="text-decoration:none;padding:8px 18px;display:flex;align-items:center;gap:6px">
+        <i class="ti ti-plus"></i> إضافة مسوق
+    </a>
+</div>
+
+<!-- فلتر البحث -->
+<div class="filter-card no-print" style="margin-bottom:20px">
+    <form method="get" style="display:flex;gap:10px;align-items:flex-end">
+        <div class="filter-group" style="flex:1">
+            <label class="filter-label">بحث</label>
+            <input type="text" name="search" value="@ViewBag.Search" class="filter-select" placeholder="اسم المسوق أو رقم الهاتف...">
+        </div>
+        <button type="submit" class="btn-primary" style="padding:8px 20px">
+            <i class="ti ti-search"></i> بحث
+        </button>
+        @if (!string.IsNullOrEmpty(ViewBag.Search as string))
+        {
+        <a href="/Marketers" class="btn-cancel" style="text-decoration:none;padding:8px 16px">مسح</a>
+        }
+    </form>
+</div>
+
+@if (TempData["Success"] != null)
+{
+<div style="background:#e8f5ee;color:#2d6a4f;padding:10px 16px;border-radius:8px;margin-bottom:16px;border-right:4px solid #2d6a4f">
+    <i class="ti ti-check"></i> @TempData["Success"]
+</div>
+}
+
+<!-- الجدول -->
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width:40px">ت</th>
+                <th>اسم المسوق</th>
+                <th>رقم الهاتف</th>
+                <th>إجمالي العمولات</th>
+                <th>الحالة</th>
+                <th class="no-print" style="width:160px">الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+            <tr>
+                <td colspan="6" style="text-align:center;padding:40px;color:#9a9890">لا يوجد مسوقون</td>
+            </tr>
+            }
+            @{ int idx = 1; }
+            @foreach (var m in Model)
+            {
+            decimal total = totals.ContainsKey(m.Id) ? totals[m.Id] : 0;
+            <tr>
+                <td style="text-align:center;color:#9a9890">@(idx++)</td>
+                <td>
+                    <a href="/Marketers/Details/@m.Id" style="font-weight:700;color:#1a3a5c;text-decoration:none">@m.Name</a>
+                </td>
+                <td style="color:#666;direction:ltr">@(m.Phone ?? "—")</td>
+                <td style="font-weight:700;color:#6c3483">@total.ToString("N3")</td>
+                <td>
+                    @if (m.IsActive)
+                    { <span style="background:#e8f5ee;color:#2d6a4f;padding:2px 10px;border-radius:10px;font-size:11px">نشط</span> }
+                    else
+                    { <span style="background:#fef0e0;color:#c0392b;padding:2px 10px;border-radius:10px;font-size:11px">غير نشط</span> }
+                </td>
+                <td class="no-print">
+                    <div style="display:flex;gap:6px">
+                        <a href="/Marketers/Details/@m.Id" class="btn-back" style="font-size:12px;padding:4px 10px;text-decoration:none">
+                            <i class="ti ti-eye"></i>
+                        </a>
+                        <a href="/Marketers/Edit/@m.Id" class="btn-primary" style="font-size:12px;padding:4px 10px;text-decoration:none">
+                            <i class="ti ti-pencil"></i>
+                        </a>
+                        <button onclick="confirmDelete(@m.Id,'@m.Name')" class="btn-cancel" style="font-size:12px;padding:4px 10px;border:none;cursor:pointer">
+                            <i class="ti ti-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal حذف -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:12px;padding:28px;width:400px;max-width:90%">
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:12px">حذف المسوق</h3>
+        <p style="font-size:13px;color:#666;margin-bottom:16px">هل تريدين حذف المسوق: <strong id="deleteNameSpan"></strong>؟</p>
+        <form id="deleteForm" method="post">
+            @Html.AntiForgeryToken()
+            <input type="text" name="reason" placeholder="سبب الحذف (اختياري)" class="filter-select" style="margin-bottom:14px">
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+                <button type="button" onclick="closeModal()" class="btn-cancel">إلغاء</button>
+                <button type="submit" style="background:#c0392b;color:#fff;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-family:inherit">حذف</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function confirmDelete(id, name) {
+    document.getElementById('deleteNameSpan').textContent = name;
+    document.getElementById('deleteForm').action = '/Marketers/Delete/' + id;
+    document.getElementById('deleteModal').style.display = 'flex';
+}
+function closeModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+}
+</script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+}

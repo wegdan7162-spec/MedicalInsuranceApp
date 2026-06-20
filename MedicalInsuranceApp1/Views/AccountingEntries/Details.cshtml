@@ -1,0 +1,256 @@
+@model MedicalInsuranceApp1.Models.Entities.AccountingEntry
+@{
+    ViewData["Title"] = "تفاصيل القيد المحاسبي";
+    var totalDebit  = Model.Lines.Sum(l => l.Debit);
+    var totalCredit = Model.Lines.Sum(l => l.Credit);
+    bool balanced   = totalDebit == totalCredit;
+    bool canApprove = Model.Status == "مكتمل";
+}
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/AccountingEntries" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+    <div style="flex:1">
+        <h2 style="font-size:18px;font-weight:800;color:#fff">
+            <i class="ti ti-balance" style="margin-left:8px;color:#9b59b6"></i>
+            قيد رقم:
+            <span style="font-family:monospace;color:#9b59b6">
+                @(Model.EntryNumber ?? $"JV-{Model.Id:D5}")
+            </span>
+        </h2>
+        <p style="font-size:12px;color:#9a9890;margin-top:2px">@Model.Description</p>
+    </div>
+    <div style="display:flex;gap:8px">
+        <a href="/AccountingEntries/Print/@Model.Id" target="_blank" class="btn-cancel" style="display:flex;align-items:center;gap:6px">
+            <i class="ti ti-printer"></i> طباعة
+        </a>
+        @if (canApprove)
+        {
+        <form asp-action="Approve" asp-route-id="@Model.Id" method="post" style="display:inline">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn-primary"
+                    onclick="return confirm('تأكيد اعتماد هذا القيد؟')">
+                <i class="ti ti-check"></i> اعتماد القيد
+            </button>
+        </form>
+        }
+    </div>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div style="background:#fef0f0;border:1px solid #f5c6cb;border-radius:8px;padding:12px 16px;
+                color:#c0392b;margin-bottom:16px;font-size:13px">
+        <i class="ti ti-alert-circle"></i> @TempData["Error"]
+    </div>
+}
+
+@* ── بطاقة الحالة ── *@
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px">
+    <div class="info-card">
+        <div class="info-label">رقم القيد</div>
+        <div class="info-value mono">@(Model.EntryNumber ?? $"JV-{Model.Id:D5}")</div>
+    </div>
+    <div class="info-card">
+        <div class="info-label">تاريخ القيد</div>
+        <div class="info-value">@Model.EntryDate.ToString("yyyy/MM/dd")</div>
+    </div>
+    <div class="info-card">
+        <div class="info-label">الحالة</div>
+        <div class="info-value">
+            @{
+                var (bg,clr) = Model.Status switch {
+                    "مبدئي"  => ("#fff3e0","#e67e22"),
+                    "مكتمل"  => ("#e8f4f8","#2980b9"),
+                    "معتمد"  => ("#f0faf4","#27ae60"),
+                    _         => ("#f5f5f5","#888")
+                };
+            }
+            <span style="background:@bg;color:@clr;border:1px solid @clr;
+                         padding:3px 14px;border-radius:20px;font-size:12px;font-weight:700">
+                @Model.Status
+            </span>
+        </div>
+    </div>
+    <div class="info-card" style="@(balanced?"border-right:4px solid #27ae60":"border-right:4px solid #c0392b")">
+        <div class="info-label">توازن القيد</div>
+        <div class="info-value" style="color:@(balanced ? "#27ae60" : "#c0392b")">
+            @if (balanced) { <text><i class="ti ti-check"></i> متوازن</text> }
+            else           { <text><i class="ti ti-alert-triangle"></i> غير متوازن!</text> }
+        </div>
+    </div>
+</div>
+
+@* ── مصادر البيانات ── *@
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+    @if (Model.SupplyOrder != null)
+    {
+    <div class="table-card" style="padding:16px">
+        <div style="font-size:12px;font-weight:700;color:#6c3483;margin-bottom:10px;
+                    border-bottom:1px solid #e8e0f0;padding-bottom:8px">
+            <i class="ti ti-truck-delivery"></i> أمر التوريد (المرحلة الأولى)
+        </div>
+        <div class="meta-row"><span>رقم الأمر</span><span class="mono">@Model.SupplyOrder.OrderNumber</span></div>
+        <div class="meta-row"><span>الجهة</span><span>@(Model.SupplyOrder.FacilityName ?? Model.SupplyOrder.Contract?.FacilityName)</span></div>
+        <div class="meta-row"><span>المبلغ</span><span style="color:#c0392b;font-weight:700">@Model.SupplyOrder.Amount.ToString("N3") د.ل</span></div>
+        <div class="meta-row"><span>الفترة</span><span>@Model.SupplyOrder.CoverageFrom.ToString("yyyy/MM/dd") — @Model.SupplyOrder.CoverageTo.ToString("yyyy/MM/dd")</span></div>
+        <div class="meta-row"><span>الحالة</span><span>@Model.SupplyOrder.Status</span></div>
+    </div>
+    }
+    else
+    {
+    <div class="table-card" style="padding:16px;display:flex;align-items:center;justify-content:center;color:#ccc">
+        <div style="text-align:center">
+            <i class="ti ti-truck-delivery" style="font-size:28px;display:block;margin-bottom:6px"></i>
+            لا يوجد أمر توريد مرتبط
+        </div>
+    </div>
+    }
+
+    @if (Model.BankDepositSlip != null)
+    {
+    <div class="table-card" style="padding:16px">
+        <div style="font-size:12px;font-weight:700;color:#2980b9;margin-bottom:10px;
+                    border-bottom:1px solid #d0e8f5;padding-bottom:8px">
+            <i class="ti ti-building-bank"></i> قسيمة الإيداع (المرحلة الثانية)
+        </div>
+        <div class="meta-row"><span>رقم القسيمة</span><span class="mono">@Model.BankDepositSlip.SlipNumber</span></div>
+        <div class="meta-row"><span>المصرف</span><span>@(Model.BankDepositSlip.BankAccount?.BankName ?? "—")</span></div>
+        <div class="meta-row"><span>المبلغ المودع</span><span style="color:#27ae60;font-weight:700">@Model.BankDepositSlip.Amount.ToString("N3") د.ل</span></div>
+        <div class="meta-row"><span>التاريخ</span><span>@Model.BankDepositSlip.DepositDate.ToString("yyyy/MM/dd")</span></div>
+    </div>
+    }
+    else
+    {
+    <div class="table-card" style="padding:16px;display:flex;align-items:center;justify-content:center;color:#ccc">
+        <div style="text-align:center">
+            <i class="ti ti-building-bank" style="font-size:28px;display:block;margin-bottom:6px"></i>
+            لم يُودَع في المصرف بعد
+        </div>
+    </div>
+    }
+</div>
+
+@* ── بنود القيد المزدوج ── *@
+<div class="table-card" style="padding:0;overflow:hidden">
+    <div style="padding:14px 20px;border-bottom:1px solid #f0f0ec;
+                font-size:13px;font-weight:700;color:#6c3483;
+                display:flex;align-items:center;gap:8px">
+        <i class="ti ti-list"></i> بنود القيد المزدوج
+        <span style="margin-right:auto;font-size:11px;color:#888;font-weight:400">
+            القاعدة: مجموع المدين = مجموع الدائن
+        </span>
+    </div>
+
+    @if (!Model.Lines.Any())
+    {
+        @* لا بنود — اعرض المدين الرئيسي من العنوان *@
+        <div style="padding:20px">
+            <table style="width:100%;border-collapse:collapse">
+                <thead>
+                    <tr style="background:#f5f0fc">
+                        <th class="entry-th">البيان</th>
+                        <th class="entry-th" style="text-align:center">الحساب</th>
+                        <th class="entry-th" style="text-align:center;color:#c0392b">مدين (د.ل)</th>
+                        <th class="entry-th" style="text-align:center;color:#27ae60">دائن (د.ل)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="entry-td">@Model.Description</td>
+                        <td class="entry-td" style="text-align:center">@Model.DebitAccount</td>
+                        <td class="entry-td" style="text-align:center;font-weight:700;color:#c0392b">@Model.DebitAmount.ToString("N3")</td>
+                        <td class="entry-td" style="text-align:center;color:#aaa">—</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr style="background:#f8f5fc;font-weight:700">
+                        <td colspan="2" class="entry-td" style="color:#6c3483">المجموع</td>
+                        <td class="entry-td" style="text-align:center;color:#c0392b">@Model.DebitAmount.ToString("N3")</td>
+                        <td class="entry-td" style="text-align:center;color:#27ae60">—</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:10px 14px;
+                        margin-top:12px;font-size:12px;color:#c0392b">
+                <i class="ti ti-info-circle"></i>
+                لم يُكتمَل القيد بعد — يحتاج ربط إيصال قبض لتوليد الجانب الدائن تلقائياً
+            </div>
+        </div>
+    }
+    else
+    {
+        <table style="width:100%;border-collapse:collapse">
+            <thead>
+                <tr style="background:#f5f0fc">
+                    <th class="entry-th" style="width:40px">ت</th>
+                    <th class="entry-th">اسم الحساب</th>
+                    <th class="entry-th">البيان</th>
+                    <th class="entry-th" style="text-align:center;color:#c0392b">مدين (د.ل)</th>
+                    <th class="entry-th" style="text-align:center;color:#27ae60">دائن (د.ل)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var line in Model.Lines.OrderBy(l => l.LineOrder))
+                {
+                    bool isDebit = line.Debit > 0;
+                    <tr style="@(isDebit ? "background:#fff9f9" : "background:#f9fff9")">
+                        <td class="entry-td" style="text-align:center;color:#888;font-size:11px">@line.LineOrder</td>
+                        <td class="entry-td" style="font-weight:600;color:@(isDebit ? "#c0392b" : "#27ae60")">
+                            @if (isDebit) { <text><i class="ti ti-trending-up" style="font-size:11px"></i> </text> }
+                            else          { <text><i class="ti ti-trending-down" style="font-size:11px"></i> </text> }
+                            @line.AccountName
+                        </td>
+                        <td class="entry-td" style="color:#555;font-size:12px">@line.LineDescription</td>
+                        <td class="entry-td" style="text-align:center;font-weight:700;color:#c0392b;font-size:14px">
+                            @(isDebit ? line.Debit.ToString("N3") : "—")
+                        </td>
+                        <td class="entry-td" style="text-align:center;font-weight:700;color:#27ae60;font-size:14px">
+                            @(!isDebit ? line.Credit.ToString("N3") : "—")
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr style="background:#f8f5fc;font-weight:800;font-size:14px">
+                    <td colspan="3" class="entry-td" style="color:#6c3483">
+                        المجموع
+                        @if (balanced)
+                        {
+                            <span style="background:#f0faf4;color:#27ae60;border:1px solid #27ae60;
+                                         padding:2px 10px;border-radius:12px;font-size:11px;margin-right:8px">
+                                ✓ متوازن
+                            </span>
+                        }
+                        else
+                        {
+                            <span style="background:#fff0f0;color:#c0392b;border:1px solid #c0392b;
+                                         padding:2px 10px;border-radius:12px;font-size:11px;margin-right:8px">
+                                ✗ غير متوازن
+                            </span>
+                        }
+                    </td>
+                    <td class="entry-td" style="text-align:center;color:#c0392b">@totalDebit.ToString("N3")</td>
+                    <td class="entry-td" style="text-align:center;color:#27ae60">@totalCredit.ToString("N3")</td>
+                </tr>
+            </tfoot>
+        </table>
+    }
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .info-card { background:var(--card-bg,#fff);border-radius:10px;padding:14px 18px;
+                 box-shadow:0 1px 4px rgba(0,0,0,.07);border-right:4px solid #9b59b6; }
+    .info-label { font-size:11px;color:#888;margin-bottom:4px; }
+    .info-value { font-size:14px;font-weight:700;color:#333; }
+    .mono { font-family:monospace;letter-spacing:.5px;color:#6c3483; }
+    .meta-row { display:flex;justify-content:space-between;font-size:12px;
+                padding:5px 0;border-bottom:1px dashed #f0f0ec;color:#555; }
+    .meta-row span:first-child { color:#888; }
+    .meta-row:last-child { border-bottom:none; }
+    .entry-th { padding:10px 14px;font-size:12px;color:#6c3483;text-align:right;
+                border-bottom:2px solid #e0d8f0; }
+    .entry-td { padding:10px 14px;border-bottom:1px solid #f0f0ec;vertical-align:middle;font-size:13px; }
+    </style>
+}

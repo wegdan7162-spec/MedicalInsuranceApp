@@ -23,6 +23,14 @@ namespace MedicalInsuranceApp1.Models.ViewModels
 
     public class FriendlyClaimCreateVM
     {
+        [Required(ErrorMessage = "رقم المطالبة مطلوب")]
+        [Range(1, long.MaxValue, ErrorMessage = "رقم المطالبة يجب أن يكون أكبر من صفر")]
+        public long Num { get; set; }
+
+        [Required(ErrorMessage = "سنة المطالبة مطلوبة")]
+        [Range(1900, 2100, ErrorMessage = "السنة غير صحيحة")]
+        public int ClaimYear { get; set; } = DateTime.Now.Year;
+
         [Required(ErrorMessage = "المدعي مطلوب")]
         public int PlaintiffNameId { get; set; }
 
@@ -45,8 +53,8 @@ namespace MedicalInsuranceApp1.Models.ViewModels
         [MaxLength(1000)]
         public string? Note { get; set; }
 
-        public string ClaimStatus { get; set; } = "تحت التسوية";
-        public string FileStatus { get; set; } = "نشط";
+        public string ClaimStatus { get; set; } = " م.مغطاء";
+        public string FileStatus { get; set; } = "تحت التسوية";
         public int? CourtId { get; set; }
 
         // Dropdowns
@@ -54,7 +62,7 @@ namespace MedicalInsuranceApp1.Models.ViewModels
         public List<SelectListItem> Branches { get; set; } = new();
         public List<SelectListItem> Courts { get; set; } = new();
         public List<string> StatusList { get; set; } = new();
-        public List<string> FileStatusList { get; set; } = new();
+        public List<string> ClaimStatusList { get; set; } = new();
     }
 
     public class FriendlyClaimEditVM : FriendlyClaimCreateVM

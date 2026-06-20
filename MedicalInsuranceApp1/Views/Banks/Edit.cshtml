@@ -1,0 +1,170 @@
+@model MedicalInsuranceApp1.Models.Entities.Bank
+@{
+    ViewData["Title"] = "تعديل مصرف";
+}
+
+<style>
+    .bank-form-wrapper { max-width: 580px; margin: 0 auto; }
+    .bank-form-card {
+        background: var(--card-bg, #fff);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
+    }
+    .bank-card-header {
+        background: linear-gradient(135deg, #2d4a1a 0%, #1B4332 60%, #2d6a4f 100%);
+        padding: 26px 28px 22px;
+        position: relative;
+        overflow: hidden;
+    }
+    .bank-card-header::before {
+        content:'';position:absolute;top:-40px;left:-40px;
+        width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.05);
+    }
+    .bank-icon-circle {
+        width:50px;height:50px;border-radius:14px;
+        background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.25);
+        display:flex;align-items:center;justify-content:center;margin-bottom:12px;
+    }
+    .bank-card-body { padding: 28px 28px 24px; }
+    .form-field { margin-bottom: 18px; }
+    .form-field label {
+        display:flex;align-items:center;gap:7px;
+        font-size:13px;font-weight:700;color:var(--text-primary,#2a3520);margin-bottom:8px;
+    }
+    .field-icon {
+        width:26px;height:26px;border-radius:7px;background:#e8f5ee;
+        display:flex;align-items:center;justify-content:center;color:#2d6a4f;font-size:13px;
+    }
+    .required-star { color:#e53e3e;font-size:15px;line-height:1; }
+    .pro-input {
+        width:100%;padding:11px 14px;
+        border:1.5px solid var(--border-color,#e0ddd5);border-radius:10px;
+        font-family:Cairo,sans-serif;font-size:13.5px;color:var(--text-primary,#2a3520);
+        background:var(--input-bg,#fafaf7);transition:border-color .2s,box-shadow .2s;
+        box-sizing:border-box;outline:none;
+    }
+    .pro-input:focus { border-color:#2d6a4f;box-shadow:0 0 0 3px rgba(45,106,79,0.12);background:#fff; }
+    .pro-input::placeholder { color:#bbb8b0; }
+    .toggle-row {
+        display:flex;align-items:center;justify-content:space-between;
+        padding:13px 16px;background:var(--hover-bg,#f7f5f0);
+        border-radius:12px;border:1.5px solid var(--border-color,#e8e5dc);margin-bottom:24px;
+    }
+    .switch { position:relative;display:inline-block;width:44px;height:24px; }
+    .switch input { display:none; }
+    .slider { position:absolute;cursor:pointer;inset:0;background:#d0cdc5;border-radius:24px;transition:.3s; }
+    .slider:before {
+        content:'';position:absolute;height:18px;width:18px;right:3px;bottom:3px;
+        background:white;border-radius:50%;transition:.3s;box-shadow:0 1px 4px rgba(0,0,0,0.2);
+    }
+    input:checked + .slider { background:#2d6a4f; }
+    input:checked + .slider:before { transform:translateX(-20px); }
+    .divider { height:1px;background:var(--border-color,#e8e5dc);margin:6px 0 20px; }
+    .form-actions { display:flex;gap:12px; }
+    .btn-save {
+        flex:1;padding:12px;background:linear-gradient(135deg,#1B4332,#2d6a4f);color:#fff;
+        border:none;border-radius:12px;font-family:Cairo,sans-serif;font-size:14px;font-weight:700;
+        cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+        transition:all .2s;box-shadow:0 4px 14px rgba(27,67,50,0.35);
+    }
+    .btn-save:hover { transform:translateY(-1px);box-shadow:0 6px 18px rgba(27,67,50,0.45); }
+    .btn-cancel-outline {
+        padding:12px 20px;border:1.5px solid var(--border-color,#ddd);border-radius:12px;
+        color:var(--text-secondary,#6a6a50);text-decoration:none;font-family:Cairo,sans-serif;
+        font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;
+        transition:all .2s;background:var(--input-bg,#fafaf7);
+    }
+    .btn-cancel-outline:hover { border-color:#c0392b;color:#c0392b;background:#fde8e8; }
+</style>
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/Banks" class="btn-back" title="رجوع"><i class="ti ti-arrow-right"></i></a>
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">المصارف وفروعها</h2>
+        <p style="font-size:12px;color:#9a9890;margin-top:2px">تعديل بيانات المصرف</p>
+    </div>
+</div>
+
+<div class="bank-form-wrapper">
+    <div class="bank-form-card">
+        <div class="bank-card-header">
+            <div class="bank-icon-circle">
+                <i class="ti ti-edit" style="font-size:22px;color:#fff"></i>
+            </div>
+            <div style="color:#fff;font-size:18px;font-weight:800;position:relative;z-index:1">تعديل: @Model.BankName</div>
+            @if (!string.IsNullOrEmpty(Model.BankCode))
+            {
+                <div style="display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:4px 12px;background:rgba(255,255,255,0.15);border-radius:20px;color:rgba(255,255,255,0.9);font-size:12px;font-family:monospace;font-weight:700;position:relative;z-index:1">
+                    <i class="ti ti-hash" style="font-size:12px"></i> @Model.BankCode
+                </div>
+            }
+        </div>
+
+        <div class="bank-card-body">
+            <form method="post" action="/Banks/Edit/@Model.Id">
+                @Html.AntiForgeryToken()
+
+                <div style="display:grid;grid-template-columns:140px 1fr;gap:14px">
+                    <div class="form-field">
+                        <label>
+                            <span class="field-icon"><i class="ti ti-hash"></i></span>
+                            الكود
+                        </label>
+                        <input type="text" name="BankCode" value="@Model.BankCode"
+                               class="pro-input" placeholder="BNK-01" style="font-family:monospace">
+                    </div>
+                    <div class="form-field">
+                        <label>
+                            <span class="field-icon"><i class="ti ti-building-bank"></i></span>
+                            اسم المصرف
+                            <span class="required-star">*</span>
+                        </label>
+                        <input type="text" name="BankName" value="@Model.BankName" class="pro-input" required autofocus>
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label>
+                        <span class="field-icon"><i class="ti ti-notes"></i></span>
+                        ملاحظات
+                    </label>
+                    <textarea name="Notes" class="pro-input" rows="3">@Model.Notes</textarea>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="toggle-row">
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <div style="width:32px;height:32px;border-radius:9px;background:#e8f5ee;display:flex;align-items:center;justify-content:center;color:#2d6a4f;font-size:15px">
+                            <i class="ti ti-toggle-right"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:13px;font-weight:700;color:var(--text-primary,#2a3520)">حالة المصرف</div>
+                            <div style="font-size:11.5px;color:#9a9890;margin-top:1px">تفعيل أو تعطيل المصرف</div>
+                        </div>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" name="IsActive" value="true" id="isActive" @(Model.IsActive ? "checked" : "")>
+                        <span class="slider"></span>
+                    </label>
+                    <input type="hidden" name="IsActive" value="false">
+                </div>
+
+                <div class="form-actions">
+                    <a href="/Banks" class="btn-cancel-outline">
+                        <i class="ti ti-x"></i> إلغاء
+                    </a>
+                    <button type="submit" class="btn-save">
+                        <i class="ti ti-device-floppy"></i> حفظ التعديلات
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+}

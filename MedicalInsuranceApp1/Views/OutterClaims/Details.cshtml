@@ -1,6 +1,12 @@
 @model MedicalInsuranceApp1.Models.ViewModels.OutterClaimDetailsVM
 @{
-    ViewData["Title"] = $"مطالبة خارجية {Model.Year}-{Model.Num:D4}";
+    ViewData["Title"] = $"مطالبة قضايا {Model.Year}-{Model.Num}";
+}
+@if (ViewBag.ExpenseDebug != null)
+{
+    <div style="background:#fff3cd;border:1px solid #ffc107;padding:8px 12px;margin-bottom:12px;font-size:12px;border-radius:6px;color:#856404">
+        @ViewBag.ExpenseDebug
+    </div>
 }
 
 <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
@@ -8,8 +14,8 @@
         <i class="ti ti-arrow-right"></i>
     </a>
     <div style="flex:1">
-        <h2 style="font-size:18px;font-weight:700;color:#1B4332">
-            مطالبة خارجية رقم @Model.Year-@Model.Num.ToString("D4")
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">
+            مطالبة قضايا رقم @Model.Year-@Model.Num.ToString("D4")
         </h2>
         <p style="font-size:13px;color:#9a9890;margin-top:2px">
             @Model.RegDate.ToString("yyyy/MM/dd")
@@ -27,6 +33,10 @@
                 <i class="ti ti-info-circle"></i> بيانات المطالبة
             </div>
             <div class="details-grid">
+                <div class="detail-item">
+                    <span class="detail-label">رقم المطالبة</span>
+                    <span class="detail-value" style="font-weight:700;color:#1B4332">@Model.Year-@Model.Num.ToString("D4")</span>
+                </div>
                 <div class="detail-item">
                     <span class="detail-label">المدعي</span>
                     <span class="detail-value">@Model.PlaintiffName</span>
@@ -52,6 +62,7 @@
                         </span>
                     </div>
                 }
+                
                 <div class="detail-item">
                     <span class="detail-label">الاحتياطي</span>
                     <span class="detail-value">@Model.Reserve.ToString("N0")</span>
@@ -133,6 +144,77 @@
             </form>
         </div>
     </div>
+</div>
+
+<!-- ===== قسم المصروفات ===== -->
+<div class="form-card" style="margin-top:20px">
+    <div class="form-section-title" style="display:flex;justify-content:space-between;align-items:center">
+        <span><i class="ti ti-receipt"></i> المصروفات (@Model.Expenses.Count)</span>
+        <a href="/OutterClaims/AddExpense/@Model.Id" class="btn-primary" style="font-size:13px;padding:6px 14px">
+            <i class="ti ti-plus"></i> إضافة مصروف
+        </a>
+    </div>
+
+    @if (Model.Expenses.Any())
+    {
+        <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:12px">
+            <thead>
+                <tr style="background:#f4f2eb;color:#6a6860">
+                    <th style="padding:8px 12px;text-align:right;font-weight:600">#</th>
+                    <th style="padding:8px 12px;text-align:right;font-weight:600">نوع المصروف</th>
+                    <th style="padding:8px 12px;text-align:right;font-weight:600">المبلغ</th>
+                    <th style="padding:8px 12px;text-align:right;font-weight:600">التاريخ</th>
+                    <th style="padding:8px 12px;text-align:right;font-weight:600">أضيف بواسطة</th>
+                    <th style="padding:8px 12px;text-align:right;font-weight:600">ملاحظات</th>
+                    <th style="padding:8px 12px;text-align:center;font-weight:600">إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int rowNum = 1; }
+                @foreach (var exp in Model.Expenses)
+                {
+                    <tr style="border-bottom:1px solid #f0ede4">
+                        <td style="padding:8px 12px;color:#9a9890">@rowNum</td>
+                        <td style="padding:8px 12px;font-weight:600;color:#1B4332">@exp.ExpenseTypeName</td>
+                        <td style="padding:8px 12px;color:#c9a84c;font-weight:700">@exp.Amount.ToString("N2")</td>
+                        <td style="padding:8px 12px">@exp.ExpenseDate.ToString("yyyy/MM/dd")</td>
+                        <td style="padding:8px 12px;color:#6a6860">@exp.AddedBy</td>
+                        <td style="padding:8px 12px;color:#9a9890">@(exp.Notes ?? "-")</td>
+                        <td style="padding:8px 12px;text-align:center">
+                            <a href="/OutterClaims/EditExpense/@exp.Id" class="btn-icon" title="تعديل">
+                                <i class="ti ti-edit" style="color:#c9a84c"></i>
+                            </a>
+                            <form action="/OutterClaims/DeleteExpense" method="post" style="display:inline"
+                                  onsubmit="return confirm('هل أنت متأكد من حذف هذا المصروف؟')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="expenseId" value="@exp.Id">
+                                <input type="hidden" name="claimId"   value="@Model.Id">
+                                <button type="submit" class="btn-icon" title="حذف">
+                                    <i class="ti ti-trash" style="color:#e55353"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    rowNum++;
+                }
+            </tbody>
+            <tfoot>
+                <tr style="background:#f4f2eb">
+                    <td colspan="2" style="padding:10px 12px;font-weight:700;color:#1B4332">الإجمالي</td>
+                    <td colspan="5" style="padding:10px 12px;font-weight:700;color:#c9a84c;font-size:15px">
+                        @Model.TotalExpenses.ToString("N2")
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    }
+    else
+    {
+        <p style="font-size:13px;color:#9a9890;text-align:center;padding:20px">
+            <i class="ti ti-receipt-off" style="font-size:24px;display:block;margin-bottom:8px"></i>
+            لا توجد مصروفات مسجلة لهذه المطالبة
+        </p>
+    }
 </div>
 
 @section Styles {

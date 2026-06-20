@@ -24,6 +24,12 @@
                                 <input type="hidden" name="id" value="@x.Id" />
                                 <button type="submit" class="btn-sm" style="color:#2d6a4f;border-color:#9AB17A"><i class="ti ti-restore"></i> استرجاع</button>
                             </form>
+                            <form action="/Trash/DeletePlaintiff" method="post" style="display:inline"
+                                  onsubmit="return confirm('⚠ هذا حذف نهائي لا يمكن التراجع عنه. هل أنت متأكد؟')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@x.Id" />
+                                <button type="submit" class="btn-sm" style="color:#c0392b;border-color:#e74c3c"><i class="ti ti-trash-x"></i> حذف نهائي</button>
+                            </form>
                         </td>
                     </tr>
                 }

@@ -1,0 +1,244 @@
+@model MedicalInsuranceApp1.Models.Entities.Supplier
+@{ ViewData["Title"] = "إضافة مورد جديد"; }
+
+<!-- رأس الصفحة -->
+<div style="display:flex;align-items:center;gap:14px;margin-bottom:28px">
+    <a href="/Suppliers" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+    <div>
+        <h2 style="font-size:20px;font-weight:800;color:#fff;margin:0">إضافة مورد جديد</h2>
+        <p style="font-size:12px;color:rgba(255,255,255,0.5);margin:4px 0 0">أدخل بيانات الجهة المورِدة للأقساط</p>
+    </div>
+</div>
+
+<form method="post" asp-action="Create">
+    @Html.AntiForgeryToken()
+
+    <div style="display:grid;grid-template-columns:280px 1fr;gap:20px;align-items:start">
+
+        <!-- الجانب الأيمن: بطاقة معلومات -->
+        <div style="background:linear-gradient(145deg,#1a3a5c,#2d6a4f);border-radius:18px;padding:28px 22px;color:#fff;position:sticky;top:20px">
+            <div style="width:64px;height:64px;background:rgba(255,255,255,0.15);border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:18px">
+                <i class="ti ti-building-store" style="font-size:30px"></i>
+            </div>
+            <h3 style="font-size:15px;font-weight:700;margin:0 0 8px">مورد جديد</h3>
+            <p style="font-size:12px;color:rgba(255,255,255,0.65);line-height:1.7;margin:0 0 22px">
+                سجّل بيانات الجهة المورِدة كاملةً لتتمكني من ربطها بكشوف العمولة والأقساط لاحقاً.
+            </p>
+            <div style="border-top:1px solid rgba(255,255,255,0.15);padding-top:18px">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+                    <div style="width:32px;height:32px;background:rgba(255,255,255,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <i class="ti ti-id-badge" style="font-size:15px"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:1px">اسم الجهة</div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.85)">الحقل الإلزامي الوحيد</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+                    <div style="width:32px;height:32px;background:rgba(255,255,255,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <i class="ti ti-file-certificate" style="font-size:15px"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:1px">رقم العقد</div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.85)">رقم الوثيقة أو العقد</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px">
+                    <div style="width:32px;height:32px;background:rgba(255,255,255,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                        <i class="ti ti-toggle-right" style="font-size:15px"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:1px">الحالة</div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.85)">نشط بشكل افتراضي</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- الجانب الأيسر: الفورم -->
+        <div>
+            <!-- قسم البيانات الأساسية -->
+            <div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 2px 12px rgba(26,58,92,0.08);border:1px solid #edf0f5">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #f0f3f8">
+                    <div style="width:36px;height:36px;background:#f0f6ff;border-radius:10px;display:flex;align-items:center;justify-content:center">
+                        <i class="ti ti-info-circle" style="color:#1a3a5c;font-size:18px"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:13px;font-weight:700;color:#1a3a5c">البيانات الأساسية</div>
+                        <div style="font-size:11px;color:#aaa">المعلومات الرئيسية للمورد</div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                    <div style="grid-column:1/-1">
+                        <label style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px;display:block">
+                            <i class="ti ti-building-store" style="color:#2d6a4f;margin-left:4px"></i>
+                            اسم المورد / الجهة <span style="color:#c0392b">*</span>
+                        </label>
+                        <input asp-for="Name" class="sup-input" placeholder="مثال: مصحة الاستقلال التخصصية" required>
+                        <span asp-validation-for="Name" style="color:#c0392b;font-size:11px;margin-top:3px;display:block"></span>
+                    </div>
+
+                    <div>
+                        <label style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px;display:block">
+                            <i class="ti ti-category" style="color:#2d6a4f;margin-left:4px"></i>
+                            نوع الجهة
+                        </label>
+                        <select asp-for="EntityType" class="sup-input">
+                            <option value="">— اختر النوع —</option>
+                            <option value="خاصة">🏥 خاصة</option>
+                            <option value="حكومية">🏛️ حكومية</option>
+                            <option value="أخرى">🏢 أخرى</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px;display:block">
+                            <i class="ti ti-file-certificate" style="color:#2d6a4f;margin-left:4px"></i>
+                            رقم العقد / الوثيقة
+                        </label>
+                        <input asp-for="ContractNumber" class="sup-input" dir="ltr" placeholder="مثال: 1951">
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم بيانات التواصل -->
+            <div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 2px 12px rgba(26,58,92,0.08);border:1px solid #edf0f5">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #f0f3f8">
+                    <div style="width:36px;height:36px;background:#f0fff8;border-radius:10px;display:flex;align-items:center;justify-content:center">
+                        <i class="ti ti-phone" style="color:#2d6a4f;font-size:18px"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:13px;font-weight:700;color:#1a3a5c">بيانات التواصل</div>
+                        <div style="font-size:11px;color:#aaa">الهاتف والبريد الإلكتروني والعنوان</div>
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                    <div>
+                        <label style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px;display:block">
+                            <i class="ti ti-phone" style="color:#2d6a4f;margin-left:4px"></i>
+                            رقم الهاتف
+                        </label>
+                        <input asp-for="Phone" class="sup-input" dir="ltr" placeholder="0912345678">
+                    </div>
+
+                    <div>
+                        <label style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px;display:block">
+                            <i class="ti ti-mail" style="color:#2d6a4f;margin-left:4px"></i>
+                            البريد الإلكتروني
+                        </label>
+                        <input asp-for="Email" type="email" class="sup-input" dir="ltr" placeholder="example@domain.com">
+                    </div>
+
+                    <div style="grid-column:1/-1">
+                        <label style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px;display:block">
+                            <i class="ti ti-map-pin" style="color:#2d6a4f;margin-left:4px"></i>
+                            العنوان
+                        </label>
+                        <input asp-for="Address" class="sup-input" placeholder="المدينة، الحي، الشارع...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم الملاحظات والحالة -->
+            <div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 2px 12px rgba(26,58,92,0.08);border:1px solid #edf0f5">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #f0f3f8">
+                    <div style="width:36px;height:36px;background:#fffbf0;border-radius:10px;display:flex;align-items:center;justify-content:center">
+                        <i class="ti ti-notes" style="color:#d4a017;font-size:18px"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:13px;font-weight:700;color:#1a3a5c">ملاحظات وحالة المورد</div>
+                        <div style="font-size:11px;color:#aaa">معلومات إضافية</div>
+                    </div>
+                </div>
+
+                <div>
+                    <label style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px;display:block">
+                        <i class="ti ti-notes" style="color:#2d6a4f;margin-left:4px"></i>
+                        ملاحظات
+                    </label>
+                    <textarea asp-for="Notes" class="sup-input" rows="3" placeholder="أي ملاحظات إضافية..." style="resize:vertical"></textarea>
+                </div>
+
+                <div style="margin-top:16px;background:#f8fbf9;border:1px solid #d4eddf;border-radius:12px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <i class="ti ti-toggle-right" style="font-size:20px;color:#2d6a4f"></i>
+                        <div>
+                            <div style="font-size:13px;font-weight:600;color:#1a3a5c">حالة المورد</div>
+                            <div style="font-size:11px;color:#888">تفعيل أو تعطيل هذا المورد</div>
+                        </div>
+                    </div>
+                    <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+                        <span id="statusLabel" style="font-size:12px;font-weight:600;color:#2d6a4f">نشط</span>
+                        <div style="position:relative;width:44px;height:24px">
+                            <input asp-for="IsActive" type="checkbox" id="isActiveChk" style="display:none" checked onchange="toggleStatus(this)">
+                            <div id="toggleTrack" onclick="document.getElementById('isActiveChk').click()"
+                                 style="width:44px;height:24px;background:#2d6a4f;border-radius:12px;cursor:pointer;transition:background 0.2s;position:relative">
+                                <div id="toggleThumb"
+                                     style="position:absolute;top:3px;right:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:right 0.2s;box-shadow:0 1px 4px rgba(0,0,0,0.2)"></div>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- أزرار الحفظ -->
+            <div style="display:flex;gap:10px">
+                <button type="submit" class="btn-primary" style="flex:1;padding:12px;font-size:14px;justify-content:center;display:flex;align-items:center;gap:8px;border-radius:12px">
+                    <i class="ti ti-device-floppy" style="font-size:16px"></i> حفظ المورد
+                </button>
+                <a href="/Suppliers" class="btn-cancel" style="text-decoration:none;padding:12px 24px;font-size:13px;display:flex;align-items:center;gap:6px;border-radius:12px">
+                    <i class="ti ti-x"></i> إلغاء
+                </a>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Styles {
+<link rel="stylesheet" href="~/css/users.css">
+<link rel="stylesheet" href="~/css/claims.css">
+<style>
+.sup-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #e8ecf3;
+    border-radius: 10px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 13px;
+    color: #333;
+    background: #fafbfd;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+.sup-input:focus {
+    outline: none;
+    border-color: #2d6a4f;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
+}
+.sup-input::placeholder { color: #bbb; }
+</style>
+}
+
+@section Scripts {
+<script>
+function toggleStatus(cb) {
+    var track  = document.getElementById('toggleTrack');
+    var thumb  = document.getElementById('toggleThumb');
+    var label  = document.getElementById('statusLabel');
+    if (cb.checked) {
+        track.style.background = '#2d6a4f';
+        thumb.style.right = '3px';
+        label.textContent = 'نشط';
+        label.style.color = '#2d6a4f';
+    } else {
+        track.style.background = '#ccc';
+        thumb.style.right = '23px';
+        label.textContent = 'غير نشط';
+        label.style.color = '#999';
+    }
+}
+</script>
+}

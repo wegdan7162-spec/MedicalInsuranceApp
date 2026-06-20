@@ -1,0 +1,93 @@
+@model MedicalInsuranceApp1.Models.Entities.Commission
+@{
+    ViewData["Title"] = "تعديل عمولة";
+}
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/Commissions" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">تعديل عمولة</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">@Model.SupplierName</p>
+    </div>
+</div>
+
+<div class="table-card" style="max-width:680px">
+    <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="form-grid">
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">اسم الجهة الموردة <span style="color:#c0392b">*</span></label>
+                <input asp-for="SupplierName" class="form-input" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">قيمة القسط (د.ل)</label>
+                <input asp-for="PremiumAmount" type="number" step="0.001" class="form-input"
+                       id="premium" oninput="calcCommission()" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">نسبة العمولة %</label>
+                <input asp-for="CommissionRate" type="number" step="0.01" class="form-input"
+                       id="rate" oninput="calcCommission()" />
+            </div>
+            <div class="form-group" style="grid-column:1/-1;background:#fff8e8;padding:14px;border-radius:10px;border:1px solid #f0d080">
+                <label class="form-label" style="color:#92711a">قيمة العمولة (د.ل)</label>
+                <input asp-for="CommissionAmount" type="number" step="0.001" class="form-input"
+                       id="commAmount" style="font-size:18px;font-weight:700;color:#c9a84c" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">المسوق المستفيد</label>
+                <input asp-for="BeneficiaryName" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">رقم إذن الصرف</label>
+                <input asp-for="AuthorizationNumber" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">رقم القيد</label>
+                <input asp-for="EntryNumber" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">تاريخ الصرف</label>
+                <input asp-for="PaymentDate" type="date" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">الحالة</label>
+                <select asp-for="Status" class="form-input">
+                    <option value="قيد الصرف">قيد الصرف</option>
+                    <option value="مصروفة">مصروفة</option>
+                </select>
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">ملاحظات</label>
+                <textarea asp-for="Notes" class="form-input" rows="2"></textarea>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:24px">
+            <button type="submit" class="btn-primary"><i class="ti ti-device-floppy"></i> حفظ</button>
+            <a href="/Commissions" class="btn-cancel">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+function calcCommission() {
+    var p = parseFloat(document.getElementById('premium').value) || 0;
+    var r = parseFloat(document.getElementById('rate').value)   || 0;
+    document.getElementById('commAmount').value = (p * r / 100).toFixed(3);
+}
+</script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .form-group{display:flex;flex-direction:column;gap:6px;}
+    .form-label{font-size:13px;font-weight:600;}
+    .form-input{padding:10px 12px;border:1px solid #e0e0d8;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;background:var(--input-bg,#fafaf8);}
+    .form-input:focus{outline:none;border-color:#1B4332;box-shadow:0 0 0 3px rgba(27,67,50,0.1);}
+    </style>
+}

@@ -1,0 +1,40 @@
+@model List<MedicalInsuranceApp1.Models.Entities.InsuranceContract>
+@{ ViewData["Title"] = "محذوفات عقود التأمين"; }
+<div style="margin-bottom:20px">
+    <h2 style="font-size:18px;font-weight:700;color:#ffffff">🗑 محذوفات عقود التأمين</h2>
+    <p style="font-size:13px;color:#9a9890;margin-top:2px">إجمالي @Model.Count عنصر محذوف</p>
+</div>
+<div class="table-card">
+    <table class="data-table">
+        <thead><tr><th>رقم العقد</th><th>الجهة</th><th>تاريخ الحذف</th><th>حذف بواسطة</th><th>السبب</th><th>إجراء</th></tr></thead>
+        <tbody>
+            @if (!Model.Any()) {
+                <tr><td colspan="6" style="text-align:center;padding:40px;color:#9a9890">لا توجد عقود محذوفة</td></tr>
+            } else {
+                @foreach (var x in Model) {
+                    <tr>
+                        <td><strong style="color:#6c3483">@(x.ContractNumber ?? $"CT-{x.Id:D5}")</strong></td>
+                        <td style="font-size:12px">@x.FacilityName</td>
+                        <td style="font-size:12px;color:#9a9890">@x.DeletedAt?.ToString("yyyy/MM/dd HH:mm")</td>
+                        <td>@(x.DeletedBy ?? "-")</td>
+                        <td><span class="badge badge-courts">@(x.DeleteReason ?? "غير محدد")</span></td>
+                        <td style="white-space:nowrap">
+                            <form action="/Trash/RestoreInsuranceContract" method="post" style="display:inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@x.Id" />
+                                <button type="submit" class="btn-sm" style="color:#2d6a4f;border-color:#9AB17A"><i class="ti ti-restore"></i> استرجاع</button>
+                            </form>
+                            <form action="/Trash/DeleteInsuranceContract" method="post" style="display:inline"
+                                  onsubmit="return confirm('⚠ حذف نهائي لا يمكن التراجع عنه. هل أنت متأكد؟')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@x.Id" />
+                                <button type="submit" class="btn-sm" style="color:#c0392b;border-color:#e74c3c"><i class="ti ti-trash-x"></i> حذف نهائي</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+@section Styles { <link rel="stylesheet" href="~/css/dashboard.css"> }

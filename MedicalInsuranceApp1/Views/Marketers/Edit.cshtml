@@ -1,0 +1,159 @@
+@model MedicalInsuranceApp1.Models.Entities.Marketer
+@{
+    ViewData["Title"] = "تعديل مسوق";
+    var toggleBg      = Model.IsActive ? "#2d6a4f" : "#ccc";
+    var toggleBallPos = Model.IsActive ? "right:3px" : "left:3px";
+    var toggleColor   = Model.IsActive ? "#2d6a4f" : "#999";
+    var toggleText    = Model.IsActive ? "نشط" : "غير نشط";
+    var statusBg      = Model.IsActive ? "#e8f5ee" : "#fceaea";
+    var statusColor   = Model.IsActive ? "#2d6a4f" : "#c0392b";
+    var statusText    = Model.IsActive ? "نشط" : "غير نشط";
+}
+
+<div style="display:flex;align-items:center;gap:14px;margin-bottom:28px">
+    <a href="/Marketers" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+    <div>
+        <h2 style="font-size:20px;font-weight:800;color:#fff;margin:0">تعديل بيانات المسوق</h2>
+        <p style="font-size:12px;color:rgba(255,255,255,0.55);margin:3px 0 0">@Model.Name</p>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:300px 1fr;gap:22px;align-items:start">
+
+    <!-- معاينة -->
+    <div style="border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(26,58,92,0.13)">
+        <div style="background:linear-gradient(145deg,#1a3a5c 0%,#2d6a4f 55%,#c9a84c 100%);padding:32px 24px 24px;position:relative;overflow:hidden">
+            <div style="position:absolute;top:-30px;left:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.06)"></div>
+            <div style="position:absolute;bottom:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,0.05)"></div>
+            <div style="width:68px;height:68px;border-radius:50%;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+                <i class="ti ti-user-edit" style="font-size:30px;color:#fff"></i>
+            </div>
+            <div style="color:#fff;font-size:15px;font-weight:700" id="previewName">@Model.Name</div>
+            <div style="color:rgba(255,255,255,0.6);font-size:12px;margin-top:4px;direction:ltr;text-align:right" id="previewPhone">@(Model.Phone ?? "رقم الهاتف")</div>
+            <div style="margin-top:14px">
+                <span id="previewBadge" style="background:rgba(255,255,255,0.2);color:#fff;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700">
+                    @if (Model.IsActive)
+                    {<i class="ti ti-circle-check" style="font-size:11px"></i><text> نشط</text>}
+                    else
+                    {<i class="ti ti-circle-x" style="font-size:11px"></i><text> غير نشط</text>}
+                </span>
+            </div>
+        </div>
+
+        <div style="background:#fff;padding:18px 20px">
+            <div style="font-size:10px;color:#bbb;font-weight:700;letter-spacing:0.8px;margin-bottom:10px">معلومات المسوق</div>
+            <div style="display:flex;flex-direction:column;gap:0">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f0">
+                    <span style="font-size:11px;color:#aaa">تاريخ الإضافة</span>
+                    <span style="font-size:12px;font-weight:600;color:#2a2820">@Model.CreatedAt.ToString("yyyy/MM/dd")</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f0">
+                    <span style="font-size:11px;color:#aaa">الحالة الحالية</span>
+                    <span style="font-size:11px;font-weight:700;color:@statusColor;background:@statusBg;padding:2px 10px;border-radius:8px">@statusText</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+                    <span style="font-size:11px;color:#aaa">رقم التعريف</span>
+                    <span style="font-size:12px;font-weight:700;color:#1a3a5c">#@Model.Id</span>
+                </div>
+            </div>
+            <a href="/Marketers/Details/@Model.Id" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;padding:10px;border-radius:10px;background:#e8f0fc;color:#1a3a5c;text-decoration:none;font-size:12px;font-weight:700;transition:background 0.2s" onmouseover="this.style.background='#d0e0f8'" onmouseout="this.style.background='#e8f0fc'">
+                <i class="ti ti-eye"></i> عرض كشوف العمولة
+            </a>
+        </div>
+    </div>
+
+    <!-- النموذج -->
+    <div style="background:#fff;border-radius:20px;border:1px solid #eeede8;box-shadow:0 4px 20px rgba(15,45,31,0.07);overflow:hidden">
+        <div style="padding:18px 26px 16px;border-bottom:1px solid #f0f0e8;background:linear-gradient(to left,#f8faf8,#fff)">
+            <div style="font-size:14px;font-weight:800;color:#1a3a5c">
+                <i class="ti ti-pencil" style="color:#c9a84c;margin-left:6px"></i> تعديل البيانات
+            </div>
+            <div style="font-size:11px;color:#aaa;margin-top:2px">الحقول المعلّمة بـ * إلزامية</div>
+        </div>
+
+        <form method="post" asp-action="Edit" asp-route-id="@Model.Id" style="padding:26px">
+            @Html.AntiForgeryToken()
+            <div style="display:grid;gap:20px">
+
+                <div class="mkf">
+                    <label class="mkl">
+                        <span class="mki" style="background:#e8f0fc"><i class="ti ti-user" style="color:#1a3a5c"></i></span>
+                        اسم المسوق <span style="color:#e74c3c">*</span>
+                    </label>
+                    <input asp-for="Name" class="mkinput" required
+                           oninput="document.getElementById('previewName').textContent=this.value||'اسم المسوق'">
+                    <span asp-validation-for="Name" style="font-size:11px;color:#e74c3c"></span>
+                </div>
+
+                <div class="mkf">
+                    <label class="mkl">
+                        <span class="mki" style="background:#e8f5ee"><i class="ti ti-phone" style="color:#2d6a4f"></i></span>
+                        رقم الهاتف
+                    </label>
+                    <input asp-for="Phone" class="mkinput" dir="ltr"
+                           oninput="document.getElementById('previewPhone').textContent=this.value||'رقم الهاتف'">
+                </div>
+
+                <div class="mkf">
+                    <label class="mkl">
+                        <span class="mki" style="background:#fef9ec"><i class="ti ti-notes" style="color:#c9a84c"></i></span>
+                        ملاحظات
+                    </label>
+                    <textarea asp-for="Notes" class="mkinput" style="height:80px;padding-top:10px;resize:vertical"></textarea>
+                </div>
+
+                <div style="background:#f8faf8;border-radius:14px;padding:14px 18px;border:1.5px solid #eef0e8;display:flex;align-items:center;justify-content:space-between">
+                    <div style="display:flex;align-items:center;gap:12px">
+                        <div style="width:38px;height:38px;border-radius:10px;background:#e8f5ee;display:flex;align-items:center;justify-content:center">
+                            <i class="ti ti-circle-check" style="color:#2d6a4f;font-size:20px"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:13px;font-weight:700;color:#2a2820">حالة المسوق</div>
+                            <div style="font-size:11px;color:#aaa">يظهر في القوائم والتقارير عند التفعيل</div>
+                        </div>
+                    </div>
+                    <label style="cursor:pointer;display:flex;align-items:center;gap:8px">
+                        <span id="toggleLabel" style="font-size:12px;font-weight:700;color:@toggleColor">@toggleText</span>
+                        <div id="toggleWrap" style="width:50px;height:27px;border-radius:14px;background:@toggleBg;position:relative;transition:background 0.25s;cursor:pointer" onclick="doToggle()">
+                            <div id="toggleBall" style="position:absolute;top:3px;@toggleBallPos;width:21px;height:21px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,0.2);transition:all 0.25s"></div>
+                        </div>
+                        <input asp-for="IsActive" id="isActiveHidden" type="checkbox" style="display:none">
+                    </label>
+                </div>
+
+                <div style="display:flex;gap:12px;margin-top:4px;padding-top:20px;border-top:1px solid #f0f0e8">
+                    <button type="submit" style="flex:1;height:48px;border-radius:13px;background:linear-gradient(135deg,#1a3a5c,#2d6a4f);color:#fff;border:none;font-family:'Cairo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 16px rgba(26,58,92,0.25);transition:all 0.2s" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">
+                        <i class="ti ti-device-floppy" style="font-size:18px"></i> حفظ التعديلات
+                    </button>
+                    <a href="/Marketers" style="height:48px;padding:0 26px;border-radius:13px;border:1.5px solid #e0e0d8;background:#fff;font-family:'Cairo',sans-serif;font-size:14px;font-weight:600;color:#6a6860;text-decoration:none;display:flex;align-items:center;transition:all 0.2s" onmouseover="this.style.background='#f8f6f0'" onmouseout="this.style.background='#fff'">
+                        إلغاء
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Styles {
+<link rel="stylesheet" href="~/css/users.css">
+<link rel="stylesheet" href="~/css/claims.css">
+<style>
+.mkf{display:flex;flex-direction:column;gap:7px}
+.mkl{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:700;color:#2a2820}
+.mki{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.mkinput{width:100%;box-sizing:border-box;height:44px;padding:0 14px;border:1.5px solid #e0e0d8;border-radius:11px;font-family:'Cairo',sans-serif;font-size:13px;color:#2a2820;background:#fafaf8;outline:none;transition:all 0.2s}
+.mkinput:focus{border-color:#1a3a5c;background:#fff;box-shadow:0 0 0 3px rgba(26,58,92,0.07)}
+</style>
+}
+
+@section Scripts {
+<script>
+var isActive = @(Model.IsActive.ToString().ToLower());
+function doToggle(){
+    isActive=!isActive;
+    var wrap=document.getElementById('toggleWrap'),ball=document.getElementById('toggleBall'),lbl=document.getElementById('toggleLabel'),cb=document.getElementById('isActiveHidden');
+    if(isActive){wrap.style.background='#2d6a4f';ball.style.right='3px';ball.style.left='auto';lbl.style.color='#2d6a4f';lbl.textContent='نشط';cb.checked=true;document.getElementById('previewBadge').innerHTML='<i class="ti ti-circle-check" style="font-size:11px"></i> نشط';}
+    else{wrap.style.background='#ccc';ball.style.right='auto';ball.style.left='3px';lbl.style.color='#999';lbl.textContent='غير نشط';cb.checked=false;document.getElementById('previewBadge').innerHTML='<i class="ti ti-circle-x" style="font-size:11px"></i> غير نشط';}
+}
+</script>
+}

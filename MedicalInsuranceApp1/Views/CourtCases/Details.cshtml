@@ -1,6 +1,6 @@
-﻿@model MedicalInsuranceApp1.Models.ViewModels.CourtCaseDetailsVM
+@* @model MedicalInsuranceApp1.Models.ViewModels.CourtCaseDetailsVM
 @{
-    ViewData["Title"] = $"مطالبة {Model.Year}-{Model.Num:D4}";
+    ViewData["Title"] = $"مطالبة {Model.Year}-{Model.Num}";
 }
 
 <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
@@ -8,7 +8,7 @@
         <i class="ti ti-arrow-right"></i>
     </a>
     <div style="flex:1">
-        <h2 style="font-size:18px;font-weight:700;color:#1B4332">
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">
             مطالبة رقم @Model.Year-@Model.Num.ToString("D4")
         </h2>
         <p style="font-size:13px;color:#9a9890;margin-top:2px">
@@ -43,7 +43,6 @@
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">نوع المطالبة</span>
-                    <span class="detail-value">@Model.ClaimType</span>
                 </div>
                 @if (!string.IsNullOrEmpty(Model.Place))
                 {
@@ -66,6 +65,10 @@
                 <div class="detail-item">
                     <span class="detail-label">سجل بواسطة</span>
                     <span class="detail-value">@Model.CreatedBy</span>
+                </div>
+                                <div class="detail-item">
+                    <span class="detail-label">نوع المطالبة</span>
+                    <span class="detail-value">@Model.ClaimType</span>
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">الاحتياطي</span>
@@ -152,4 +155,4 @@
 @section Styles {
     <link rel="stylesheet" href="~/css/users.css">
     <link rel="stylesheet" href="~/css/claims.css">
-}
+} *@

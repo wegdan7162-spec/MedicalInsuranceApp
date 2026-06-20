@@ -1,0 +1,206 @@
+@model List<MedicalInsuranceApp1.Models.Entities.Bank>
+@{
+    ViewData["Title"] = "المصارف وفروعها";
+}
+
+<!-- رأس الصفحة -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="/Dashboard/Index" class="btn-back" title="رجوع">
+            <i class="ti ti-arrow-right"></i>
+        </a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#ffffff">المصارف وفروعها</h2>
+            <p style="font-size:13px;color:#9a9890;margin-top:2px">@Model.Count مصرف مسجل</p>
+        </div>
+    </div>
+    <a href="/Banks/Create" class="btn-primary">
+        <i class="ti ti-plus"></i> إضافة مصرف
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div style="background:#e8f5ee;border:1px solid #b5d9c5;color:#2d6a4f;padding:12px 16px;border-radius:10px;margin-bottom:16px;font-size:13px;font-weight:600">
+        <i class="ti ti-circle-check"></i> @TempData["Success"]
+    </div>
+}
+
+@Html.AntiForgeryToken()
+
+@if (!Model.Any())
+{
+    <div class="table-card" style="text-align:center;padding:60px;color:#9a9890">
+        <i class="ti ti-building-bank" style="font-size:48px;display:block;margin-bottom:12px;opacity:.4"></i>
+        <p style="font-size:15px">لا توجد مصارف — أضف مصرفاً جديداً</p>
+    </div>
+}
+else
+{
+    @foreach (var bank in Model)
+    {
+    <div class="table-card" style="margin-bottom:20px;padding:0;overflow:hidden">
+
+        <!-- رأس المصرف -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:linear-gradient(135deg,#1a3a5c,#2d6a4f);border-radius:12px 12px 0 0">
+            <div style="display:flex;align-items:center;gap:12px">
+                <i class="ti ti-building-bank" style="font-size:22px;color:#fff;opacity:.9"></i>
+                <div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <div style="font-size:16px;font-weight:700;color:#fff">@bank.BankName</div>
+                        @if (!string.IsNullOrEmpty(bank.BankCode))
+                        {
+                            <span style="background:rgba(255,255,255,0.18);color:#fff;padding:2px 9px;border-radius:12px;font-size:11px;font-family:monospace;font-weight:700">@bank.BankCode</span>
+                        }
+                    </div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:2px">
+                        @bank.Branches.Count فرع
+                        @if (!bank.IsActive)
+                        {
+                            <span style="background:rgba(255,255,255,.2);padding:1px 8px;border-radius:10px;margin-right:6px">غير نشط</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+                <a href="/Banks/CreateBranch/@bank.Id" title="إضافة فرع"
+                   style="display:inline-flex;align-items:center;gap:5px;padding:6px 14px;background:rgba(255,255,255,.2);color:#fff;border-radius:8px;text-decoration:none;font-size:12px;font-weight:600;transition:all .15s"
+                   onmouseover="this.style.background='rgba(255,255,255,.35)'"
+                   onmouseout="this.style.background='rgba(255,255,255,.2)'">
+                    <i class="ti ti-plus"></i> فرع جديد
+                </a>
+                <a href="/Banks/Edit/@bank.Id" title="تعديل المصرف"
+                   style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:rgba(255,255,255,.2);color:#fff;border-radius:8px;text-decoration:none;transition:all .15s"
+                   onmouseover="this.style.background='rgba(255,255,255,.35)'"
+                   onmouseout="this.style.background='rgba(255,255,255,.2)'">
+                    <i class="ti ti-edit" style="font-size:15px"></i>
+                </a>
+                <button type="button" title="حذف المصرف"
+                        onclick="showDeleteBank(@bank.Id,'@bank.BankName')"
+                        style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:rgba(220,53,69,.6);color:#fff;border:none;border-radius:8px;cursor:pointer;transition:all .15s"
+                        onmouseover="this.style.background='rgba(220,53,69,.9)'"
+                        onmouseout="this.style.background='rgba(220,53,69,.6)'">
+                    <i class="ti ti-trash" style="font-size:15px"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- فروع المصرف -->
+        @if (!bank.Branches.Any())
+        {
+            <div style="padding:20px;text-align:center;color:#9a9890;font-size:13px">
+                <i class="ti ti-git-branch" style="font-size:20px;display:block;margin-bottom:6px;opacity:.5"></i>
+                لا توجد فروع — أضف فرعاً جديداً
+            </div>
+        }
+        else
+        {
+            <table class="data-table" style="border-radius:0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الكود</th>
+                        <th>اسم الفرع</th>
+                        <th>العنوان</th>
+                        <th>الهاتف</th>
+                        <th>الحالة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ int i = 1; }
+                    @foreach (var branch in bank.Branches.OrderBy(b => b.BranchName))
+                    {
+                    <tr>
+                        <td style="color:#9a9890">@(i++)</td>
+                        <td style="font-family:monospace;color:#1a3a5c;font-weight:700;font-size:12px">@(branch.BranchCode ?? "—")</td>
+                        <td><strong><i class="ti ti-git-branch" style="color:#2d6a4f;margin-left:6px"></i>@branch.BranchName</strong></td>
+                        <td style="color:#6a6a50">@(branch.Address ?? "—")</td>
+                        <td style="color:#6a6a50;font-family:monospace">@(branch.Phone ?? "—")</td>
+                        <td>
+                            @if (branch.IsActive)
+                            {
+                                <span style="background:#e8f5ee;color:#2d6a4f;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">نشط</span>
+                            }
+                            else
+                            {
+                                <span style="background:#f5f5f0;color:#9a9890;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">غير نشط</span>
+                            }
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:6px">
+                                <a href="/Banks/EditBranch/@branch.Id" title="تعديل"
+                                   style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#f5f0e8;color:#92711a;text-decoration:none;border:1px solid #e0d0a0;transition:all .15s"
+                                   onmouseover="this.style.background='#92711a';this.style.color='#fff'"
+                                   onmouseout="this.style.background='#f5f0e8';this.style.color='#92711a'">
+                                    <i class="ti ti-edit" style="font-size:15px"></i>
+                                </a>
+                                <button type="button" title="حذف"
+                                        onclick="showDeleteBranch(@branch.Id,'@branch.BranchName')"
+                                        style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:#fde8e8;color:#c0392b;border:1px solid #f0b8b8;cursor:pointer;transition:all .15s"
+                                        onmouseover="this.style.background='#c0392b';this.style.color='#fff'"
+                                        onmouseout="this.style.background='#fde8e8';this.style.color='#c0392b'">
+                                    <i class="ti ti-trash" style="font-size:15px"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+    }
+}
+
+<!-- Modal حذف مصرف -->
+<div id="deleteBankModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:var(--card-bg,#fff);border-radius:16px;padding:28px;width:420px;max-width:90vw">
+        <h3 style="font-size:16px;font-weight:700;color:#1B4332;margin-bottom:8px">حذف المصرف</h3>
+        <p style="font-size:13px;color:#6a6a50;margin-bottom:20px">سيتم حذف <strong id="deleteBankName"></strong> وجميع فروعه. هل أنت متأكد؟</p>
+        <form id="deleteBankForm" method="post">
+            <input type="hidden" name="id" id="deleteBankId"/>
+            @Html.AntiForgeryToken()
+            <div style="display:flex;gap:10px">
+                <button type="submit" style="flex:1;padding:10px;background:#c0392b;color:#fff;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">حذف</button>
+                <button type="button" onclick="document.getElementById('deleteBankModal').style.display='none'" style="flex:1;padding:10px;background:#f5f5f0;color:#3a4a28;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal حذف فرع -->
+<div id="deleteBranchModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:var(--card-bg,#fff);border-radius:16px;padding:28px;width:420px;max-width:90vw">
+        <h3 style="font-size:16px;font-weight:700;color:#1B4332;margin-bottom:8px">حذف الفرع</h3>
+        <p style="font-size:13px;color:#6a6a50;margin-bottom:20px">هل أنت متأكد من حذف فرع <strong id="deleteBranchName"></strong>؟</p>
+        <form id="deleteBranchForm" method="post">
+            <input type="hidden" name="id" id="deleteBranchId"/>
+            @Html.AntiForgeryToken()
+            <div style="display:flex;gap:10px">
+                <button type="submit" style="flex:1;padding:10px;background:#c0392b;color:#fff;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">حذف</button>
+                <button type="button" onclick="document.getElementById('deleteBranchModal').style.display='none'" style="flex:1;padding:10px;background:#f5f5f0;color:#3a4a28;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showDeleteBank(id, name) {
+    document.getElementById("deleteBankName").textContent = name;
+    document.getElementById("deleteBankId").value = id;
+    document.getElementById("deleteBankForm").action = "/Banks/Delete";
+    document.getElementById("deleteBankModal").style.display = "flex";
+}
+function showDeleteBranch(id, name) {
+    document.getElementById("deleteBranchName").textContent = name;
+    document.getElementById("deleteBranchId").value = id;
+    document.getElementById("deleteBranchForm").action = "/Banks/DeleteBranch";
+    document.getElementById("deleteBranchModal").style.display = "flex";
+}
+</script>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+}

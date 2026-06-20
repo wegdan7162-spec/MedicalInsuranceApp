@@ -3,10 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MedicalInsuranceApp1.Data;
 using MedicalInsuranceApp1.Models.Entities;
+using MedicalInsuranceApp1.Infrastrcture;
 
 namespace MedicalInsuranceApp1.Controllers
 {
     [Authorize]
+    [RequirePermission(AppModules.Courts)]
     public class CourtsController : Controller
     {
         private readonly AppDbContext _db;

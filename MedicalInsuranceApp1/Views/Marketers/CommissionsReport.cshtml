@@ -1,0 +1,324 @@
+@using MedicalInsuranceApp1.Models.Entities
+@{
+    ViewData["Title"] = "كشف عمولات المسوقين";
+
+    var marketers   = ViewBag.Marketers as List<Marketer> ?? new();
+    var years       = ViewBag.Years     as List<int>      ?? new();
+    int selMarketer = ViewBag.SelectedMarketer ?? 0;
+    int selYear     = ViewBag.SelectedYear     ?? 0;
+    int selMonth    = ViewBag.SelectedMonth    ?? 0;
+    string search   = ViewBag.Search           ?? "";
+    decimal totComm = ViewBag.TotalCommission  ?? 0m;
+    decimal totPrem = ViewBag.TotalPremiums    ?? 0m;
+    decimal totNet  = ViewBag.TotalNet         ?? 0m;
+    int totRecords  = ViewBag.TotalRecords     ?? 0;
+
+    dynamic grouped = ViewBag.Grouped;
+
+    var monthNames = new[] {
+        "", "يناير","فبراير","مارس","أبريل","مايو","يونيو",
+        "يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"
+    };
+
+    bool hasFilter = selMarketer != 0 || selYear != 0 || selMonth != 0 || !string.IsNullOrEmpty(search);
+}
+
+<!-- رأس الصفحة -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+    <div style="display:flex;align-items:center;gap:14px">
+        <a href="/Marketers" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+        <div>
+            <h2 style="font-size:20px;font-weight:800;color:#fff;margin:0">كشف عمولات المسوقين</h2>
+            <p style="font-size:12px;color:rgba(255,255,255,0.55);margin:3px 0 0">تقرير شامل بجميع كشوف العمولة</p>
+        </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+        <a href="/Marketers/Search" style="height:38px;padding:0 20px;border-radius:10px;background:linear-gradient(135deg,#c9a84c,#e6b84c);color:#fff;text-decoration:none;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px;box-shadow:0 3px 10px rgba(201,168,76,0.35);transition:opacity 0.2s" onmouseover="this.style.opacity='0.88'" onmouseout="this.style.opacity='1'">
+            <i class="ti ti-plus" style="font-size:16px"></i> إضافة كشف عمولة
+        </a>
+        <button onclick="window.print()" style="height:38px;padding:0 20px;border-radius:10px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);color:#fff;font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background 0.2s" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
+            <i class="ti ti-printer" style="font-size:16px"></i> طباعة
+        </button>
+    </div>
+</div>
+
+<!-- بطاقات الإجماليات -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px" class="rpt-stat-grid">
+    <div style="background:#fff;border-radius:16px;padding:18px 20px;border:1px solid #eeede8;box-shadow:0 2px 12px rgba(26,58,92,0.07)">
+        <div style="font-size:10px;color:#bbb;font-weight:700;letter-spacing:0.8px;margin-bottom:8px">إجمالي الكشوف</div>
+        <div style="font-size:24px;font-weight:800;color:#1a3a5c">@totRecords</div>
+        <div style="font-size:11px;color:#aaa;margin-top:4px">كشف عمولة</div>
+    </div>
+    <div style="background:#fff;border-radius:16px;padding:18px 20px;border:1px solid #eeede8;box-shadow:0 2px 12px rgba(26,58,92,0.07)">
+        <div style="font-size:10px;color:#bbb;font-weight:700;letter-spacing:0.8px;margin-bottom:8px">إجمالي الأقساط</div>
+        <div style="font-size:20px;font-weight:800;color:#2d6a4f">@totPrem.ToString("N3")</div>
+        <div style="font-size:11px;color:#aaa;margin-top:4px">دينار ليبي</div>
+    </div>
+    <div style="background:#fff;border-radius:16px;padding:18px 20px;border:1px solid #eeede8;box-shadow:0 2px 12px rgba(26,58,92,0.07)">
+        <div style="font-size:10px;color:#bbb;font-weight:700;letter-spacing:0.8px;margin-bottom:8px">الأقساط الصافية</div>
+        <div style="font-size:20px;font-weight:800;color:#1a3a5c">@totNet.ToString("N3")</div>
+        <div style="font-size:11px;color:#aaa;margin-top:4px">دينار ليبي</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#1a3a5c,#2d6a4f);border-radius:16px;padding:18px 20px;box-shadow:0 4px 16px rgba(26,58,92,0.2)">
+        <div style="font-size:10px;color:rgba(255,255,255,0.65);font-weight:700;letter-spacing:0.8px;margin-bottom:8px">إجمالي العمولات</div>
+        <div style="font-size:20px;font-weight:800;color:#fff">@totComm.ToString("N3")</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:4px">دينار ليبي</div>
+    </div>
+</div>
+
+<!-- فلتر -->
+<div style="background:#fff;border-radius:16px;border:1px solid #eeede8;padding:18px 22px;margin-bottom:22px;box-shadow:0 2px 10px rgba(26,58,92,0.05)">
+    <form method="get" action="/Marketers/CommissionsReport" id="filterForm">
+
+        <!-- البحث النصي -->
+        <div style="margin-bottom:14px;position:relative">
+            <i class="ti ti-search" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#aaa;font-size:15px;pointer-events:none"></i>
+            <input type="text" name="search" value="@search" placeholder="ابحث باسم المسوق، الجهة، الفترة... (مثال: مارس، 2024، مستشفى)"
+                   style="width:100%;box-sizing:border-box;height:42px;padding:0 40px 0 14px;border:1.5px solid #e0e0d8;border-radius:11px;font-family:'Cairo',sans-serif;font-size:13px;color:#2a2820;background:#fafaf8;outline:none;transition:border 0.2s"
+                   onfocus="this.style.borderColor='#1a3a5c';this.style.boxShadow='0 0 0 3px rgba(26,58,92,0.07)'"
+                   onblur="this.style.borderColor='#e0e0d8';this.style.boxShadow='none'">
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+            <!-- المسوق -->
+            <div style="flex:2;min-width:160px">
+                <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:5px">المسوق</label>
+                <select name="marketerId" style="@("width:100%;height:38px;padding:0 10px;border:1.5px solid #e0e0d8;border-radius:10px;font-family:'Cairo',sans-serif;font-size:12px;color:#2a2820;background:#fafaf8;outline:none")">
+                    <option value="0" selected="@(selMarketer==0)">— الكل —</option>
+                    @foreach (var m in marketers)
+                    {
+                        <option value="@m.Id" selected="@(selMarketer == m.Id)">@m.Name</option>
+                    }
+                </select>
+            </div>
+            <!-- السنة -->
+            <div style="min-width:110px">
+                <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:5px">السنة</label>
+                <select name="year" style="width:100%;height:38px;padding:0 10px;border:1.5px solid #e0e0d8;border-radius:10px;font-family:'Cairo',sans-serif;font-size:12px;color:#2a2820;background:#fafaf8;outline:none">
+                    <option value="0" selected="@(selYear==0)">— الكل —</option>
+                    @foreach (var y in years)
+                    {
+                        <option value="@y" selected="@(selYear == y)">@y</option>
+                    }
+                </select>
+            </div>
+            <!-- الشهر -->
+            <div style="min-width:110px">
+                <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:5px">شهر التسوية</label>
+                <select name="month" style="width:100%;height:38px;padding:0 10px;border:1.5px solid #e0e0d8;border-radius:10px;font-family:'Cairo',sans-serif;font-size:12px;color:#2a2820;background:#fafaf8;outline:none">
+                    <option value="0" selected="@(selMonth==0)">— الكل —</option>
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        <option value="@m" selected="@(selMonth == m)">@monthNames[m]</option>
+                    }
+                </select>
+            </div>
+            <!-- أزرار -->
+            <button type="submit" style="height:38px;padding:0 20px;border-radius:10px;background:linear-gradient(135deg,#1a3a5c,#2d6a4f);color:#fff;border:none;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap">
+                <i class="ti ti-filter" style="font-size:14px"></i> تطبيق
+            </button>
+            @if (hasFilter)
+            {
+            <a href="/Marketers/CommissionsReport" style="height:38px;padding:0 14px;border-radius:10px;border:1.5px solid #e0e0d8;background:#fff;color:#888;text-decoration:none;font-family:'Cairo',sans-serif;font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px;white-space:nowrap">
+                <i class="ti ti-x" style="font-size:13px"></i> مسح
+            </a>
+            }
+        </div>
+
+        @if (hasFilter)
+        {
+        <div style="margin-top:12px;padding:8px 14px;background:#f0f6ff;border-radius:9px;font-size:11px;color:#1a3a5c;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <i class="ti ti-filter-check" style="font-size:13px"></i>
+            @if (!string.IsNullOrEmpty(search)) { <span style="background:#1a3a5c;color:#fff;padding:2px 9px;border-radius:6px">بحث: @search</span> }
+            @if (selMarketer != 0) { <span style="background:#2d6a4f;color:#fff;padding:2px 9px;border-radius:6px">@(marketers.FirstOrDefault(m=>m.Id==selMarketer)?.Name)</span> }
+            @if (selYear != 0) { <span style="background:#c9a84c;color:#fff;padding:2px 9px;border-radius:6px">@selYear</span> }
+            @if (selMonth != 0) { <span style="background:#c9a84c;color:#fff;padding:2px 9px;border-radius:6px">@monthNames[selMonth]</span> }
+            <span style="color:#888;font-weight:400">— @totRecords كشف • @totComm.ToString("N3") د.ل إجمالي عمولة</span>
+        </div>
+        }
+    </form>
+</div>
+
+<!-- جداول المسوقين -->
+@if (grouped == null || ((System.Collections.ICollection)grouped).Count == 0)
+{
+<div style="background:#fff;border-radius:16px;padding:48px;text-align:center;border:1px solid #eeede8">
+    <i class="ti ti-file-off" style="font-size:48px;color:#ddd;display:block;margin-bottom:12px"></i>
+    <div style="font-size:15px;font-weight:700;color:#bbb">لا توجد كشوف عمولة</div>
+    <div style="font-size:12px;color:#ccc;margin-top:4px">جرّب تغيير الفلتر أو أضف كشوفاً جديدة</div>
+</div>
+}
+else
+{
+foreach (var group in grouped)
+{
+    var mktr    = (Marketer)group.Marketer;
+    var records = (List<MarketerCommissionRecord>)group.Records;
+    decimal mkrComm = 0m;
+    foreach (var r in records) foreach (var it in r.Items) mkrComm += it.CommissionAmount;
+    decimal mkrPrem = 0m;
+    foreach (var r in records) foreach (var it in r.Items) mkrPrem += it.TotalPremiums;
+
+<div style="background:#fff;border-radius:18px;border:1px solid #eeede8;box-shadow:0 2px 12px rgba(26,58,92,0.06);overflow:hidden;margin-bottom:22px" class="rpt-marketer-card">
+
+    <!-- رأس المسوق -->
+    <div style="background:linear-gradient(to left,#f0f6ff,#e8f5ee);padding:14px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e8e8e0">
+        <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#1a3a5c,#2d6a4f);display:flex;align-items:center;justify-content:center">
+                <i class="ti ti-user" style="color:#fff;font-size:18px"></i>
+            </div>
+            <div>
+                <div style="font-size:15px;font-weight:800;color:#1a3a5c">@mktr.Name</div>
+                <div style="font-size:11px;color:#888;margin-top:2px">@records.Count كشف • @mktr.Phone</div>
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px">
+            <div style="text-align:center">
+                <div style="font-size:11px;color:#888;margin-bottom:2px">إجمالي أقساط</div>
+                <div style="font-size:14px;font-weight:700;color:#2d6a4f">@mkrPrem.ToString("N3")</div>
+            </div>
+            <div style="width:1px;height:32px;background:#ddd"></div>
+            <div style="text-align:center">
+                <div style="font-size:11px;color:#888;margin-bottom:2px">إجمالي عمولة</div>
+                <div style="font-size:15px;font-weight:800;color:#c9a84c">@mkrComm.ToString("N3")</div>
+            </div>
+            <a href="/Marketers/Details/@mktr.Id" style="width:32px;height:32px;border-radius:9px;background:#e8f0fc;color:#1a3a5c;display:flex;align-items:center;justify-content:center;text-decoration:none" title="عرض التفاصيل">
+                <i class="ti ti-external-link" style="font-size:15px"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- كشوف المسوق -->
+    @foreach (var rec in records)
+    {
+    <div style="padding:16px 22px;border-bottom:1px solid #f5f5f0">
+        <!-- رأس الكشف -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span style="background:#e8f0fc;color:#1a3a5c;padding:3px 10px;border-radius:7px;font-size:11px;font-weight:700">
+                    <i class="ti ti-calendar" style="font-size:10px"></i>
+                    @rec.SettlementDate.ToString("yyyy/MM/dd")
+                </span>
+                <span style="font-size:11px;color:#aaa">@rec.Items.Count بند</span>
+                @if (!string.IsNullOrEmpty(rec.CheckNumber))
+                {
+                <span style="background:#f0f6ff;color:#1a3a5c;padding:3px 10px;border-radius:7px;font-size:11px;font-weight:600;border:1px solid #d0e4f7">
+                    <i class="ti ti-writing" style="font-size:10px"></i> صك: @rec.CheckNumber
+                </span>
+                }
+                @if (!string.IsNullOrEmpty(rec.SupplyOrderNumbers))
+                {
+                <span style="background:#f0fff4;color:#2d6a4f;padding:3px 10px;border-radius:7px;font-size:11px;font-weight:600;border:1px solid #c3e6cb">
+                    <i class="ti ti-file-invoice" style="font-size:10px"></i> أوامر توريد: @rec.SupplyOrderNumbers
+                </span>
+                }
+                @if (!string.IsNullOrEmpty(rec.ReceiptNumbers))
+                {
+                <span style="background:#fffbf0;color:#856404;padding:3px 10px;border-radius:7px;font-size:11px;font-weight:600;border:1px solid #ffc107">
+                    <i class="ti ti-receipt" style="font-size:10px"></i> إيصالات قبض: @rec.ReceiptNumbers
+                </span>
+                }
+            </div>
+            <div style="font-size:13px;font-weight:700;color:#c9a84c">
+                @rec.Items.Sum(i => i.CommissionAmount).ToString("N3") <span style="font-size:10px;font-weight:400;color:#aaa">إجمالي العمولة</span>
+            </div>
+        </div>
+
+        <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead>
+                <tr style="background:#f8f8f4">
+                    <th style="padding:8px 12px;text-align:right;font-weight:700;color:#666;border-bottom:2px solid #eee;white-space:nowrap">الجهة الموردة</th>
+                    <th style="padding:8px 12px;text-align:right;font-weight:700;color:#666;border-bottom:2px solid #eee;white-space:nowrap">الفترة</th>
+                    <th style="padding:8px 12px;text-align:center;font-weight:700;color:#666;border-bottom:2px solid #eee;white-space:nowrap">إجمالي الأقساط</th>
+                    <th style="padding:8px 12px;text-align:center;font-weight:700;color:#666;border-bottom:2px solid #eee;white-space:nowrap">المرجعة</th>
+                    <th style="padding:8px 12px;text-align:center;font-weight:700;color:#666;border-bottom:2px solid #eee;white-space:nowrap">الصافية</th>
+                    <th style="padding:8px 12px;text-align:center;font-weight:700;color:#666;border-bottom:2px solid #eee;white-space:nowrap">النسبة%</th>
+                    <th style="padding:8px 12px;text-align:center;font-weight:700;color:#c9a84c;border-bottom:2px solid #eee;white-space:nowrap">قيمة العمولة</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in rec.Items)
+                {
+                <tr style="border-bottom:1px solid #f5f5f0;transition:background 0.15s" onmouseover="this.style.background='#fafaf5'" onmouseout="this.style.background=''">
+                    <td style="padding:9px 12px;color:#2a2820;font-weight:600">@item.FacilityName</td>
+                    <td style="padding:9px 12px;color:#666;font-size:11px">@item.Period</td>
+                    <td style="padding:9px 12px;text-align:center;color:#2a2820">@item.TotalPremiums.ToString("N3")</td>
+                    <td style="padding:9px 12px;text-align:center;color:@(item.ReturnedPremiums > 0 ? "#e74c3c" : "#aaa")">@item.ReturnedPremiums.ToString("N3")</td>
+                    <td style="padding:9px 12px;text-align:center;color:#2d6a4f;font-weight:600">@item.NetPremiums.ToString("N3")</td>
+                    <td style="padding:9px 12px;text-align:center;color:#666">@((item.CommissionRate * 100).ToString("0.##"))%</td>
+                    <td style="padding:9px 12px;text-align:center;font-weight:700;color:#c9a84c">@item.CommissionAmount.ToString("N3")</td>
+                </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr style="background:#fafaf5;border-top:2px solid #eee">
+                    <td colspan="2" style="padding:9px 12px;font-size:11px;font-weight:700;color:#888">المجموع</td>
+                    <td style="padding:9px 12px;text-align:center;font-weight:700;color:#2a2820">@rec.Items.Sum(i=>i.TotalPremiums).ToString("N3")</td>
+                    <td style="padding:9px 12px;text-align:center;font-weight:700;color:#e74c3c">@rec.Items.Sum(i=>i.ReturnedPremiums).ToString("N3")</td>
+                    <td style="padding:9px 12px;text-align:center;font-weight:700;color:#2d6a4f">@rec.Items.Sum(i=>i.NetPremiums).ToString("N3")</td>
+                    <td style="padding:9px 12px"></td>
+                    <td style="padding:9px 12px;text-align:center;font-weight:800;color:#c9a84c">@rec.Items.Sum(i=>i.CommissionAmount).ToString("N3")</td>
+                </tr>
+            </tfoot>
+        </table>
+        </div>
+
+        @if (!string.IsNullOrEmpty(rec.PreparedBy) || !string.IsNullOrEmpty(rec.ReviewedBy))
+        {
+        <div style="display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px dashed #e8e8e0;font-size:11px;color:#888">
+            @if (!string.IsNullOrEmpty(rec.PreparedBy))
+            {
+            <span><strong style="color:#1a3a5c">إعداد:</strong> @rec.PreparedBy</span>
+            }
+            @if (!string.IsNullOrEmpty(rec.ReviewedBy))
+            {
+            <span><strong style="color:#1a3a5c">مراجعة:</strong> @rec.ReviewedBy</span>
+            }
+            <span style="color:#ccc">رئيس قسم الشؤون المالية</span>
+        </div>
+        }
+    </div>
+    }
+
+</div>
+}
+
+<!-- إجمالي عام -->
+<div style="background:linear-gradient(135deg,#1a3a5c,#2d6a4f);border-radius:16px;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-top:6px" class="no-print-border">
+    <div style="color:rgba(255,255,255,0.7);font-size:13px;font-weight:700">
+        <i class="ti ti-calculator" style="margin-left:6px"></i> الإجمالي العام
+    </div>
+    <div style="display:flex;gap:32px;flex-wrap:wrap">
+        <div style="text-align:center">
+            <div style="font-size:10px;color:rgba(255,255,255,0.55);margin-bottom:3px">إجمالي الأقساط</div>
+            <div style="font-size:16px;font-weight:700;color:#fff">@totPrem.ToString("N3")</div>
+        </div>
+        <div style="text-align:center">
+            <div style="font-size:10px;color:rgba(255,255,255,0.55);margin-bottom:3px">الأقساط الصافية</div>
+            <div style="font-size:16px;font-weight:700;color:#fff">@totNet.ToString("N3")</div>
+        </div>
+        <div style="width:1px;background:rgba(255,255,255,0.2)"></div>
+        <div style="text-align:center">
+            <div style="font-size:10px;color:rgba(255,255,255,0.55);margin-bottom:3px">إجمالي العمولات</div>
+            <div style="font-size:22px;font-weight:800;color:#c9a84c">@totComm.ToString("N3")</div>
+        </div>
+    </div>
+</div>
+}
+
+@section Styles {
+<link rel="stylesheet" href="~/css/users.css">
+<link rel="stylesheet" href="~/css/claims.css">
+<style>
+@@media print {
+    .sidebar, .btn-back, button, form, .no-print-border { display:none !important; }
+    .rpt-stat-grid { grid-template-columns: repeat(4,1fr) !important; }
+    body { background: #fff !important; }
+    .rpt-marketer-card { break-inside: avoid; }
+}
+@@media (max-width: 768px) {
+    .rpt-stat-grid { grid-template-columns: repeat(2,1fr) !important; }
+}
+</style>
+}

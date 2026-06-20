@@ -1,0 +1,202 @@
+@model List<MedicalInsuranceApp1.Models.Entities.PaymentAuthorization>
+@{
+    ViewData["Title"] = "إذون الصرف";
+    var monthNames = new[]{"يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"};
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="/Dashboard/Index" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#ffffff">إذون الصرف</h2>
+            <p style="font-size:13px;color:#9a9890;margin-top:2px">
+                @monthNames[(int)ViewBag.Month - 1] @ViewBag.Year — @Model.Count إذن
+            </p>
+        </div>
+    </div>
+    <a href="/PaymentAuthorizations/Create" class="btn-primary">
+        <i class="ti ti-plus"></i> إذن صرف جديد
+    </a>
+</div>
+
+<!-- بطاقات الإجماليات -->
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+    <div class="stat-card" style="border-right:4px solid #c0392b">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">إجمالي المصروفات</div>
+        <div style="font-size:18px;font-weight:700;color:#c0392b">@(((decimal)ViewBag.TotalAmount).ToString("N3"))</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #c9a84c">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">قيد التنفيذ</div>
+        <div style="font-size:22px;font-weight:700;color:#c9a84c">@ViewBag.CountPending</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #2d6a4f">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">منفذة</div>
+        <div style="font-size:22px;font-weight:700;color:#2d6a4f">@ViewBag.CountExecuted</div>
+    </div>
+</div>
+
+<!-- فلاتر -->
+<div class="filter-card" style="margin-bottom:20px">
+    <form method="get">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <input type="text" name="search" value="@ViewBag.Search" class="filter-input"
+                       placeholder="بحث برقم الإذن أو اسم المستفيد...">
+            </div>
+            <div class="filter-group">
+                @{ string? _sp = ViewBag.Status == "قيد التنفيذ" ? "selected" : null;
+                   string? _se = ViewBag.Status == "منفذ"        ? "selected" : null;
+                   string? _sc = ViewBag.Status == "ملغي"        ? "selected" : null; }
+                <select name="status" class="filter-select">
+                    <option value="">كل الحالات</option>
+                    <option value="قيد التنفيذ" selected="@_sp">قيد التنفيذ</option>
+                    <option value="منفذ"        selected="@_se">منفذ</option>
+                    <option value="ملغي"        selected="@_sc">ملغي</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <select name="month" class="filter-select">
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        string? _mSel = (int)ViewBag.Month == m ? "selected" : null;
+                        <option value="@m" selected="@_mSel">@monthNames[m-1]</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <select name="year" class="filter-select">
+                    @for (int y = DateTime.Now.Year + 1; y >= DateTime.Now.Year - 3; y--)
+                    {
+                        string? _ySel = (int)ViewBag.Year == y ? "selected" : null;
+                        <option value="@y" selected="@_ySel">@y</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group" style="display:flex;gap:8px">
+                <button type="submit" class="btn-primary" style="flex:1"><i class="ti ti-search"></i> بحث</button>
+                <a href="/PaymentAuthorizations" class="btn-cancel" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px">
+                    <i class="ti ti-x"></i> إعادة
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@Html.AntiForgeryToken()
+
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>رقم الإذن</th>
+                <th>التاريخ</th>
+                <th>المستفيد</th>
+                <th>النوع</th>
+                <th>المبلغ</th>
+                <th>طريقة الصرف</th>
+                <th>الحساب</th>
+                <th>الحالة</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="10" style="text-align:center;padding:40px;color:#9a9890">
+                        <i class="ti ti-cash" style="font-size:32px;display:block;margin-bottom:8px"></i>
+                        لا توجد إذون صرف في هذه الفترة
+                    </td>
+                </tr>
+            }
+            else
+            {
+                int i = 1;
+                @foreach (var item in Model)
+                {
+                <tr>
+                    <td style="color:#9a9890">@(i++)</td>
+                    <td style="font-family:monospace;font-size:12px">@(item.AuthorizationNumber ?? "—")</td>
+                    <td style="font-size:12px;color:#6a6a50">@item.AuthorizationDate.ToString("yyyy/MM/dd")</td>
+                    <td>
+                        <strong>@(item.BeneficiaryName ?? "—")</strong>
+                        @if (!string.IsNullOrEmpty(item.Description))
+                        { <div style="font-size:11px;color:#9a9890">@item.Description</div> }
+                    </td>
+                    <td style="font-size:12px">@(item.BeneficiaryType ?? "—")</td>
+                    <td style="font-weight:700;color:#c0392b;font-size:14px">@item.Amount.ToString("N3")</td>
+                    <td style="font-size:12px">@(item.PaymentMethod ?? "—")</td>
+                    <td style="font-size:12px;color:#6a6a50">@(item.BankAccount?.BankName ?? "—")</td>
+                    <td>
+                        @if (item.Status == "منفذ")
+                        { <span style="background:#e8f5ee;color:#2d6a4f;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">منفذ</span> }
+                        else if (item.Status == "قيد التنفيذ")
+                        { <span style="background:#fff8e8;color:#92711a;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">قيد التنفيذ</span> }
+                        else
+                        { <span style="background:#fde8e8;color:#c0392b;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600">ملغي</span> }
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:4px;flex-wrap:wrap">
+                            <a href="/PaymentAuthorizations/Edit/@item.Id" class="btn-icon"
+                               style="display:inline-flex;align-items:center;gap:3px;padding:4px 8px">
+                                <i class="ti ti-edit"></i>
+                            </a>
+                            <button type="button" class="btn-icon danger"
+                                    onclick="showDelete(@item.Id,'إذن صرف @(item.AuthorizationNumber ?? "")')"
+                                    style="display:inline-flex;align-items:center;gap:3px;padding:4px 8px">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                }
+            }
+        </tbody>
+        @if (Model.Any())
+        {
+        <tfoot>
+            <tr style="font-weight:700;background:var(--sidebar-bg,#f5f5f0)">
+                <td colspan="5" style="text-align:left;padding:10px 14px">الإجمالي</td>
+                <td style="color:#c0392b;padding:10px 14px">@(((decimal)ViewBag.TotalAmount).ToString("N3"))</td>
+                <td colspan="4"></td>
+            </tr>
+        </tfoot>
+        }
+    </table>
+</div>
+
+<!-- Delete Modal -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:var(--card-bg,#fff);border-radius:16px;padding:28px;width:420px;max-width:90vw">
+        <h3 style="font-size:16px;font-weight:700;color:#c0392b;margin-bottom:8px">تأكيد الحذف</h3>
+        <p style="font-size:13px;color:#6a6a50;margin-bottom:16px">هل أنت متأكد من حذف <strong id="deleteName"></strong>؟</p>
+        <form id="deleteForm" method="post" action="/PaymentAuthorizations/Delete">
+            <input type="hidden" name="id" id="deleteId"/>
+            @Html.AntiForgeryToken()
+            <div style="margin-bottom:16px">
+                <input type="text" name="reason" placeholder="سبب الحذف..."
+                       style="width:100%;padding:10px 12px;border:1px solid #e0e0d8;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;box-sizing:border-box"/>
+            </div>
+            <div style="display:flex;gap:10px">
+                <button type="submit" style="flex:1;padding:10px;background:#c0392b;color:#fff;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">حذف</button>
+                <button type="button" onclick="document.getElementById('deleteModal').style.display='none'" style="flex:1;padding:10px;background:#f5f5f0;color:#3a4a28;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+function showDelete(id, name) {
+    document.getElementById("deleteName").textContent = name;
+    document.getElementById("deleteId").value = id;
+    document.getElementById("deleteModal").style.display = "flex";
+}
+</script>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .stat-card{background:var(--card-bg,#fff);border-radius:12px;padding:16px 20px;border:1px solid #e8e8e0;}
+    </style>
+}

@@ -1,0 +1,127 @@
+@model MedicalInsuranceApp1.Models.Entities.ReceiptVoucher
+@{
+    ViewData["Title"] = $"إيصال قبض رقم {Model.ReceiptNumber}";
+    Layout = "~/Views/Shared/_PrintLayout.cshtml";
+}
+
+<!-- رأس الشركة -->
+<div class="company-header">
+    <div>
+        <div class="company-name">شركة ليبيا للتأمين</div>
+        <div class="company-sub">إدارة الشئون المالية</div>
+    </div>
+    <div style="text-align:center">
+        <div style="font-size:15px;font-weight:700;color:#1a3a5c">إيصال قبض رقم</div>
+        <div style="font-size:20px;font-weight:800;border:2px solid #1a3a5c;padding:4px 16px;margin-top:4px">
+            No. @Model.ReceiptNumber
+        </div>
+    </div>
+    <div class="company-logo">ش.ل.ت</div>
+</div>
+
+<!-- التاريخ -->
+<div class="field-row" style="justify-content:flex-end;gap:40px">
+    <div style="display:flex;gap:8px;align-items:baseline">
+        <span class="field-label">التاريخ:</span>
+        <span class="field-value" style="min-width:120px">@Model.ReceiptDate.ToString("yyyy/MM/dd")</span>
+    </div>
+</div>
+
+<div style="height:10px"></div>
+
+<!-- الإدارة / الفرع / المكتب -->
+<div class="field-row">
+    <span class="field-label">الإدارة العامة / فرع:</span>
+    <span class="field-value">@(Model.Department ?? string.Empty)</span>
+</div>
+<div class="field-row">
+    <span class="field-label">مكتب:</span>
+    <span class="field-value">@(Model.Office ?? string.Empty)</span>
+</div>
+
+<!-- الجهة المسددة -->
+<div class="field-row" style="margin-top:8px">
+    <span class="field-label">وصلنا من الأخ / الأخوة:</span>
+    <span class="field-value" style="font-weight:700">@(Model.FacilityName ?? Model.Contract?.FacilityName)</span>
+</div>
+
+<!-- القسط -->
+<div class="field-row">
+    <span class="field-label">قسط:</span>
+    <span class="field-value">
+        أقساط تأمين ضد أخطاء طبية
+        @if (Model.SupplyOrder != null)
+        {
+            <span> — من @Model.SupplyOrder.CoverageFrom.ToString("yyyy/MM/dd") إلى @Model.SupplyOrder.CoverageTo.ToString("yyyy/MM/dd")</span>
+        }
+    </span>
+</div>
+
+<!-- المبلغ -->
+<div style="margin:12px 0;padding:8px;border:1px solid #333;background:#f8f9fa">
+    <div style="display:flex;gap:30px;align-items:center">
+        <span class="field-label">وذلك مبلغ:</span>
+        <span style="font-size:16px;font-weight:800">@Model.DinarAmount.ToString("N0")</span>
+        <span>دينار</span>
+        <span style="font-size:16px;font-weight:800">@Model.DirhamAmount.ToString("N0")</span>
+        <span>درهم</span>
+        <span style="margin-right:auto">د.ل</span>
+    </div>
+    @if (Model.SupervisionFee > 0)
+    {
+        <div style="font-size:11px;color:#555;margin-top:4px">
+            منها رسوم إشراف: @Model.SupervisionFee.ToString("N3") | صافي الخزينة: @Model.TreasuryAmount.ToString("N3")
+        </div>
+    }
+</div>
+
+<!-- طريقة السداد -->
+<div class="field-row">
+    <span class="field-label">سددت قيمته بـ</span>
+    @if (Model.PaymentMethod == "نقدي")
+    {
+        <span>☑ إيصال نقداً &nbsp;&nbsp;&nbsp; ☐ بموجب صك رقم</span>
+    }
+    else
+    {
+        <span>☐ إيصال نقداً &nbsp;&nbsp;&nbsp; ☑ بموجب صك رقم: <strong>@(Model.CheckNumber ?? "___________")</strong></span>
+    }
+</div>
+
+@if (Model.PaymentMethod != "نقدي")
+{
+    <div class="field-row">
+        <span class="field-label">على مصرف:</span>
+        <span class="field-value">@(Model.BankName ?? Model.BankAccount?.BankName ?? string.Empty)</span>
+        <span class="field-label" style="margin-right:20px">فرع:</span>
+        <span class="field-value">@(Model.BankBranchName ?? string.Empty)</span>
+    </div>
+}
+
+<!-- التوقيعات -->
+<div class="signatures" style="margin-top:50px">
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        أمين الخزينة
+    </div>
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        رئيس مكتب الحسابات
+    </div>
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        المدير
+    </div>
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        المستلم
+    </div>
+</div>
+
+<!-- تذييل -->
+<div style="margin-top:20px;font-size:10px;text-align:center;color:#777;border-top:1px solid #ccc;padding-top:6px">
+    نوع التحصيل: @Model.CollectionType.ToString() |
+    الإجمالي: @Model.TotalAmount.ToString("N3") د.ل
+    @if (Model.CollectionType == CollectionType.Mandatory)
+    { <span>| إجباري</span> }
+</div>

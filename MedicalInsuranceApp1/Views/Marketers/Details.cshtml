@@ -1,0 +1,139 @@
+@using MedicalInsuranceApp1.Models.Entities
+@model (Marketer Marketer, List<MarketerCommissionRecord> Records)
+@{
+    ViewData["Title"] = "حركة المسوق";
+    var marketer = Model.Marketer;
+    var records  = Model.Records;
+}
+
+<!-- شريط الأدوات -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="/Marketers" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#ffffff">@marketer.Name</h2>
+            <p style="font-size:13px;color:#9a9890;margin-top:2px">كشوف العمولات والحركة</p>
+        </div>
+    </div>
+    <a href="/Marketers/AddRecord?marketerId=@marketer.Id" class="btn-primary" style="text-decoration:none;padding:8px 18px;display:flex;align-items:center;gap:6px">
+        <i class="ti ti-plus"></i> إضافة كشف عمولة
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+<div style="background:#e8f5ee;color:#2d6a4f;padding:10px 16px;border-radius:8px;margin-bottom:16px;border-right:4px solid #2d6a4f">
+    <i class="ti ti-check"></i> @TempData["Success"]
+</div>
+}
+
+<!-- بطاقات الملخص -->
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">
+    <div class="stat-card" style="border-right:4px solid #1a3a5c">
+        <div class="stat-label">عدد الكشوف</div>
+        <div class="stat-value" style="color:#1a3a5c">@ViewBag.RecordsCount</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #c9a84c">
+        <div class="stat-label">إجمالي الأقساط</div>
+        <div class="stat-value" style="color:#c9a84c;font-size:16px">@((decimal)ViewBag.TotalPremiums).ToString("N3")</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #6c3483">
+        <div class="stat-label">إجمالي العمولات</div>
+        <div class="stat-value" style="color:#6c3483;font-size:16px">@((decimal)ViewBag.TotalCommission).ToString("N3")</div>
+    </div>
+</div>
+
+<!-- كشوف العمولة -->
+@if (!records.Any())
+{
+<div class="table-card" style="text-align:center;padding:40px;color:#9a9890">
+    لا توجد كشوف عمولة لهذا المسوق
+</div>
+}
+else
+{
+@foreach (var rec in records)
+{
+<div class="table-card" style="margin-bottom:20px">
+    <!-- رأس الكشف -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #e8e8e0">
+        <div>
+            <span style="font-weight:700;color:#1a3a5c;font-size:14px">
+                <i class="ti ti-calendar"></i> @rec.SettlementDate.ToString("yyyy/MM/dd")
+            </span>
+            @if (!string.IsNullOrWhiteSpace(rec.CheckNumber))
+            {
+            <span style="background:#f0f0e8;padding:2px 10px;border-radius:8px;font-size:12px;margin-right:10px;color:#555">
+                رقم الصك: @rec.CheckNumber
+            </span>
+            }
+            @if (!string.IsNullOrWhiteSpace(rec.Notes))
+            {
+            <span style="color:#9a9890;font-size:12px;margin-right:8px">@rec.Notes</span>
+            }
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-weight:700;color:#6c3483">
+                إجمالي: @rec.Items.Sum(i => i.CommissionAmount).ToString("N3")
+            </span>
+            <form method="post" action="/Marketers/DeleteRecord/@rec.Id" style="display:inline"
+                  onsubmit="return confirm('هل تريدين حذف هذا الكشف؟')">
+                @Html.AntiForgeryToken()
+                <button type="submit" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:14px">
+                    <i class="ti ti-trash"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- بنود الكشف -->
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead>
+            <tr style="background:#f5f5f0">
+                <th style="padding:7px 10px;text-align:right;border-bottom:1px solid #e0e0d8">الجهة المورِدة</th>
+                <th style="padding:7px 10px;text-align:center;border-bottom:1px solid #e0e0d8">الفترة</th>
+                <th style="padding:7px 10px;text-align:left;border-bottom:1px solid #e0e0d8">إجمالي الأقساط</th>
+                <th style="padding:7px 10px;text-align:left;border-bottom:1px solid #e0e0d8">المرجعة</th>
+                <th style="padding:7px 10px;text-align:left;border-bottom:1px solid #e0e0d8">الصافية</th>
+                <th style="padding:7px 10px;text-align:center;border-bottom:1px solid #e0e0d8">النسبة%</th>
+                <th style="padding:7px 10px;text-align:left;border-bottom:1px solid #e0e0d8;color:#6c3483">العمولة</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in rec.Items)
+            {
+            <tr style="border-bottom:1px solid #f0f0e8">
+                <td style="padding:7px 10px;font-weight:600">@item.FacilityName</td>
+                <td style="padding:7px 10px;text-align:center;color:#666;font-size:11px">@(item.Period ?? "—")</td>
+                <td style="padding:7px 10px;text-align:left;color:#1a3a5c">@item.TotalPremiums.ToString("N3")</td>
+                <td style="padding:7px 10px;text-align:left;color:#c0392b">@(item.ReturnedPremiums > 0 ? item.ReturnedPremiums.ToString("N3") : "—")</td>
+                <td style="padding:7px 10px;text-align:left;color:#2d6a4f">@item.NetPremiums.ToString("N3")</td>
+                <td style="padding:7px 10px;text-align:center">@((item.CommissionRate * 100).ToString("N0"))%</td>
+                <td style="padding:7px 10px;text-align:left;font-weight:700;color:#6c3483">@item.CommissionAmount.ToString("N3")</td>
+            </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr style="background:#f5f5f0;font-weight:700">
+                <td colspan="2" style="padding:8px 10px">الإجماليـات</td>
+                <td style="padding:8px 10px;text-align:left;color:#1a3a5c">@rec.Items.Sum(i => i.TotalPremiums).ToString("N3")</td>
+                <td style="padding:8px 10px;text-align:left;color:#c0392b">@rec.Items.Sum(i => i.ReturnedPremiums).ToString("N3")</td>
+                <td style="padding:8px 10px;text-align:left;color:#2d6a4f">@rec.Items.Sum(i => i.NetPremiums).ToString("N3")</td>
+                <td></td>
+                <td style="padding:8px 10px;text-align:left;color:#6c3483">@rec.Items.Sum(i => i.CommissionAmount).ToString("N3")</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+}
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .stat-card{background:var(--card-bg,#fff);border-radius:12px;padding:14px 18px;border:1px solid #e8e8e0}
+    .stat-label{font-size:11px;color:#9a9890;margin-bottom:4px}
+    .stat-value{font-size:20px;font-weight:700}
+    </style>
+}

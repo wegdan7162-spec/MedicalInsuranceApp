@@ -1,0 +1,256 @@
+@{
+    ViewData["Title"] = "حركة الخزينة";
+    var so             = (MedicalInsuranceApp1.Models.Entities.SupplyOrder)ViewBag.SupplyOrder;
+    var totalAmount    = (decimal)ViewBag.TotalAmount;
+    var supervisionFee = (decimal)ViewBag.SupervisionFee;
+    var netTreasury    = (decimal)ViewBag.NetTreasury;
+    var receiptNumber  = (string)ViewBag.ReceiptNumber;
+    var facilityName   = (string)ViewBag.FacilityName;
+    var coverageFrom   = (DateTime)ViewBag.CoverageFrom;
+    var coverageTo     = (DateTime)ViewBag.CoverageTo;
+    var privatePremium = (decimal)ViewBag.PrivatePremium;
+    var publicPremium  = (decimal)ViewBag.PublicPremium;
+    var seqNum         = (int)ViewBag.SeqNum;
+    var bankAccounts   = (IEnumerable<MedicalInsuranceApp1.Models.Entities.BankAccount>)ViewBag.BankAccounts;
+}
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/SupplyOrders" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">حركة الخزينة</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">تعبئة سجل حركة الخزينة اليومية</p>
+    </div>
+</div>
+
+<div class="table-card" style="max-width:900px">
+    <form method="post" action="/ReceiptVouchers/TreasuryConfirm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="supplyOrderId" value="@so.Id" />
+
+        <!-- ══ معلومات الإيصال (للقراءة) ══ -->
+        <div class="section-title"><i class="ti ti-receipt"></i> بيانات الإيصال</div>
+        <div class="form-grid three-col">
+            <div class="form-group">
+                <label class="form-label">تسلسل</label>
+                <div class="readonly-box">@seqNum</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">رقم الإيصال</label>
+                <div class="readonly-box purple">@(receiptNumber != "" ? receiptNumber : "—")</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">اسم الجهة</label>
+                <div class="readonly-box">@facilityName</div>
+            </div>
+        </div>
+
+        <!-- ══ مدة التأمين ══ -->
+        <div class="section-title" style="margin-top:20px"><i class="ti ti-calendar"></i> مدة التأمين</div>
+        <div class="form-grid two-col">
+            <div class="form-group">
+                <label class="form-label">من تاريخ</label>
+                <div class="readonly-box">@coverageFrom.ToString("yyyy/MM/dd")</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">إلى تاريخ</label>
+                <div class="readonly-box">@coverageTo.ToString("yyyy/MM/dd")</div>
+            </div>
+        </div>
+
+        <!-- ══ الأقساط ══ -->
+        <div class="section-title" style="margin-top:20px"><i class="ti ti-calculator"></i> تفاصيل الأقساط</div>
+        <div class="form-grid two-col">
+
+            <!-- الأقساط المباشرة — خاص -->
+            <div class="form-group">
+                <label class="form-label">
+                    الأقساط المباشرة — خاص
+                    <span class="lbl-hint">(من العقد)</span>
+                </label>
+                <input type="number" name="privatePremium" id="privatePremium"
+                       class="form-input" step="0.001" min="0"
+                       value="@privatePremium.ToString("F3")"
+                       oninput="recalcNet()" />
+            </div>
+
+            <!-- الأقساط المباشرة — عام -->
+            <div class="form-group">
+                <label class="form-label">
+                    الأقساط المباشرة — عام
+                    <span class="lbl-hint">(من العقد)</span>
+                </label>
+                <input type="number" name="publicPremium" id="publicPremium"
+                       class="form-input" step="0.001" min="0"
+                       value="@publicPremium.ToString("F3")"
+                       oninput="recalcNet()" />
+            </div>
+
+            <!-- الأقساط المقدمة -->
+            <div class="form-group">
+                <label class="form-label">الأقساط المقدمة</label>
+                <input type="number" name="advancePremium" id="advancePremium"
+                       class="form-input" step="0.001" min="0"
+                       value="0.000" oninput="onAdvanceChange()" />
+            </div>
+
+            <!-- رسوم الإشراف -->
+            <div class="form-group">
+                <label class="form-label">
+                    رسوم الإشراف
+                    <span class="lbl-hint"> = الإجمالي × 0.005</span>
+                </label>
+                <input type="number" name="supervisionFee" id="supervisionFee"
+                       class="form-input" step="0.001" min="0"
+                       value="@supervisionFee.ToString("F3")"
+                       oninput="recalcNet()"
+                       style="color:#6c3483;font-weight:700" />
+            </div>
+
+            <!-- أقساط تحت الدفع = قيمة الإيصال -->
+            <div class="form-group">
+                <label class="form-label">
+                    أقساط تحت الدفع
+                    <span class="lbl-hint">(قيمة الإيصال)</span>
+                </label>
+                <input type="number" name="pendingPremium" id="pendingPremium"
+                       class="form-input" step="0.001" min="0"
+                       value="@totalAmount.ToString("F3")"
+                       style="color:#1a3a5c;font-weight:700" />
+            </div>
+
+            <!-- القيمة الإجمالية — للعرض فقط -->
+            <div class="form-group">
+                <label class="form-label">القيمة الإجمالية في الإيصال (د.ل)</label>
+                <div class="readonly-box blue" style="font-size:18px;font-weight:800">
+                    @totalAmount.ToString("N3")
+                </div>
+                <input type="hidden" name="totalAmount" value="@totalAmount.ToString("F3")" />
+            </div>
+
+        </div>
+
+        <!-- ══ ملخص الخزينة ══ -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px;
+                    background:#f0faf4;border:1px solid #a8d5b8;border-radius:10px;padding:16px">
+            <div>
+                <div style="font-size:11px;color:#9a9890">صافي الخزينة (بعد رسوم الإشراف)</div>
+                <div id="netTreasuryDisplay"
+                     style="font-size:22px;font-weight:800;color:#1B4332">
+                    @netTreasury.ToString("N3") د.ل
+                </div>
+                <input type="hidden" name="netTreasury" id="netTreasury"
+                       value="@netTreasury.ToString("F3")" />
+            </div>
+            <div>
+                <div style="font-size:11px;color:#9a9890">رسوم الإشراف المحسوبة</div>
+                <div id="feeSummary"
+                     style="font-size:22px;font-weight:800;color:#6c3483">
+                    @supervisionFee.ToString("N3") د.ل
+                </div>
+            </div>
+        </div>
+
+        <!-- ══ بيانات الإيداع ══ -->
+        <div class="section-title" style="margin-top:24px"><i class="ti ti-building-bank"></i> بيانات الإيداع المصرفي</div>
+        <div class="form-grid two-col">
+            <div class="form-group">
+                <label class="form-label">تاريخ الإيداع <span style="color:#c0392b">*</span></label>
+                <input type="date" name="depositDate" class="form-input"
+                       value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">رقم قسيمة الإيداع / الصك</label>
+                <input type="text" name="depositSlipNumber" class="form-input"
+                       value="@(so.Receipt?.CheckNumber ?? "")"
+                       placeholder="رقم القسيمة أو الصك..." />
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">الحساب المصرفي <span style="color:#c0392b">*</span></label>
+                <select name="bankAccountId" class="form-input" required>
+                    <option value="">— اختر الحساب —</option>
+                    @foreach (var a in bankAccounts)
+                    {
+                        <option value="@a.Id">@a.BankName — @a.AccountNumber</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">ملاحظات</label>
+                <textarea name="notes" class="form-input" rows="2"
+                          placeholder="أي ملاحظات من موظف الخزينة..."></textarea>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:24px">
+            <button type="submit" class="btn-primary">
+                <i class="ti ti-device-floppy"></i> حفظ حركة الخزينة
+            </button>
+            <a href="/SupplyOrders" class="btn-cancel">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+var TOTAL        = @totalAmount.ToString("F3");
+var INIT_PRIVATE = @privatePremium.ToString("F3");
+
+// يُستدعى عند تغيير القسط المقدم
+function onAdvanceChange() {
+    var adv    = parseFloat(document.getElementById('advancePremium').value) || 0;
+    // القسط المباشر = الإجمالي − المقدم (أو الإجمالي إذا لا يوجد مقدم)
+    var direct = Math.round(Math.max(0, TOTAL - adv) * 1000) / 1000;
+
+    // ضع القيمة في الحقل المناسب (خاص إذا كان من عقد خاص، عام إذا عام)
+    if (INIT_PRIVATE > 0) {
+        document.getElementById('privatePremium').value = direct.toFixed(3);
+        document.getElementById('publicPremium').value  = '0.000';
+    } else {
+        document.getElementById('publicPremium').value  = direct.toFixed(3);
+        document.getElementById('privatePremium').value = '0.000';
+    }
+
+    // رسوم الإشراف = الإجمالي × 0.005 (دائماً على الإجمالي الكامل)
+    var fee = Math.round(TOTAL * 0.005 * 1000) / 1000;
+    document.getElementById('supervisionFee').value = fee.toFixed(3);
+
+    recalcNet();
+}
+
+// يُستدعى عند التعديل اليدوي لأي حقل آخر
+function recalcNet() {
+    var fee = parseFloat(document.getElementById('supervisionFee').value) || 0;
+    var net = TOTAL - fee;
+    document.getElementById('netTreasury').value             = net.toFixed(3);
+    document.getElementById('netTreasuryDisplay').textContent = net.toLocaleString('en', {minimumFractionDigits:3}) + ' د.ل';
+    document.getElementById('feeSummary').textContent         = fee.toLocaleString('en', {minimumFractionDigits:3}) + ' د.ل';
+}
+</script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .form-grid            { display:grid; gap:16px; }
+    .two-col              { grid-template-columns:1fr 1fr; }
+    .three-col            { grid-template-columns:repeat(3,1fr); }
+    .form-group           { display:flex; flex-direction:column; gap:6px; }
+    .form-label           { font-size:13px; font-weight:600; color:#1B4332; }
+    .lbl-hint             { font-size:11px; color:#9a9890; font-weight:400; }
+    .form-input           { padding:10px 12px; border:1px solid #e0e0d8; border-radius:8px;
+                            font-family:Cairo,sans-serif; font-size:13px;
+                            background:var(--input-bg,#fafaf8); color:#1B4332; }
+    .form-input:focus     { outline:none; border-color:#1B4332; box-shadow:0 0 0 3px rgba(27,67,50,0.1); }
+    .readonly-box         { padding:10px 14px; border:1px solid #e0e0d8; border-radius:8px;
+                            background:#f5f5f0; font-size:13px; font-weight:600;
+                            color:#3a3a3a; min-height:42px; display:flex; align-items:center; }
+    .readonly-box.purple  { color:#6c3483; background:#f8f0fe; border-color:#d4a8f0; letter-spacing:1px; }
+    .readonly-box.blue    { color:#1a3a5c; background:#e8f0fe; border-color:#b0c8f8; }
+    .section-title        { font-size:13px; font-weight:700; color:#1B4332;
+                            border-bottom:1px solid #e8e8e0; padding-bottom:10px; margin-bottom:16px; }
+    @@media (max-width:700px) {
+        .two-col   { grid-template-columns:1fr; }
+        .three-col { grid-template-columns:1fr 1fr; }
+    }
+    </style>
+}

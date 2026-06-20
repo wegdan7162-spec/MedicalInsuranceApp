@@ -1,0 +1,138 @@
+@model List<MedicalInsuranceApp1.Models.Entities.ReceiptVoucher>
+@{
+    ViewData["Title"] = $"كشف حركة الخزينة ليوم {ViewBag.DateDisplay}";
+    Layout = "~/Views/Shared/_PrintLayout.cshtml";
+    var totalTreasury    = (decimal)(ViewBag.TotalTreasury    ?? 0m);
+    var totalSupervision = (decimal)(ViewBag.TotalSupervision ?? 0m);
+    var totalAmount      = (decimal)(ViewBag.TotalAmount      ?? 0m);
+}
+
+<!-- رأس الشركة -->
+<div class="company-header">
+    <div>
+        <div class="company-name">شركة ليبيا للتأمين</div>
+        <div class="company-sub">إدارة الشئون المالية — أمين الخزينة</div>
+    </div>
+    <div style="text-align:center">
+        <div class="doc-title" style="margin:0;font-size:15px">كشف حركة الخزينة</div>
+        <div style="font-size:13px;font-weight:700">ليوم: @ViewBag.DateDisplay</div>
+    </div>
+    <div class="company-logo">ش.ل.ت</div>
+</div>
+
+<div style="height:8px"></div>
+
+<!-- الجدول الرئيسي -->
+<table style="font-size:10px">
+    <thead>
+        <tr>
+            <th rowspan="2" style="width:5%">م</th>
+            <th rowspan="2" style="width:8%">رقم إيصال القبض</th>
+            <th rowspan="2" style="width:15%">البيان</th>
+            <th colspan="2" style="width:12%">الخزينة</th>
+            <th colspan="6" style="width:30%">وثائق تحت التحصيل</th>
+            <th rowspan="2" style="width:8%">دفعات تحت الحساب</th>
+            <th rowspan="2" style="width:8%">متشرعة</th>
+            <th rowspan="2" style="width:7%">متنوعة</th>
+        </tr>
+        <tr>
+            <th>مصادين</th>
+            <th>دائنين</th>
+            <th>إجباري</th>
+            <th>بطاقة طبية</th>
+            <th>تكميلي</th>
+            <th>بحري</th>
+            <th>حرق</th>
+            <th>حوادث متنوعة</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int row = 0;
+            decimal totMasadin = 0, totDainin = 0;
+            decimal totIjbari = 0, totCard = 0, totTakm = 0, totBahri = 0, totHariq = 0, totHaw = 0;
+        }
+        @foreach (var rv in Model)
+        {
+            row++;
+            var isIjbari  = rv.CollectionType == CollectionType.Mandatory;
+            var isCard     = rv.CollectionType == CollectionType.MedicalCard;
+            var isTakm     = rv.CollectionType == CollectionType.Supplemental;
+            var isBahri    = rv.CollectionType == CollectionType.Marine;
+            var isHariq    = rv.CollectionType == CollectionType.Fires;
+            var isHaw      = rv.CollectionType == CollectionType.Miscellaneous;
+
+            totMasadin += rv.TreasuryAmount;
+            if (isIjbari) totIjbari += rv.TreasuryAmount;
+            if (isCard)   totCard   += rv.TreasuryAmount;
+            if (isTakm)   totTakm   += rv.TreasuryAmount;
+            if (isBahri)  totBahri  += rv.TreasuryAmount;
+            if (isHariq)  totHariq  += rv.TreasuryAmount;
+            if (isHaw)    totHaw    += rv.TreasuryAmount;
+            <tr>
+                <td>@row</td>
+                <td>@rv.ReceiptNumber</td>
+                <td class="td-desc" style="font-size:9px">@(rv.FacilityName ?? rv.Contract?.FacilityName)</td>
+                <td>@rv.TreasuryAmount.ToString("N3")</td>
+                <td></td>
+                <td>@(isIjbari ? rv.TreasuryAmount.ToString("N3") : string.Empty)</td>
+                <td>@(isCard   ? rv.TreasuryAmount.ToString("N3") : string.Empty)</td>
+                <td>@(isTakm   ? rv.TreasuryAmount.ToString("N3") : string.Empty)</td>
+                <td>@(isBahri  ? rv.TreasuryAmount.ToString("N3") : string.Empty)</td>
+                <td>@(isHariq  ? rv.TreasuryAmount.ToString("N3") : string.Empty)</td>
+                <td>@(isHaw    ? rv.TreasuryAmount.ToString("N3") : string.Empty)</td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        }
+        @for (int i = row + 1; i <= Math.Max(row + 3, 15); i++)
+        {
+            <tr style="height:18px">
+                <td>@i</td>
+                <td></td><td></td><td></td><td></td>
+                <td></td><td></td><td></td><td></td><td></td><td></td>
+                <td></td><td></td><td></td>
+            </tr>
+        }
+        <!-- صف الإجمالي -->
+        <tr class="total-row">
+            <td colspan="3">الإجمالي</td>
+            <td>@totMasadin.ToString("N3")</td>
+            <td>@totDainin.ToString("N3")</td>
+            <td>@totIjbari.ToString("N3")</td>
+            <td>@totCard.ToString("N3")</td>
+            <td>@totTakm.ToString("N3")</td>
+            <td>@totBahri.ToString("N3")</td>
+            <td>@totHariq.ToString("N3")</td>
+            <td>@totHaw.ToString("N3")</td>
+            <td>0.000</td>
+            <td>0.000</td>
+            <td>0.000</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- التوقيعات -->
+<div class="signatures" style="margin-top:30px">
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        أمين الخزينة
+    </div>
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        رئيس مكتب الحسابات
+    </div>
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        المدير
+    </div>
+</div>
+
+<!-- ملخص سفلي -->
+<div style="margin-top:14px;display:flex;gap:30px;font-size:11px;border:1px solid #ccc;padding:6px">
+    <span><strong>إجمالي الإيصالات:</strong> @Model.Count</span>
+    <span><strong>إجمالي الخزينة:</strong> @totalTreasury.ToString("N3") د.ل</span>
+    <span><strong>رسوم الإشراف:</strong> @totalSupervision.ToString("N3") د.ل</span>
+    <span><strong>الإجمالي الكلي:</strong> @totalAmount.ToString("N3") د.ل</span>
+</div>

@@ -1,0 +1,434 @@
+@model MedicalInsuranceApp1.Models.ViewModels.ReportFilterVM
+@{
+    ViewData["Title"] = "تقارير المطالبات";
+}
+
+<style>
+.report-section { background:#fff;border:1px solid #e8e4d8;border-radius:10px;padding:20px;margin-bottom:16px }
+.report-section-title { font-size:14px;font-weight:700;color:#1B4332;margin-bottom:14px;display:flex;align-items:center;gap:8px }
+.col-check-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px }
+.col-check-item { display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #e8e4d8;border-radius:8px;cursor:pointer;transition:all .15s }
+.col-check-item:hover { border-color:#F7F7F7;background:#f0f7f0 }
+.col-check-item input[type=checkbox] { width:16px;height:16px;accent-color:#1B4332;cursor:pointer }
+.col-check-item label { font-size:13px;color:#1B4332;cursor:pointer;user-select:none }
+.col-check-item.checked { border-color:#1B4332;background:#f0f7f0 }
+.filter-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:14px }
+@@media(max-width:900px){ .filter-grid{ grid-template-columns:1fr 1fr } }
+@@media(max-width:600px){ .filter-grid{ grid-template-columns:1fr } }
+</style>
+
+<div style="max-width:1500px">
+
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <div>
+            <h2 style="font-size:20px;font-weight:700;color:#fff">
+                <i class="ti ti-chart-bar"></i> تقارير المطالبات
+            </h2>
+            @* <p style="font-size:13px;color:#9a9890;margin-top:2px">اختاري الفلاتر والأعمدة ثم اضغطي عرض التقرير</p> *@
+        </div>
+    </div>
+
+    <form asp-action="Index" method="post" id="reportForm">
+        @Html.AntiForgeryToken()
+
+        <!-- ===== قسم 1: الفلاتر ===== -->
+        <div class="report-section">
+            <div class="report-section-title">
+                <i class="ti ti-filter"></i> فلاتر البحث
+            </div>
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label>نوع التقرير</label>
+                    <select asp-for="ReportType" class="form-select">
+                        <option value="OutterClaims">مطالبات القضايا فقط</option>
+                        <option value="FriendlyClaims">مطالبات الصلح الودي فقط</option>
+                        <option value="Both">الكل (قضايا + صلح ودي)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>الفرع</label>
+                    <select asp-for="BranchId" asp-items="Model.Branches" class="form-select">
+                        <option value="">-- كل الفروع --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>مكان الواقعة</label>
+                    <input asp-for="Place" class="form-input" placeholder="اكتب جزء من المكان...">
+                </div>
+                <div class="form-group">
+                    <label>من تاريخ التسجيل</label>
+                    <input asp-for="DateFrom" type="date" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>إلى تاريخ التسجيل</label>
+                    <input asp-for="DateTo" type="date" class="form-input">
+                </div>
+                
+                <div class="form-group">
+                    @* <label>نوع الملف <small style="color:#9a9890">(للقضايا)</small></label> *@
+                    <select asp-for="ClaimStatus" class="form-select">
+                        <option value="">-- م.مغطاء وغير مغطاء --</option>
+                        @foreach (var t in Model.ClaimStatuses)
+                        {
+                            <option value="@t">@t</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>حالة المطالبة</label>
+                    <select asp-for="FileStatus" class="form-select">
+                        <option value="">-- كل الحالات --</option>
+                        @foreach (var s in Model.StatusList)
+                        {
+                            <option value="@s">@s</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== قسم 2: اختيار الأعمدة ===== -->
+        <div class="report-section">
+            <div class="report-section-title">
+                <i class="ti ti-columns"></i> اختيار الأعمدة التي تظهر في التقرير
+                <button type="button" onclick="toggleAll(true)"  style="margin-right:auto;background:#e8f5e9;color:#1B4332;border:1px solid #1B4332;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer">تحديد الكل</button>
+                <button type="button" onclick="toggleAll(false)" style="background:#fef3f2;color:#c0392b;border:1px solid #c0392b;padding:4px 12px;border-radius:6px;font-size:12px;cursor:pointer;margin-right:6px">إلغاء الكل</button>
+            </div>
+
+            <div class="col-check-grid" id="colGrid">
+
+                <div class="col-check-item @(Model.ColClaimSource ? "checked" : "")">
+                    <input type="checkbox" asp-for="ColClaimSource" id="cb_source"
+                           onchange="updateItem(this)">
+                    <label for="cb_source"><i class="ti ti-tag"></i> نوع المطالبة (قضية/صلح)</label>
+                </div>
+
+                <div class="col-check-item @(Model.ColNum ? "checked" : "")">
+                    <input type="checkbox" asp-for="ColNum" id="cb_num"
+                           onchange="updateItem(this)">
+                    <label for="cb_num"><i class="ti ti-hash"></i> رقم المطالبة / السنة</label>
+                </div>
+
+                <div class="col-check-item @(Model.ColPlaintiff ? "checked" : "")">
+                    <input type="checkbox" asp-for="ColPlaintiff" id="cb_plaintiff"
+                           onchange="updateItem(this)">
+                    <label for="cb_plaintiff"><i class="ti ti-user"></i> اسم المدعي</label>
+                </div>
+
+                <div class="col-check-item @(Model.ColBranch ? "checked" : "")">
+                    <input type="checkbox" asp-for="ColBranch" id="cb_branch"
+                           onchange="updateItem(this)">
+                    <label for="cb_branch"><i class="ti ti-building"></i> الفرع</label>
+                </div>
+
+                <div class="col-check-item @(Model.ColPlace ? "checked" : "")">
+                    <input type="checkbox" asp-for="ColPlace" id="cb_place"
+                           onchange="updateItem(this)">
+                    <label for="cb_place"><i class="ti ti-map-pin"></i> مكان الواقعة</label>
+                </div>
+
+                <div class="col-check-item @(Model.ColCourt ? "checked" : "")">
+                    <input type="checkbox" asp-for="ColCourt" id="cb_court"
+                           onchange="updateItem(this)">
+                    <label for="cb_court"><i class="ti ti-gavel"></i> المحكمة</label>
+                </div>
+
+                <div class="col-check-item @(Model.ColIncidentDate ? "checked" : "")">
+                    <input type="checkbox" asp-for="ColIncidentDate" id="cb_incident"
+                           onchange="updateItem(this)">
+                    <label for="cb_incident"><i class="ti ti-calendar-event"></i> تاريخ الواقعة</label>
+                </div>
+
+                <div class="col-check-item @(Model.ColRegDate ? "checked" : "")">
+                    <input type="checkbox" asp-for="ColRegDate" id="cb_regdate"
+                           onchange="updateItem(this)">
+                    <label for="cb_regdate"><i class="ti ti-calendar-plus"></i> تاريخ التسجيل</label>
+                </div>
+
+
+                
+                <div class="col-check-item @(Model.ColClaimStatus ? "checked" : "")">
+                    <input type="checkbox" asp-for="ColClaimStatus" id="cb_claimtype"
+                           onchange="updateItem(this)">
+                    <label for="cb_claimtype"><i class="ti ti-shield"></i> نوع الملف (م.مغطاء/غير مغطاء)</label>
+                </div>
+                <div class="col-check-item @(Model.ColFileStatus ? "checked" : "")">
+                    <input type="checkbox" asp-for="ColFileStatus" id="cb_status"
+                           onchange="updateItem(this)">
+                    <label for="cb_status"><i class="ti ti-circle-check"></i> حالة المطالبة</label>
+                </div>
+
+                <div class="col-check-item @(Model.ColReserve ? "checked" : "")">
+                    <input type="checkbox" asp-for="ColReserve" id="cb_reserve"
+                           onchange="updateItem(this)">
+                    <label for="cb_reserve"><i class="ti ti-coins"></i> الاحتياطي</label>
+                </div>
+
+                <div class="col-check-item @(Model.ColSettled ? "checked" : "")">
+                    <input type="checkbox" asp-for="ColSettled" id="cb_settled"
+                           onchange="updateItem(this)">
+                    <label for="cb_settled"><i class="ti ti-cash"></i> المسدد</label>
+                </div>
+
+                <div class="col-check-item @(Model.ColTotalExpenses ? "checked" : "")">
+                    <input type="checkbox" asp-for="ColTotalExpenses" id="cb_totalexp"
+                           onchange="updateItem(this)">
+                    <label for="cb_totalexp"><i class="ti ti-receipt"></i> إجمالي المصروفات</label>
+                </div>
+
+                <div class="col-check-item @(Model.ColExpenseDetail ? "checked" : "")">
+                    <input type="checkbox" asp-for="ColExpenseDetail" id="cb_expdetail"
+                           onchange="updateItem(this)">
+                    <label for="cb_expdetail"><i class="ti ti-list-details"></i> تفصيل كل نوع مصروف</label>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ===== أزرار ===== -->
+        <div style="display:flex;gap:12px;justify-content:flex-end;margin-bottom:20px">
+            <a href="/Reports" class="btn-cancel">
+                <i class="ti ti-refresh"></i> إعادة تعيين
+            </a>
+            <button type="submit" class="btn-save">
+                <i class="ti ti-search"></i> عرض التقرير
+            </button>
+        </div>
+    </form>
+
+    @if (Model.HasResults)
+    {
+        <!-- ===== إحصائيات سريعة ===== -->
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+            <div style="background:#f8f6f0;border:1px solid #e8e4d8;padding:14px 24px;border-radius:10px;text-align:center;flex:1;min-width:140px">
+                <div style="font-size:26px;font-weight:700;color:#3a3a3a">@Model.TotalCount</div>
+                <div style="font-size:12px;color:#9a9890">إجمالي المطالبات</div>
+            </div>
+            @if (Model.ColReserve)
+            {
+            <div style="background:#f8f6f0;border:1px solid #e8e4d8;padding:14px 24px;border-radius:10px;text-align:center;flex:1;min-width:160px">
+                <div style="font-size:22px;font-weight:700;color:#1B4332">@Model.TotalReserve.ToString("N2")</div>
+                <div style="font-size:12px;color:#9a9890">إجمالي الاحتياطي</div>
+            </div>
+            }
+            @if (Model.ColSettled)
+            {
+            <div style="background:#f8f6f0;border:1px solid #e8e4d8;padding:14px 24px;border-radius:10px;text-align:center;flex:1;min-width:160px">
+                <div style="font-size:22px;font-weight:700;color:#2d6a4f">@Model.TotalSettled.ToString("N2")</div>
+                <div style="font-size:12px;color:#9a9890">إجمالي المسدد</div>
+            </div>
+            }
+            @if (Model.ColTotalExpenses)
+            {
+            <div style="background:#f8f6f0;border:1px solid #e8e4d8;padding:14px 24px;border-radius:10px;text-align:center;flex:1;min-width:160px">
+                <div style="font-size:22px;font-weight:700;color:#c9a84c">@Model.TotalExpenses.ToString("N2")</div>
+                <div style="font-size:12px;color:#9a9890">إجمالي المصروفات</div>
+            </div>
+            }
+        </div>
+
+        <!-- أزرار التصدير -->
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px">
+            <span style="font-size:13px;color:#6a6860">
+                عرض <strong>@Model.TotalCount</strong> مطالبة
+            </span>
+            <div style="display:flex;gap:8px">
+
+                <!-- تصدير Excel -->
+                <form asp-action="ExportExcel" method="post" id="exportForm" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ReportType"       value="@Model.ReportType">
+                    <input type="hidden" name="BranchId"         value="@Model.BranchId">
+                    <input type="hidden" name="Place"            value="@Model.Place">
+                    <input type="hidden" name="DateFrom"         value="@Model.DateFrom?.ToString("yyyy-MM-dd")">
+                    <input type="hidden" name="DateTo"           value="@Model.DateTo?.ToString("yyyy-MM-dd")">
+                    <input type="hidden" name="FileStatus"        value="@Model.FileStatus">
+                    <input type="hidden" name="ClaimStatus"      value="@Model.ClaimStatus">
+                    <input type="hidden" name="ColClaimSource"   value="@Model.ColClaimSource">
+                    <input type="hidden" name="ColNum"           value="@Model.ColNum">
+                    <input type="hidden" name="ColPlaintiff"     value="@Model.ColPlaintiff">
+                    <input type="hidden" name="ColBranch"        value="@Model.ColBranch">
+                    <input type="hidden" name="ColPlace"         value="@Model.ColPlace">
+                    <input type="hidden" name="ColCourt"         value="@Model.ColCourt">
+                    <input type="hidden" name="ColIncidentDate"  value="@Model.ColIncidentDate">
+                    <input type="hidden" name="ColRegDate"       value="@Model.ColRegDate">
+                    <input type="hidden" name="ColFileStatus"     value="@Model.ColFileStatus">
+                    <input type="hidden" name="ColClaimStatus"   value="@Model.ColClaimStatus">
+                    <input type="hidden" name="ColReserve"       value="@Model.ColReserve">
+                    <input type="hidden" name="ColSettled"       value="@Model.ColSettled">
+                    <input type="hidden" name="ColTotalExpenses" value="@Model.ColTotalExpenses">
+                    <input type="hidden" name="ColExpenseDetail" value="@Model.ColExpenseDetail">
+                    <button type="submit" style="background:#217346;color:#fff;padding:9px 20px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px">
+                        <i class="ti ti-file-spreadsheet"></i> تصدير Excel
+                    </button>
+                </form>
+
+                <!-- طباعة / PDF -->
+                <form asp-action="PrintReport" method="post" target="_blank" id="printForm" style="display:inline">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="ReportType"      value="@Model.ReportType">
+                    <input type="hidden" name="BranchId"        value="@Model.BranchId">
+                    <input type="hidden" name="Place"           value="@Model.Place">
+                    <input type="hidden" name="DateFrom"        value="@Model.DateFrom?.ToString("yyyy-MM-dd")">
+                    <input type="hidden" name="DateTo"          value="@Model.DateTo?.ToString("yyyy-MM-dd")">
+                    <input type="hidden" name="FileStatus"       value="@Model.FileStatus">
+                    <input type="hidden" name="ClaimStatus"     value="@Model.ClaimStatus">
+                    <input type="hidden" name="ColClaimSource"  value="@Model.ColClaimSource">
+                    <input type="hidden" name="ColNum"          value="@Model.ColNum">
+                    <input type="hidden" name="ColPlaintiff"    value="@Model.ColPlaintiff">
+                    <input type="hidden" name="ColBranch"       value="@Model.ColBranch">
+                    <input type="hidden" name="ColPlace"        value="@Model.ColPlace">
+                    <input type="hidden" name="ColCourt"        value="@Model.ColCourt">
+                    <input type="hidden" name="ColIncidentDate" value="@Model.ColIncidentDate">
+                    <input type="hidden" name="ColRegDate"      value="@Model.ColRegDate">
+                    <input type="hidden" name="ColFileStatus"    value="@Model.ColFileStatus">
+                    <input type="hidden" name="ColClaimStatus"  value="@Model.ColClaimStatus">
+                    <input type="hidden" name="ColReserve"      value="@Model.ColReserve">
+                    <input type="hidden" name="ColSettled"      value="@Model.ColSettled">
+                    <input type="hidden" name="ColTotalExpenses" value="@Model.ColTotalExpenses">
+                    <input type="hidden" name="ColExpenseDetail" value="@Model.ColExpenseDetail">
+                    <button type="submit" style="background:#c0392b;color:#fff;padding:9px 20px;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px">
+                        <i class="ti ti-printer"></i> طباعة / PDF
+                    </button>
+                </form>
+
+            </div>
+        </div>
+
+        <!-- ===== جدول النتائج ===== -->
+        @if (Model.Rows.Any())
+        {
+        <div id="printArea" style="overflow-x:auto;border-radius:10px;border:1px solid #e8e4d8">
+            <table style="width:100%;border-collapse:collapse;font-size:12px">
+                <thead>
+                    <tr style="background:#1B4332;color:#fff">
+                        <th style="padding:10px 8px;text-align:center;white-space:nowrap">#</th>
+                        @if (Model.ColClaimSource)   { <th style="padding:10px 8px;white-space:nowrap">النوع</th> }
+                        @if (Model.ColNum)           { <th style="padding:10px 8px;white-space:nowrap">رقم / السنة</th> }
+                        @if (Model.ColPlaintiff)     { <th style="padding:10px 8px;white-space:nowrap">المدعي</th> }
+                        @if (Model.ColBranch)        { <th style="padding:10px 8px;white-space:nowrap">الفرع</th> }
+                        @if (Model.ColPlace)         { <th style="padding:10px 8px;white-space:nowrap">مكان الواقعة</th> }
+                        @if (Model.ColCourt)         { <th style="padding:10px 8px;white-space:nowrap">المحكمة</th> }
+                        @if (Model.ColIncidentDate)  { <th style="padding:10px 8px;white-space:nowrap">تاريخ الواقعة</th> }
+                        @if (Model.ColRegDate)       { <th style="padding:10px 8px;white-space:nowrap">تاريخ التسجيل</th> }
+                        @if (Model.ColClaimStatus)   { <th style="padding:10px 8px;white-space:nowrap">الحالة</th> }
+                        @if (Model.ColReserve)       { <th style="padding:10px 8px;white-space:nowrap;text-align:left">الاحتياطي</th> }
+                        @if (Model.ColSettled)       { <th style="padding:10px 8px;white-space:nowrap;text-align:left">المسدد</th> }
+                        @if (Model.ColTotalExpenses) { <th style="padding:10px 8px;white-space:nowrap;text-align:left;background:#2d6a4f">إجمالي المصروفات</th> }
+                        @if (Model.ColExpenseDetail)
+                        {
+                            @foreach (var et in Model.ExpenseTypeNames)
+                            {
+                                <th style="padding:10px 8px;white-space:nowrap;text-align:left;background:#1a3a2a">@et</th>
+                            }
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ int rowNum = 1; }
+                    @foreach (var r in Model.Rows)
+                    {
+                        <tr style="border-bottom:1px solid #f0ede4;@(rowNum%2==0?"background:#fafaf7":"background:#2d6a4f;color:#fff")">
+                            <td style="padding:8px;text-align:center;color:#9a9890">@rowNum</td>
+                            @if (Model.ColClaimSource)
+                            {
+                                <td style="padding:8px">
+                                    @if (r.ClaimSource == "قضية")
+                                    { <span style="background:#e8f5e9;color:#1B4332;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600"><i class="ti ti-gavel"></i> قضية</span> }
+                                    else
+                                    { <span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600"><i class="ti ti-handshake"></i> صلح</span> }
+                                </td>
+                            }
+                            @if (Model.ColNum)          { <td style="padding:8px;font-weight:700;color:@(rowNum%2==0?"#1B4332":"#fff");white-space:nowrap">@r.Year-@r.Num</td> }
+                            @if (Model.ColPlaintiff)    { <td style="padding:8px">@r.PlaintiffName</td> }
+                            @if (Model.ColBranch)       { <td style="padding:8px;white-space:nowrap">@r.BranchName</td> }
+                            @if (Model.ColPlace)        { <td style="padding:8px">@r.Place</td> }
+                            @if (Model.ColCourt)        { <td style="padding:8px;white-space:nowrap">@(r.CourtName == "-" ? "" : r.CourtName)</td> }
+                            @if (Model.ColIncidentDate) { <td style="padding:8px;white-space:nowrap">@(r.IncidentDate.HasValue ? r.IncidentDate.Value.ToString("yyyy/MM/dd") : "-")</td> }
+                            @if (Model.ColRegDate)      { <td style="padding:8px;white-space:nowrap">@r.RegDate.ToString("yyyy/MM/dd")</td> }
+                            @if (Model.ColClaimStatus)
+                            {
+                                <td style="padding:8px">
+                                    @if (!string.IsNullOrEmpty(r.ClaimStatus))
+                                    {
+                                        <span style="background:@(r.ClaimStatus=="م.مغطاء"?"#e8f5e9":"#fff3e0");color:@(r.ClaimStatus=="غير مغطاء"?"#1B4332":"#e65100");padding:2px 8px;border-radius:12px;font-size:11px">@r.ClaimStatus</span>
+                                    }
+                                </td>
+                            }
+                            @if (Model.ColClaimStatus)   { <td style="padding:8px;font-size:11px;white-space:nowrap">@r.ClaimStatus</td> }
+                            @if (Model.ColReserve)       { <td style="padding:8px;text-align:left;font-weight:600">@r.Reserve.ToString("N2")</td> }
+                            @if (Model.ColSettled)       { <td style="padding:8px;text-align:left;font-weight:600;color:#2d6a4f">@r.Settled.ToString("N2")</td> }
+                            @if (Model.ColTotalExpenses) { <td style="padding:8px;text-align:left;font-weight:700;color:#c9a84c">@r.TotalExpenses.ToString("N2")</td> }
+                            @if (Model.ColExpenseDetail)
+                            {
+                                @foreach (var et in Model.ExpenseTypeNames)
+                                {
+                                    var amt = r.ExpensesByType.TryGetValue(et, out var v) ? v : 0;
+                                    <td style="padding:8px;text-align:left;color:@(amt>0?"#c9a84c":"#ccc")">@(amt>0?amt.ToString("N2"):"-")</td>
+                                }
+                            }
+                        </tr>
+                        rowNum++;
+                    }
+                </tbody>
+                <tfoot>
+                    <tr style="background:#1B4332;color:#fff;font-weight:700">
+                        @{
+                            int fixedCols = 1
+                                + (Model.ColClaimSource  ? 1 : 0)
+                                + (Model.ColNum          ? 1 : 0)
+                                + (Model.ColPlaintiff    ? 1 : 0)
+                                + (Model.ColBranch       ? 1 : 0)
+                                + (Model.ColPlace        ? 1 : 0)
+                                + (Model.ColCourt        ? 1 : 0)
+                                + (Model.ColIncidentDate ? 1 : 0)
+                                + (Model.ColRegDate      ? 1 : 0)
+                                + (Model.ColClaimStatus  ? 1 : 0);
+                        }
+                        <td colspan="@fixedCols" style="padding:10px 8px;text-align:right">
+                            الإجمالي (@Model.TotalCount مطالبة)
+                        </td>
+                        @if (Model.ColReserve)       { <td style="padding:10px 8px;text-align:left">@Model.TotalReserve.ToString("N2")</td> }
+                        @if (Model.ColSettled)       { <td style="padding:10px 8px;text-align:left">@Model.TotalSettled.ToString("N2")</td> }
+                        @if (Model.ColTotalExpenses) { <td style="padding:10px 8px;text-align:left">@Model.TotalExpenses.ToString("N2")</td> }
+                        @if (Model.ColExpenseDetail)
+                        {
+                            @foreach (var et in Model.ExpenseTypeNames)
+                            {
+                                var tot = Model.Rows.Sum(r => r.ExpensesByType.TryGetValue(et, out var v) ? v : 0);
+                                <td style="padding:10px 8px;text-align:left">@tot.ToString("N2")</td>
+                            }
+                        }
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        }
+        else
+        {
+            <div style="text-align:center;padding:60px;color:#9a9890;background:#fafaf7;border-radius:10px;border:1px solid #e8e4d8">
+                <i class="ti ti-mood-empty" style="font-size:48px;display:block;margin-bottom:12px"></i>
+                لا توجد نتائج تطابق الفلاتر المحددة
+            </div>
+        }
+    }
+
+</div>
+
+@section Scripts {
+<script>
+function updateItem(cb) {
+    cb.closest('.col-check-item').classList.toggle('checked', cb.checked);
+}
+function toggleAll(val) {
+    document.querySelectorAll('#colGrid input[type=checkbox]').forEach(cb => {
+        cb.checked = val;
+        cb.closest('.col-check-item').classList.toggle('checked', val);
+    });
+}
+</script>
+}
+
+@section Styles {
+<link rel="stylesheet" href="~/css/claims.css">
+}

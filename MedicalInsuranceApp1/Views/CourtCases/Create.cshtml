@@ -1,4 +1,4 @@
-﻿@model MedicalInsuranceApp1.Models.ViewModels.CourtCaseCreateVM
+@* @model MedicalInsuranceApp1.Models.ViewModels.CourtCaseCreateVM
 @{
     ViewData["Title"] = "مطالبة جديدة";
 }
@@ -9,7 +9,7 @@
             <i class="ti ti-arrow-right"></i>
         </a>
         <div>
-            <h2 style="font-size:18px;font-weight:700;color:#1B4332">تسجيل مطالبة قضية جديدة</h2>
+            <h2 style="font-size:18px;font-weight:700;color:#ffffff">تسجيل مطالبة قضية جديدة</h2>
             <p style="font-size:13px;color:#9a9890">أدخل بيانات المطالبة</p>
         </div>
     </div>
@@ -48,15 +48,6 @@
                     </select>
                     <span asp-validation-for="CourtId" class="field-error"></span>
                 </div>
-                <div class="form-group">
-                    <label asp-for="ClaimType">نوع المطالبة</label>
-                    <select asp-for="ClaimType" class="form-select">
-                        @foreach (var t in Model.ClaimTypeList)
-                        {
-                            <option value="@t">@t</option>
-                        }
-                    </select>
-                </div>
                 <div class="form-group" style="grid-column:span 2">
                     <label asp-for="Place">مكان الواقعة</label>
                     <input asp-for="Place" class="form-input" placeholder="أدخل مكان الواقعة">
@@ -84,6 +75,16 @@
                         @foreach (var s in Model.StatusList)
                         {
                             <option value="@s">@s</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ClaimType">نوع المطالبة</label>
+                    <select asp-for="ClaimType" class="form-select">
+                        @foreach (var t in Model.ClaimTypeList)
+                        {
+                            <option value="@t">@t</option>
                         }
                     </select>
                 </div>
@@ -142,4 +143,4 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-}
+} *@

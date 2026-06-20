@@ -1,0 +1,221 @@
+@model List<MedicalInsuranceApp1.Models.Entities.BankTransaction>
+@{
+    ViewData["Title"] = "كشف حركة المصارف";
+    var account  = ViewBag.Account  as MedicalInsuranceApp1.Models.Entities.BankAccount;
+    var accounts = ViewBag.Accounts as List<MedicalInsuranceApp1.Models.Entities.BankAccount> ?? new();
+    int  selMonth = (int)(ViewBag.Month ?? DateTime.Now.Month);
+    int  selYear  = (int)(ViewBag.Year  ?? DateTime.Now.Year);
+    int? selAccId = ViewBag.BankAccountId as int?;
+    decimal prevBal = ViewBag.PrevBalance  is decimal pb ? pb : 0m;
+    decimal totDebit  = ViewBag.TotalDebit  is decimal td ? td : 0m;
+    decimal totCredit = ViewBag.TotalCredit is decimal tc ? tc : 0m;
+    decimal currBal   = ViewBag.CurrentBalance is decimal cb ? cb : 0m;
+
+    string[] monthNames = { "يناير","فبراير","مارس","أبريل","مايو","يونيو",
+                             "يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر" };
+}
+
+<!-- شريط الأدوات -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="/BankTransactions" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+    </div>
+    @if (Model.Any())
+    {
+    <button onclick="window.print()" class="btn-cancel">
+        <i class="ti ti-printer"></i> طباعة الكشف
+    </button>
+    }
+</div>
+
+<!-- فلاتر الاختيار -->
+<div class="filter-card" style="margin-bottom:24px">
+    <form method="get">
+        <div class="filter-grid" style="grid-template-columns:repeat(4,1fr)">
+            <div class="filter-group">
+                <label class="filter-label">المصرف / الحساب</label>
+                <select name="bankAccountId" class="filter-select">
+                    <option value="">-- اختر الحساب --</option>
+                    @foreach (var a in accounts)
+                    {
+                        string? sel = selAccId == a.Id ? "selected" : null;
+                        <option value="@a.Id" selected="@sel">@a.BankName — @a.AccountNumber</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">الشهر</label>
+                <select name="month" class="filter-select">
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        string? sel = selMonth == m ? "selected" : null;
+                        <option value="@m" selected="@sel">@monthNames[m-1]</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">السنة</label>
+                <select name="year" class="filter-select">
+                    @for (int y = DateTime.Now.Year + 1; y >= DateTime.Now.Year - 4; y--)
+                    {
+                        string? sel = selYear == y ? "selected" : null;
+                        <option value="@y" selected="@sel">@y</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group" style="display:flex;align-items:flex-end">
+                <button type="submit" class="btn-primary" style="width:100%">
+                    <i class="ti ti-search"></i> عرض الكشف
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@if (!selAccId.HasValue)
+{
+<div style="text-align:center;padding:60px;color:#9a9890">
+    <i class="ti ti-building-bank" style="font-size:48px;display:block;margin-bottom:12px"></i>
+    اختر الحساب المصرفي والشهر لعرض الكشف
+</div>
+}
+else
+{
+<!-- منطقة الطباعة -->
+<div id="printArea">
+
+
+<!-- بطاقات الملخص — تُخفى عند الطباعة -->
+<div class="no-print" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+    <div class="stat-card" style="border-right:4px solid #6a6a50">
+        <div class="stat-label">رصيد الشهر السابق</div>
+        <div class="stat-value" style="color:#6a6a50;font-size:16px">@prevBal.ToString("N3")</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #2d6a4f">
+        <div class="stat-label">إجمالي الإيداعات (دائن)</div>
+        <div class="stat-value" style="color:#2d6a4f;font-size:16px">@totCredit.ToString("N3")</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #c0392b">
+        <div class="stat-label">إجمالي الصرفيات (مدين)</div>
+        <div class="stat-value" style="color:#c0392b;font-size:16px">@totDebit.ToString("N3")</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #1a3a5c">
+        <div class="stat-label">الرصيد الحالي</div>
+        <div class="stat-value" style="color:#1a3a5c;font-size:16px">@currBal.ToString("N3")</div>
+    </div>
+</div>
+
+<!-- جدول الحركات -->
+<div class="table-card">
+    <table class="data-table" style="font-size:12px">
+        <thead>
+            <tr>
+                <th style="width:40px">ر.م</th>
+                <th>رقم القيد</th>
+                <th>رقم الصك / قسيمة الإيداع</th>
+                <th>البيـان</th>
+                <th>تاريخ الإصدار</th>
+                <th style="color:#2d6a4f">دائن (إيداع)</th>
+                <th style="color:#c0392b">مدين (صرف)</th>
+                <th>نوع المستند</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+            <tr>
+                <td colspan="8" style="text-align:center;padding:40px;color:#9a9890">
+                    لا توجد حركات في هذا الشهر
+                </td>
+            </tr>
+            }
+            else
+            {
+                int idx = 1;
+                @foreach (var tx in Model)
+                {
+                <tr>
+                    <td style="color:#9a9890;text-align:center">@(idx++)</td>
+                    <td style="font-family:monospace">@(tx.EntryNumber ?? "—")</td>
+                    <td style="font-family:monospace">@(tx.DocumentNumber ?? "—")</td>
+                    <td style="font-size:11px">@(tx.Description ?? "—")</td>
+                    <td style="font-size:11px;color:#6a6a50;white-space:nowrap">
+                        @tx.TransactionDate.ToString("M/d")
+                    </td>
+                    <td style="text-align:left;font-weight:600;color:#2d6a4f">
+                        @(tx.CreditAmount > 0 ? tx.CreditAmount.ToString("N3") : "—")
+                    </td>
+                    <td style="text-align:left;font-weight:600;color:#c0392b">
+                        @(tx.DebitAmount > 0 ? tx.DebitAmount.ToString("N3") : "—")
+                    </td>
+                    <td style="font-size:11px;color:#6a6a50">@tx.DocType</td>
+                </tr>
+                }
+            }
+        </tbody>
+        @if (Model.Any())
+        {
+        <tfoot>
+            <!-- صف إجمالي الشهر -->
+            <tr style="font-weight:700;background:#f5f5f0;font-size:12px">
+                <td colspan="5" style="padding:10px 14px">إجمالي حركة الشهر</td>
+                <td style="padding:10px 14px;color:#2d6a4f;text-align:left">@totCredit.ToString("N3")</td>
+                <td style="padding:10px 14px;color:#c0392b;text-align:left">@totDebit.ToString("N3")</td>
+                <td></td>
+            </tr>
+            <!-- رصيد الشهر السابق -->
+            <tr style="font-size:12px;color:#6a6a50">
+                <td colspan="5" style="padding:6px 14px">رصيد الشهر السابق</td>
+                <td colspan="2" style="padding:6px 14px;text-align:left;font-weight:600">@prevBal.ToString("N3")</td>
+                <td></td>
+            </tr>
+            <!-- الرصيد الحالي -->
+            <tr style="font-size:14px;font-weight:700;background:#e8f0fe">
+                <td colspan="5" style="padding:10px 14px;color:#1a3a5c">الرصيد الحالي</td>
+                <td colspan="2" style="padding:10px 14px;color:#1a3a5c;text-align:left;font-size:15px">
+                    @currBal.ToString("N3")
+                </td>
+                <td></td>
+            </tr>
+        </tfoot>
+        }
+    </table>
+</div>
+
+<!-- توقيعات -->
+@if (Model.Any())
+{
+<div style="display:flex;justify-content:space-between;margin-top:40px;padding-top:20px;border-top:1px solid #e8e8e0">
+    <div style="text-align:center;min-width:180px">
+        <div style="font-size:12px;color:#666">إعداد :</div>
+        <div style="margin-top:40px;border-top:1px solid #333;padding-top:4px;font-size:12px">التوقيع</div>
+    </div>
+    <div style="text-align:center;min-width:220px">
+        <div style="font-size:12px;color:#666">رئيس مكتب الحسابات والميزانية</div>
+        <div style="margin-top:40px;border-top:1px solid #333;padding-top:4px;font-size:12px">التوقيع</div>
+    </div>
+</div>
+}
+
+</div><!-- end printArea -->
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .stat-card{background:var(--card-bg,#fff);border-radius:12px;padding:14px 18px;border:1px solid #e8e8e0}
+    .stat-label{font-size:11px;color:#9a9890;margin-bottom:4px}
+    .stat-value{font-size:20px;font-weight:700}
+    @@media print {
+        body *          { visibility: hidden }
+        #printArea,
+        #printArea *    { visibility: visible }
+        #printArea      { position: absolute; left: 0; top: 0; width: 100% }
+        .no-print       { display: none !important }
+        .table-card     { box-shadow: none; border: 1px solid #ccc }
+        table           { font-size: 10pt }
+        .print-header   { border-bottom: 2px solid #000 }
+    }
+    </style>
+}

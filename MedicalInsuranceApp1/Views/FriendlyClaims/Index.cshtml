@@ -5,8 +5,8 @@
 
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
     <div>
-        <h2 style="font-size:18px;font-weight:700;color:#1B4332">مطالبات الصلح الودي</h2>
-        <p style="font-size:13px;color:#9a9890;margin-top:2px">إجمالي @ViewBag.Total مطالبة</p>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">مطالبات الصلح الودي</h2>
+        <p style="font-size:13px;color:#ffff;margin-top:2px">إجمالي @ViewBag.Total مطالبة</p>
     </div>
 </div>
 
@@ -22,17 +22,36 @@
                     <option value="">كل الفروع</option>
                     @foreach (var b in ViewBag.Branches)
                     {
-                        <option value="@b.Id" selected="@(ViewBag.BranchId == b.Id)">@b.BranchName</option>
+                        @if ((int?)ViewBag.BranchId == b.Id)
+                        { <option value="@b.Id" selected>@b.BranchName</option> }
+                        else
+                        { <option value="@b.Id">@b.BranchName</option> }
                     }
                 </select>
             </div>
             <div class="filter-group">
                 <select name="status" class="filter-select">
-                    <option value="">كل الحالات</option>
+                    <option value="">كل حالات الملف</option>
                     @foreach (var s in ViewBag.StatusList)
                     {
-                        <option value="@s" selected="@(ViewBag.Status == s)">@s</option>
+                        @if ((string)ViewBag.Status == s)
+                        { <option value="@s" selected>@s</option> }
+                        else
+                        { <option value="@s">@s</option> }
                     }
+                </select>
+            </div>
+            <div class="filter-group">
+                <select name="claimStatus" class="filter-select">
+                    <option value="">م.مغطاء / غير مغطاء</option>
+                    @if ((string)ViewBag.ClaimStatus == "م.مغطاء")
+                    { <option value="م.مغطاء" selected>م.مغطاء</option> }
+                    else
+                    { <option value="م.مغطاء">م.مغطاء</option> }
+                    @if ((string)ViewBag.ClaimStatus == "غير مغطاء")
+                    { <option value="غير مغطاء" selected>غير مغطاء</option> }
+                    else
+                    { <option value="غير مغطاء">غير مغطاء</option> }
                 </select>
             </div>
             <div class="filter-group">

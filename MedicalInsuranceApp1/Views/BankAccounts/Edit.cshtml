@@ -1,0 +1,63 @@
+@model MedicalInsuranceApp1.Models.Entities.BankAccount
+@{
+    ViewData["Title"] = "تعديل حساب مصرفي";
+}
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/BankAccounts" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">تعديل حساب مصرفي</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">@Model.BankName — @Model.AccountNumber</p>
+    </div>
+</div>
+
+<div class="table-card" style="max-width:640px">
+    <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">اسم المصرف <span style="color:#c0392b">*</span></label>
+                <input asp-for="BankName" class="form-input" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">رقم الحساب <span style="color:#c0392b">*</span></label>
+                <input asp-for="AccountNumber" class="form-input" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">فرع المصرف</label>
+                <input asp-for="BankBranch" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">الرصيد الحالي</label>
+                <input asp-for="CurrentBalance" type="number" step="0.001" class="form-input"
+                       style="color:#1a3a5c;font-weight:700" readonly />
+                <span style="font-size:11px;color:#9a9890">يُحسب تلقائياً من الحركات — استخدمي «إعادة حساب»</span>
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">ملاحظات</label>
+                <textarea asp-for="Notes" class="form-input" rows="3"></textarea>
+            </div>
+            <div class="form-group" style="grid-column:1/-1;display:flex;align-items:center;gap:10px">
+                <input asp-for="IsActive" type="checkbox" id="isActive" style="width:18px;height:18px;accent-color:#1B4332" />
+                <label for="isActive" class="form-label" style="margin:0;cursor:pointer">حساب نشط</label>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:24px">
+            <button type="submit" class="btn-primary"><i class="ti ti-device-floppy"></i> حفظ</button>
+            <a href="/BankAccounts" class="btn-cancel">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .form-grid { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+    .form-group { display:flex;flex-direction:column;gap:6px; }
+    .form-label { font-size:13px;font-weight:600; }
+    .form-input { padding:10px 12px;border:1px solid #e0e0d8;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;background:var(--input-bg,#fafaf8); }
+    .form-input:focus { outline:none;border-color:#1B4332;box-shadow:0 0 0 3px rgba(27,67,50,0.1); }
+    </style>
+}

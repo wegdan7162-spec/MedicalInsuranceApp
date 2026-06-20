@@ -1,0 +1,120 @@
+@model MedicalInsuranceApp1.Models.Entities.BankTransaction
+@using MedicalInsuranceApp1.Models.Entities
+@{
+    ViewData["Title"] = "إضافة حركة مصرفية";
+}
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/BankTransactions" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">إضافة حركة مصرفية</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">تسجيل قيد مدين أو دائن</p>
+    </div>
+</div>
+
+<div class="table-card" style="max-width:760px">
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="form-grid">
+            <!-- الحساب المصرفي -->
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">الحساب المصرفي <span style="color:#c0392b">*</span></label>
+                <select asp-for="BankAccountId" class="form-input" required>
+                    <option value="">— اختر الحساب —</option>
+                    @foreach (var a in ViewBag.Accounts)
+                    {
+                        <option value="@a.Id">@a.BankName — @a.AccountNumber (رصيد: @a.CurrentBalance.ToString("N3"))</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">تاريخ الحركة <span style="color:#c0392b">*</span></label>
+                <input asp-for="TransactionDate" type="date" class="form-input" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">رقم القيد</label>
+                <input asp-for="EntryNumber" class="form-input" placeholder="مثال: 3ـ1" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">نوع المستند</label>
+                <select asp-for="DocType" class="form-input">
+                    <option value="">— اختر —</option>
+                    @foreach (DocumentType dt in ViewBag.DocTypes)
+                    {
+                        <option value="@((int)dt)">@dt.ToString().Replace("_"," ")</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">رقم الصك / قسيمة الإيداع</label>
+                <input asp-for="DocumentNumber" class="form-input" placeholder="رقم الصك أو القسيمة" />
+            </div>
+
+            <!-- المبالغ -->
+            <div class="form-group" style="background:#fde8e8;padding:14px;border-radius:10px;border:1px solid #f5c6c6">
+                <label class="form-label" style="color:#c0392b">مبلغ مدين (خروج) د.ل</label>
+                <input asp-for="DebitAmount" type="number" step="0.001" min="0" class="form-input"
+                       style="font-size:16px;font-weight:700;color:#c0392b" placeholder="0.000" />
+            </div>
+            <div class="form-group" style="background:#e8f5ee;padding:14px;border-radius:10px;border:1px solid #b7dfc8">
+                <label class="form-label" style="color:#2d6a4f">مبلغ دائن (دخول) د.ل</label>
+                <input asp-for="CreditAmount" type="number" step="0.001" min="0" class="form-input"
+                       style="font-size:16px;font-weight:700;color:#2d6a4f" placeholder="0.000" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">تصنيف الحركة</label>
+                <select asp-for="Category" class="form-input">
+                    @foreach (TransactionCategory cat in ViewBag.Categories)
+                    {
+                        <option value="@((int)cat)">@cat.ToString().Replace("_"," ")</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" style="color:#9a9890">ربط بملف ودي (اختياري)</label>
+                <select asp-for="FriendlyClaimId" class="form-input">
+                    <option value="">— لا يوجد —</option>
+                    @foreach (var c in ViewBag.FriendlyClaims)
+                    {
+                        <option value="@c.Id">@c.Label</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" style="color:#9a9890">ربط بملف قضائي (اختياري)</label>
+                <select asp-for="OutterClaimId" class="form-input">
+                    <option value="">— لا يوجد —</option>
+                    @foreach (var c in ViewBag.OutterClaims)
+                    {
+                        <option value="@c.Id">@c.Label</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">البيان <span style="color:#c0392b">*</span></label>
+                <textarea asp-for="Description" class="form-input" rows="3"
+                          placeholder="وصف الحركة — مثال: إيداع قسط مصحة الفردوس" required></textarea>
+            </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:24px">
+            <button type="submit" class="btn-primary"><i class="ti ti-device-floppy"></i> حفظ الحركة</button>
+            <a href="/BankTransactions" class="btn-cancel">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .form-group{display:flex;flex-direction:column;gap:6px;}
+    .form-label{font-size:13px;font-weight:600;}
+    .form-input{padding:10px 12px;border:1px solid #e0e0d8;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;background:var(--input-bg,#fafaf8);}
+    .form-input:focus{outline:none;border-color:#1B4332;box-shadow:0 0 0 3px rgba(27,67,50,0.1);}
+    </style>
+}

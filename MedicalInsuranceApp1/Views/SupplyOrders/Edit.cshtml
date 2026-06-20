@@ -1,0 +1,202 @@
+@model MedicalInsuranceApp1.Models.Entities.SupplyOrder
+@{
+    ViewData["Title"] = "تعديل أمر التوريد";
+}
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/SupplyOrders" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">تعديل أمر التوريد</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">@(Model.FacilityName ?? "—")</p>
+    </div>
+</div>
+
+<div class="table-card" style="max-width:720px">
+    <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+        @Html.AntiForgeryToken()
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">رقم أمر التوريد</label>
+                <input asp-for="OrderNumber" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">تاريخ الأمر</label>
+                <input asp-for="OrderDate" type="date" class="form-input" required />
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">العقد المرتبط</label>
+                <select asp-for="ContractId" class="form-input">
+                    <option value="">— بدون ربط —</option>
+                    @foreach (var c in (IEnumerable<MedicalInsuranceApp1.Models.Entities.InsuranceContract>)ViewBag.Contracts)
+                    {
+                        <option value="@c.Id">@c.FacilityName (@c.ContractNumber)</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">اسم المنشأة</label>
+                <input asp-for="FacilityName" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">من تاريخ</label>
+                <input asp-for="CoverageFrom" type="date" class="form-input" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">إلى تاريخ</label>
+                <input asp-for="CoverageTo" type="date" class="form-input" required />
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">وصف الربع / الفترة</label>
+                <input asp-for="QuarterDescription" class="form-input" />
+            </div>
+            <div class="form-group" style="background:#f0faf4;padding:14px;border-radius:10px;border:1px solid #b8e0c8;grid-column:1/-1">
+                <label class="form-label" style="color:#2d6a4f">المبلغ (د.ل)</label>
+                <input asp-for="Amount" type="number" step="0.001" min="0" class="form-input"
+                       style="font-size:18px;font-weight:700;color:#2d6a4f" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">الحالة</label>
+                <select asp-for="Status" class="form-input">
+                    <option value="قيد التحصيل">قيد التحصيل</option>
+                    <option value="مُوَرَّد">مُوَرَّد</option>
+                    <option value="ملغي">ملغي</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">ملاحظات</label>
+                <input asp-for="Notes" class="form-input" />
+            </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:24px">
+            <button type="submit" class="btn-primary"><i class="ti ti-device-floppy"></i> حفظ التعديلات</button>
+            <a href="/SupplyOrders" class="btn-cancel">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+@* ══ قسم اعتماد الاكتتاب ══ *@
+@if (Model.WorkflowStatus == "في_انتظار_اكتتاب" || Model.WorkflowStatus == "معتمد_اكتتاب")
+{
+<div class="table-card" style="max-width:720px;margin-top:20px;border:2px solid #1B4332">
+
+    <!-- رأس القسم -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+        <div style="width:36px;height:36px;border-radius:50%;background:#e8f5ee;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <i class="ti ti-writing" style="color:#1B4332;font-size:18px"></i>
+        </div>
+        <div>
+            <div style="font-size:14px;font-weight:700;color:#1B4332">قسم الاكتتاب — اعتماد أمر التوريد</div>
+            <div style="font-size:12px;color:#9a9890">بعد مراجعة صورة إيصال القبض العائد من الجهة</div>
+        </div>
+        @if (Model.WorkflowStatus == "معتمد_اكتتاب")
+        {
+            <span style="margin-right:auto;background:#e8f5ee;color:#1B4332;border:1px solid #a8d5b8;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700">
+                <i class="ti ti-check"></i> تم الاعتماد
+            </span>
+        }
+    </div>
+
+    @if (Model.WorkflowStatus == "معتمد_اكتتاب")
+    {
+        <!-- حالة: تم الاعتماد — عرض فقط -->
+        <div style="background:#f0faf4;border-radius:8px;padding:14px 16px;font-size:13px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div>
+                    <div style="color:#9a9890;font-size:11px">معتمد من</div>
+                    <div style="font-weight:700;color:#1B4332">@(Model.UnderwritingApprovedBy ?? "—")</div>
+                </div>
+                <div>
+                    <div style="color:#9a9890;font-size:11px">تاريخ الاعتماد</div>
+                    <div style="font-weight:700">@Model.UnderwritingApprovedAt?.ToString("yyyy/MM/dd  HH:mm")</div>
+                </div>
+                @if (Model.Receipt != null)
+                {
+                    <div>
+                        <div style="color:#9a9890;font-size:11px">رقم إيصال القبض</div>
+                        <div style="font-weight:700;color:#6c3483">@Model.Receipt.ReceiptNumber</div>
+                    </div>
+                    <div>
+                        <div style="color:#9a9890;font-size:11px">مبلغ الإيصال</div>
+                        <div style="font-weight:700;color:#1a3a5c">@Model.Receipt.TotalAmount.ToString("N3") د.ل</div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- حالة: في انتظار الاعتماد — نموذج الاعتماد -->
+
+        @if (Model.Receipt != null)
+        {
+            <!-- بطاقة الإيصال المرتبط -->
+            <div style="background:#f8f0fe;border:1px solid #d4a8f0;border-radius:8px;padding:12px 16px;margin-bottom:16px">
+                <div style="font-size:11px;font-weight:700;color:#6c3483;margin-bottom:8px">
+                    <i class="ti ti-receipt"></i> إيصال القبض المرتبط
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;font-size:13px">
+                    <div>
+                        <div style="color:#9a9890;font-size:11px">رقم الإيصال</div>
+                        <div style="font-weight:700;color:#6c3483">@Model.Receipt.ReceiptNumber</div>
+                    </div>
+                    <div>
+                        <div style="color:#9a9890;font-size:11px">تاريخ الإيصال</div>
+                        <div style="font-weight:600">@Model.Receipt.ReceiptDate.ToString("yyyy/MM/dd")</div>
+                    </div>
+                    <div>
+                        <div style="color:#9a9890;font-size:11px">المبلغ</div>
+                        <div style="font-weight:700;color:#1a3a5c">@Model.Receipt.TotalAmount.ToString("N3") د.ل</div>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div style="background:#fff8e8;border:1px solid #ffc107;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#856404">
+                <i class="ti ti-alert-triangle"></i>
+                لم يُربط إيصال قبض بهذا الأمر بعد — يمكن إدخال رقم الإيصال يدوياً للمراجعة
+            </div>
+        }
+
+        <form method="post" action="/SupplyOrders/UnderwritingApprove">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.Id" />
+
+            <div class="form-grid">
+                <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">
+                        رقم إيصال القبض
+                        <span style="font-size:11px;color:#9a9890;font-weight:400"> — للتأكيد والمراجعة</span>
+                    </label>
+                    <input type="text" name="receiptNumberConfirm" class="form-input"
+                           value="@(Model.Receipt?.ReceiptNumber ?? "")"
+                           placeholder="أدخل رقم إيصال القبض الوارد من الجهة..."
+                           style="font-size:15px;font-weight:700;color:#6c3483;letter-spacing:1px" />
+                </div>
+            </div>
+
+            <div style="background:#f0faf4;border-right:3px solid #1B4332;border-radius:6px;padding:10px 14px;margin:14px 0;font-size:12px;color:#2d6a4f">
+                <i class="ti ti-info-circle"></i>
+                بالاعتماد سيتم: تسجيل اسمك كمعتمد، توليد الجانب الدائن في القيد المحاسبي (إيرادات أقساط التأمين)،
+                وتحويل الأمر لمرحلة <strong>تأكيد الخزينة</strong>.
+            </div>
+
+            <button type="submit"
+                    style="display:inline-flex;align-items:center;gap:8px;padding:10px 24px;background:#1B4332;color:#fff;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:14px;font-weight:700;cursor:pointer">
+                <i class="ti ti-check"></i> اعتماد أمر التوريد
+            </button>
+        </form>
+    }
+</div>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .form-group{display:flex;flex-direction:column;gap:6px;}
+    .form-label{font-size:13px;font-weight:600;}
+    .form-input{padding:10px 12px;border:1px solid #e0e0d8;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;background:var(--input-bg,#fafaf8);}
+    .form-input:focus{outline:none;border-color:#1B4332;box-shadow:0 0 0 3px rgba(27,67,50,0.1);}
+    </style>
+}

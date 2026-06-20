@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
-using MedicalInsuranceApp1.Models.Identity;
+using MedicalInsuranceApp1.Models.ViewModels.Identity;
 
 namespace MedicalInsuranceApp1.Data
 {

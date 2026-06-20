@@ -1,0 +1,220 @@
+@model MedicalInsuranceApp1.Models.Entities.InsuranceContract
+@{
+    ViewData["Title"] = "تفاصيل العقد — " + Model.FacilityName;
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="/InsuranceContracts" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#ffffff">@Model.FacilityName</h2>
+            <p style="font-size:13px;color:#9a9890;margin-top:2px">رقم العقد: @(Model.ContractNumber ?? "—")</p>
+        </div>
+    </div>
+    <div style="display:flex;gap:8px">
+        <a href="/SupplyOrders/Create?contractId=@Model.Id" class="btn-primary">
+            <i class="ti ti-plus"></i> أمر توريد
+        </a>
+        <a href="/ReceiptVouchers/Create?contractId=@Model.Id" class="btn-primary" style="background:#6c3483">
+            <i class="ti ti-receipt"></i> إيصال قبض
+        </a>
+        <a href="/InsuranceContracts/Edit/@Model.Id" class="btn-cancel">
+            <i class="ti ti-edit"></i> تعديل
+        </a>
+    </div>
+</div>
+
+<!-- بطاقات الإجماليات -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
+    <div class="stat-card" style="border-right:4px solid #1a3a5c">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">القسط الخاص</div>
+        <div style="font-size:18px;font-weight:700;color:#1a3a5c">@Model.PrivatePremium.ToString("N3")</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #2d6a4f">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">القسط الحكومي</div>
+        <div style="font-size:18px;font-weight:700;color:#2d6a4f">@Model.PublicPremium.ToString("N3")</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #c9a84c">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">تحت التحصيل</div>
+        <div style="font-size:18px;font-weight:700;color:#c9a84c">@Model.UnderCollectionAmount.ToString("N3")</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #6c3483">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">الخزينة المحصلة</div>
+        <div style="font-size:18px;font-weight:700;color:#6c3483">@Model.TreasuryAmount.ToString("N3")</div>
+    </div>
+</div>
+
+<!-- بيانات العقد -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
+    <div class="table-card">
+        <div style="font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:16px">
+            <i class="ti ti-info-circle" style="margin-left:6px"></i> بيانات العقد
+        </div>
+        <table style="width:100%;font-size:13px;border-collapse:collapse">
+            <tr><td style="color:#9a9890;padding:6px 0">النوع</td>
+                <td style="font-weight:600">@(Model.FacilityType == MedicalInsuranceApp1.Models.Entities.FacilityType.Private ? "خاص" : "حكومي")</td></tr>
+            <tr><td style="color:#9a9890;padding:6px 0">بداية التأمين</td>
+                <td style="font-weight:600">@Model.InsuranceStartDate.ToString("yyyy/MM/dd")</td></tr>
+            <tr><td style="color:#9a9890;padding:6px 0">نهاية التأمين</td>
+                <td style="font-weight:600">@Model.InsuranceEndDate.ToString("yyyy/MM/dd")</td></tr>
+            <tr><td style="color:#9a9890;padding:6px 0">رسوم الإشراف</td>
+                <td style="font-weight:600">@Model.SupervisionFee.ToString("N3")</td></tr>
+            <tr><td style="color:#9a9890;padding:6px 0">مبلغ مقدم</td>
+                <td style="font-weight:600">@Model.PrepaidAmount.ToString("N3")</td></tr>
+            <tr><td style="color:#9a9890;padding:6px 0">الحالة</td>
+                <td>
+                    @if (Model.Status == "نشط")
+                    { <span style="background:#e8f5ee;color:#2d6a4f;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600">نشط</span> }
+                    else if (Model.Status == "منتهي")
+                    { <span style="background:#f0f0e8;color:#6a6a50;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600">منتهي</span> }
+                    else
+                    { <span style="background:#fde8e8;color:#c0392b;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600">ملغي</span> }
+                </td></tr>
+            @if (!string.IsNullOrEmpty(Model.Notes))
+            {
+            <tr><td style="color:#9a9890;padding:6px 0">ملاحظات</td>
+                <td style="font-size:12px;color:#6a6a50">@Model.Notes</td></tr>
+            }
+        </table>
+    </div>
+    <div class="table-card" style="background:#f0faf4">
+        <div style="font-size:13px;font-weight:700;color:#2d6a4f;margin-bottom:16px">
+            <i class="ti ti-calculator" style="margin-left:6px"></i> ملخص مالي
+        </div>
+        <table style="width:100%;font-size:13px;border-collapse:collapse">
+            <tr><td style="color:#9a9890;padding:8px 0">إجمالي الأقساط</td>
+                <td style="font-weight:700;color:#1a3a5c;font-size:15px">@((Model.PrivatePremium + Model.PublicPremium).ToString("N3")) د.ل</td></tr>
+            <tr><td style="color:#9a9890;padding:8px 0">رسوم الإشراف</td>
+                <td style="font-weight:600;color:#6a6a50">@Model.SupervisionFee.ToString("N3") د.ل</td></tr>
+            <tr><td style="color:#9a9890;padding:8px 0">مبلغ مقدم</td>
+                <td style="font-weight:600;color:#6a6a50">@Model.PrepaidAmount.ToString("N3") د.ل</td></tr>
+            <tr style="border-top:1px solid #b8e0c8">
+                <td style="color:#2d6a4f;padding:8px 0;font-weight:600">تحت التحصيل</td>
+                <td style="font-weight:700;color:#c9a84c;font-size:15px">@Model.UnderCollectionAmount.ToString("N3") د.ل</td></tr>
+            <tr>
+                <td style="color:#2d6a4f;padding:8px 0;font-weight:600">الخزينة المحصلة</td>
+                <td style="font-weight:700;color:#6c3483;font-size:15px">@Model.TreasuryAmount.ToString("N3") د.ل</td></tr>
+        </table>
+    </div>
+</div>
+
+<!-- أوامر التوريد -->
+<div class="table-card" style="margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-size:14px;font-weight:700;color:#1a3a5c">
+            <i class="ti ti-truck-delivery" style="margin-left:6px"></i>
+            أوامر التوريد (@Model.SupplyOrders?.Count() sجل)
+        </div>
+        <a href="/SupplyOrders/Create?contractId=@Model.Id" class="btn-primary" style="font-size:12px;padding:6px 14px">
+            <i class="ti ti-plus"></i> إضافة أمر
+        </a>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>رقم الأمر</th>
+                <th>التاريخ</th>
+                <th>الفترة</th>
+                <th>المبلغ</th>
+                <th>الحالة</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.SupplyOrders == null || !Model.SupplyOrders.Any())
+            {
+                <tr><td colspan="6" style="text-align:center;padding:20px;color:#9a9890">لا توجد أوامر توريد</td></tr>
+            }
+            else
+            {
+                @foreach (var o in Model.SupplyOrders)
+                {
+                <tr>
+                    <td style="font-family:monospace;font-size:12px">@(o.OrderNumber ?? "—")</td>
+                    <td style="font-size:12px">@o.OrderDate.ToString("yyyy/MM/dd")</td>
+                    <td style="font-size:12px">@o.CoverageFrom.ToString("yyyy/MM/dd") — @o.CoverageTo.ToString("yyyy/MM/dd")</td>
+                    <td style="font-weight:600;color:#1a3a5c">@o.Amount.ToString("N3")</td>
+                    <td>
+                        @if (o.Status == "مُوَرَّد")
+                        { <span style="background:#e8f5ee;color:#2d6a4f;padding:2px 8px;border-radius:12px;font-size:11px">مُوَرَّد</span> }
+                        else if (o.Status == "قيد التحصيل")
+                        { <span style="background:#fff8e8;color:#92711a;padding:2px 8px;border-radius:12px;font-size:11px">قيد التحصيل</span> }
+                        else
+                        { <span style="background:#fde8e8;color:#c0392b;padding:2px 8px;border-radius:12px;font-size:11px">ملغي</span> }
+                    </td>
+                    <td>
+                        @if (o.Status == "قيد التحصيل")
+                        {
+                            <a href="/ReceiptVouchers/Create?supplyOrderId=@o.Id" class="btn-icon"
+                               style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;background:#f0eaf8;color:#6c3483;font-size:11px">
+                                <i class="ti ti-receipt"></i> قبض
+                            </a>
+                        }
+                        <a href="/SupplyOrders/Edit/@o.Id" class="btn-icon"
+                           style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px">
+                            <i class="ti ti-edit"></i>
+                        </a>
+                    </td>
+                </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- إيصالات القبض -->
+<div class="table-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-size:14px;font-weight:700;color:#6c3483">
+            <i class="ti ti-receipt" style="margin-left:6px"></i>
+            إيصالات القبض (@Model.Receipts?.Count() سجل)
+        </div>
+        <a href="/ReceiptVouchers/Create?contractId=@Model.Id" class="btn-primary" style="font-size:12px;padding:6px 14px;background:#6c3483">
+            <i class="ti ti-plus"></i> إضافة إيصال
+        </a>
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>رقم الإيصال</th>
+                <th>التاريخ</th>
+                <th>المبلغ بالدينار</th>
+                <th>المبلغ بالدرهم</th>
+                <th>الإجمالي</th>
+                <th>رسوم الإشراف</th>
+                <th>الخزينة</th>
+                <th>طريقة الدفع</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Receipts == null || !Model.Receipts.Any())
+            {
+                <tr><td colspan="8" style="text-align:center;padding:20px;color:#9a9890">لا توجد إيصالات قبض</td></tr>
+            }
+            else
+            {
+                @foreach (var r in Model.Receipts)
+                {
+                <tr>
+                    <td style="font-family:monospace;font-size:12px">@(r.ReceiptNumber ?? "—")</td>
+                    <td style="font-size:12px">@r.ReceiptDate.ToString("yyyy/MM/dd")</td>
+                    <td style="font-weight:600;color:#1a3a5c">@r.DinarAmount.ToString("N3")</td>
+                    <td style="color:#6a6a50">@r.DirhamAmount.ToString("N3")</td>
+                    <td style="font-weight:700;color:#1a3a5c">@r.TotalAmount.ToString("N3")</td>
+                    <td style="color:#c9a84c">@r.SupervisionFee.ToString("N3")</td>
+                    <td style="font-weight:700;color:#6c3483">@r.TreasuryAmount.ToString("N3")</td>
+                    <td style="font-size:12px">@(r.PaymentMethod ?? "—")</td>
+                </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .stat-card{background:var(--card-bg,#fff);border-radius:12px;padding:16px 20px;border:1px solid #e8e8e0;}
+    </style>
+}

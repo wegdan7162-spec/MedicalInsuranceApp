@@ -1,8 +1,13 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MedicalInsuranceApp1.Data;
-using MedicalInsuranceApp1.Models.Identity;
 using MedicalInsuranceApp1.Infrastrcture;
+using MedicalInsuranceApp1.Models.Interfaces;
+using MedicalInsuranceApp1.Models.Settings;
+using MedicalInsuranceApp1.Services.Implementations;
+using System.Globalization;
+using Microsoft.AspNetCore.Localization;
+using MedicalInsuranceApp1.Models.ViewModels.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +62,12 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddScoped<UserMigrationService>();
 builder.Services.AddScoped<ActivityLogFilter>();
+builder.Services.AddScoped<IPermissionService, PermissionService>();
+
+// ===== Mail =====
+var mailSettings = builder.Configuration.GetSection("MailSettings").Get<MailSettings>() ?? new MailSettings();
+builder.Services.AddSingleton(mailSettings);
+builder.Services.AddScoped<IEmailSender, EmailSender>();
 
 var app = builder.Build();
 
@@ -71,9 +82,20 @@ using (var scope = app.Services.CreateScope())
     var db = services.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
 
+    // إضافة أعمدة جديدة إن لم تكن موجودة (safe fallback)
+    await db.Database.ExecuteSqlRawAsync(@"
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                       WHERE TABLE_NAME='TblBanks' AND COLUMN_NAME='BankCode')
+            ALTER TABLE TblBanks ADD BankCode nvarchar(50) NULL;
+
+        IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
+                       WHERE TABLE_NAME='TblBankBranches' AND COLUMN_NAME='BranchCode')
+            ALTER TABLE TblBankBranches ADD BranchCode nvarchar(50) NULL;
+    ");
+
     var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-    await SeedData.InitializeAsync(roleManager, userManager);
+    await SeedData.InitializeAsync(roleManager, userManager, db);
 }
 
 if (!app.Environment.IsDevelopment())
@@ -82,12 +104,21 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// ===== Localization (لحل مشكلة parsing الأرقام العشرية) =====
+var invariantCulture = CultureInfo.InvariantCulture;
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(invariantCulture),
+    SupportedCultures = new[] { invariantCulture },
+    SupportedUICultures = new[] { CultureInfo.GetCultureInfo("ar-SA") }
+});
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseSession();
 
 // ===== Routes =====
 app.MapControllerRoute(
@@ -109,10 +140,10 @@ app.MapControllerRoute(
     pattern: "Roles/{action=Index}/{id?}",
     defaults: new { controller = "Roles" });
 
-app.MapControllerRoute(
-    name: "courtcases",
-    pattern: "CourtCases/{action=Index}/{id?}",
-    defaults: new { controller = "CourtCases" });
+//app.MapControllerRoute(
+//    name: "courtcases",
+//    pattern: "CourtCases/{action=Index}/{id?}",
+//    defaults: new { controller = "CourtCases" });
 
 app.MapControllerRoute(
     name: "friendlyclaims",
@@ -151,5 +182,93 @@ app.MapControllerRoute(
     name: "activity",
     pattern: "Activity/{action=Index}/{id?}",
     defaults: new { controller = "Activity" });
+
+app.MapControllerRoute(
+    name: "reports",
+    pattern: "Reports/{action=Index}/{id?}",
+    defaults: new { controller = "Reports" });
+
+// ===== المصارف =====
+app.MapControllerRoute(
+    name: "banks",
+    pattern: "Banks/{action=Index}/{id?}",
+    defaults: new { controller = "Banks" });
+
+// ===== الجزء المالي =====
+app.MapControllerRoute(
+    name: "bankaccounts",
+    pattern: "BankAccounts/{action=Index}/{id?}",
+    defaults: new { controller = "BankAccounts" });
+
+app.MapControllerRoute(
+    name: "banktransactions",
+    pattern: "BankTransactions/{action=Index}/{id?}",
+    defaults: new { controller = "BankTransactions" });
+
+app.MapControllerRoute(
+    name: "commissions",
+    pattern: "Commissions/{action=Index}/{id?}",
+    defaults: new { controller = "Commissions" });
+
+app.MapControllerRoute(
+    name: "import",
+    pattern: "Import/{action=Index}/{id?}",
+    defaults: new { controller = "Import" });
+
+// ===== الاكتتاب =====
+app.MapControllerRoute(
+    name: "insurancecontracts",
+    pattern: "InsuranceContracts/{action=Index}/{id?}",
+    defaults: new { controller = "InsuranceContracts" });
+
+app.MapControllerRoute(
+    name: "supplyorders",
+    pattern: "SupplyOrders/{action=Index}/{id?}",
+    defaults: new { controller = "SupplyOrders" });
+
+app.MapControllerRoute(
+    name: "receiptvouchers",
+    pattern: "ReceiptVouchers/{action=Index}/{id?}",
+    defaults: new { controller = "ReceiptVouchers" });
+
+app.MapControllerRoute(
+    name: "paymentauthorizations",
+    pattern: "PaymentAuthorizations/{action=Index}/{id?}",
+    defaults: new { controller = "PaymentAuthorizations" });
+
+app.MapControllerRoute(
+    name: "issuancestats",
+    pattern: "IssuanceStats/{action=Index}/{id?}",
+    defaults: new { controller = "IssuanceStats" });
+
+// ===== المسوقون =====
+app.MapControllerRoute(
+    name: "marketers",
+    pattern: "Marketers/{action=Index}/{id?}",
+    defaults: new { controller = "Marketers" });
+
+// ===== الموردون =====
+app.MapControllerRoute(
+    name: "suppliers",
+    pattern: "Suppliers/{action=Index}/{id?}",
+    defaults: new { controller = "Suppliers" });
+
+// ===== القيود المحاسبية =====
+app.MapControllerRoute(
+    name: "accountingentries",
+    pattern: "AccountingEntries/{action=Index}/{id?}",
+    defaults: new { controller = "AccountingEntries" });
+
+// ===== قسائم الإيداع =====
+app.MapControllerRoute(
+    name: "bankdepositslips",
+    pattern: "BankDepositSlips/{action=Index}/{id?}",
+    defaults: new { controller = "BankDepositSlips" });
+
+// ===== اليومية =====
+app.MapControllerRoute(
+    name: "dailyjournal",
+    pattern: "DailyJournal/{action=Index}/{id?}",
+    defaults: new { controller = "DailyJournal" });
 
 app.Run();

@@ -1,0 +1,165 @@
+@model MedicalInsuranceApp1.Models.ViewModels.ReportFilterVM
+@{
+    Layout = null;
+    var printDate = DateTime.Now.ToString("dd/MM/yyyy");
+    var fromDate  = Model.DateFrom.HasValue ? Model.DateFrom.Value.ToString("dd/MM/yyyy") : "---";
+    var toDate    = Model.DateTo.HasValue   ? Model.DateTo.Value.ToString("dd/MM/yyyy")   : "---";
+    var showAgent = Model.ReportType == "FriendlyClaims" || Model.ReportType == "Both";
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@Model.ReportTypeTitle</title>
+
+    <link rel="stylesheet" href="~/css/Report.css">
+   
+</head>
+<body>
+<div class="page">
+
+    <!-- ===== رأس التقرير ===== -->
+    <div class="report-header">
+
+        <!-- اليمين: تاريخ الطباعة -->
+        <div class="header-left">
+            <div class="print-date-label">تاريخ الطباعة</div>
+            <div class="print-date-val">@printDate</div>
+        </div>
+
+        <!-- الوسط: الشعار + اسم الشركة -->
+        <div class="header-center">
+            <img src="/image/FALG11.jpg" alt="شركة ليبيا للتأمين" onerror="this.style.display='none'">
+            <div class="company-name">شـركـة لـيـبـيـا للتـأمـيـن</div>
+            <div style="font-size:10px;color:#555;letter-spacing:1px">LIBYA INSURANCE CO</div>
+        </div>
+
+        <!-- اليسار: الفلتر المختار + نوع التاريخ -->
+        <div class="header-right">
+            <div class="filter-badge">@Model.FilterDescription</div>
+            <span class="date-type-label">حسب تاريخ التسجيل</span>
+        </div>
+
+    </div>
+
+    <!-- ===== عنوان التقرير ===== -->
+    <div class="report-title-box">
+        <div class="title-inner">@Model.ReportTypeTitle</div>
+    </div>
+
+    <!-- ===== الفترة ===== -->
+    <div class="period-bar">
+        من @fromDate &nbsp;&nbsp; إلى &nbsp;&nbsp; @toDate
+    </div>
+
+    <!-- ===== الجدول ===== -->
+    @if (Model.Rows.Any())
+    {
+    <table>
+        <thead>
+            <tr>
+                <th>ت</th>
+                <th>الحادث</th>
+                <th>اسم المتضرر</th>
+                @if (showAgent) { <th>اسم الوكيل</th> }
+                <th>الفرع</th>
+                <th>تاريخ الواقعة</th>
+                <th>مكان الواقعة</th>
+                @if (Model.ColClaimStatus) { <th>نوع الملف</th> }
+                @if (Model.ColFileStatus) { <th>الحالة</th> }
+                @if (Model.ColCourt && Model.ReportType != "FriendlyClaims") { <th>المحكمة</th> }
+                <th>الاحتياطي</th>
+                <th>المسدد</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{ int rowNum = 1; }
+            @foreach (var r in Model.Rows)
+            {
+                <tr>
+                    <td>@rowNum</td>
+                    <td class="num-col">@r.Num/@r.Year</td>
+                    <td style="text-align:right">@r.PlaintiffName</td>
+                    @if (showAgent) { <td style="text-align:right">@r.AgentName</td> }
+                    <td>@r.BranchName</td>
+                    <td>@(r.IncidentDate.HasValue ? r.IncidentDate.Value.ToString("M/d/yy") : "-")</td>
+                    <td>@r.Place</td>
+                    @if (Model.ColClaimStatus) {
+                        <td style="font-size:10px">@r.ClaimStatus</td>
+                    }
+                    @* @if (Model.ColFileStatus) {
+                        <td style="font-size:10px">@r.FileStatus</td>
+                    } *@
+                    }
+                    @if (Model.ColCourt && Model.ReportType != "FriendlyClaims") {
+                        <td>@(r.CourtName == "-" ? "" : r.CourtName)</td>
+                    }
+                    <td class="money">@(r.Reserve > 0 ? r.Reserve.ToString("N2") : "0.00")</td>
+                    <td class="money" style="color:#2d6a4f">@(r.Settled > 0 ? r.Settled.ToString("N2") : "0.00")</td>
+                </tr>
+                rowNum++;
+            }
+        </tbody>
+    </table>
+
+    <!-- ===== ملخص الإجماليات ===== -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+        <div class="totals-summary">
+            <div class="summary-item">عدد الملفات &nbsp;<span>@Model.TotalCount</span></div>
+            <div class="summary-item">مجموع الاحتياطي &nbsp;<span>@Model.TotalReserve.ToString("N4")</span></div>
+            <div class="summary-item">مجموع المسدد &nbsp;<span>@Model.TotalSettled.ToString("N4")</span></div>
+        </div>
+    </div>
+    }
+    else
+    {
+        <div style="text-align:center;padding:40px;color:#999;font-size:14px">
+            لا توجد بيانات تطابق المعايير المحددة
+        </div>
+    }
+
+    <!-- ===== التوقيعات ===== -->
+    <div class="signatures-section">
+        <div class="sig-block">
+            <div class="sig-name">هشام عبد المجيد العريفي</div>
+            <div class="sig-title">رئيـــس قسـم المطالبـات</div>
+        </div>
+        <div class="sig-block">
+            <div class="sig-name">ناصر محمد ابوستة</div>
+            <div class="sig-title">مدير فرع التأمين الطبي</div>
+        </div>
+    </div>
+
+    <!-- ===== ذيل الصفحة ===== -->
+    <div class="report-footer">
+        <div>
+            <span>اسم المستخدم</span>
+            &nbsp;
+            <span class="username-badge">@Model.UserFullName</span>
+        </div>
+        <div style="font-size:10px;color:#888">
+            @printDate
+        </div>
+    </div>
+
+</div>
+
+<!-- زر الطباعة (يختفي عند الطباعة) -->
+<div class="no-print" style="text-align:center;margin:20px">
+    <button onclick="window.print()"
+            style="background:#1B4332;color:#fff;padding:10px 30px;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-family:Arial">
+        🖨 طباعة
+    </button>
+    <button onclick="window.close()"
+            style="background:#888;color:#fff;padding:10px 20px;border:none;border-radius:6px;font-size:14px;cursor:pointer;margin-right:10px;font-family:Arial">
+        إغلاق
+    </button>
+</div>
+
+<script>
+    // طباعة تلقائية عند فتح الصفحة (اختياري - يمكن تعطيله)
+    // window.onload = () => window.print();
+</script>
+</body>
+</html>

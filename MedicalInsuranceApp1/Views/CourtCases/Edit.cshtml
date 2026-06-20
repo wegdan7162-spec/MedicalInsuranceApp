@@ -1,4 +1,4 @@
-﻿@model MedicalInsuranceApp1.Models.ViewModels.CourtCaseEditVM
+@* @model MedicalInsuranceApp1.Models.ViewModels.CourtCaseEditVM
 @{
     ViewData["Title"] = "تعديل المطالبة";
 }
@@ -8,7 +8,7 @@
         <a href="/CourtCases" class="btn-back">
             <i class="ti ti-arrow-right"></i>
         </a>
-        <h2 style="font-size:18px;font-weight:700;color:#1B4332">تعديل المطالبة</h2>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">تعديل المطالبة</h2>
     </div>
 
     <form asp-action="Edit" method="post">
@@ -39,15 +39,6 @@
                         <option value="">-- اختر المحكمة --</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label asp-for="ClaimType">نوع المطالبة</label>
-                    <select asp-for="ClaimType" class="form-select">
-                        @foreach (var t in Model.ClaimTypeList)
-                        {
-                            <option value="@t">@t</option>
-                        }
-                    </select>
-                </div>
                 <div class="form-group" style="grid-column:span 2">
                     <label asp-for="Place">مكان الواقعة</label>
                     <input asp-for="Place" class="form-input">
@@ -74,6 +65,16 @@
                         @foreach (var s in Model.StatusList)
                         {
                             <option value="@s">@s</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="ClaimType">نوع المطالبة</label>
+                    <select asp-for="ClaimType" class="form-select">
+                        @foreach (var t in Model.ClaimTypeList)
+                        {
+                            <option value="@t">@t</option>
                         }
                     </select>
                 </div>
@@ -123,4 +124,4 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-}
+} *@

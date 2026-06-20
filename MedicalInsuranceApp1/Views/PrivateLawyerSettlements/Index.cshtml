@@ -1,0 +1,297 @@
+@model List<MedicalInsuranceApp1.Models.Entities.PrivateLawyerSettlement>
+@{
+    ViewData["Title"] = "تسوية أتعاب المحاماة الخواص";
+    decimal totalAgreed    = (decimal)ViewBag.TotalAgreed;
+    decimal totalPaid      = (decimal)ViewBag.TotalPaid;
+    decimal totalRemaining = (decimal)ViewBag.TotalRemaining;
+    int     countPaid      = (int)ViewBag.CountPaid;
+    int     countPending   = (int)ViewBag.CountPending;
+    double  paidPct        = totalAgreed > 0 ? (double)(totalPaid / totalAgreed * 100) : 0;
+}
+
+<!-- رأس الصفحة -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+    <div style="display:flex;align-items:center;gap:14px">
+        <a href="/Dashboard/Index" class="btn-back" title="رجوع للرئيسية">
+            <i class="ti ti-arrow-right"></i>
+        </a>
+        <div>
+            <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:38px;height:38px;background:linear-gradient(135deg,#546B41,#2d6a4f);border-radius:10px;display:flex;align-items:center;justify-content:center">
+                    <i class="ti ti-gavel" style="color:#fff;font-size:18px"></i>
+                </div>
+                <div>
+                    <h2 style="font-size:19px;font-weight:700;margin:0">تسوية أتعاب المحاماة الخواص</h2>
+                    <p style="font-size:12px;color:#9a9890;margin:2px 0 0">إجمالي @Model.Count سجل مسجل</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="/PrivateLawyerSettlements/Create" class="btn-primary" style="display:inline-flex;align-items:center;gap:8px;padding:10px 20px">
+        <i class="ti ti-plus"></i> إضافة محامي خاص
+    </a>
+</div>
+
+<!-- بطاقات الإحصاء الكبيرة -->
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px">
+    <div style="background:linear-gradient(135deg,#1B4332,#2d6a4f);border-radius:14px;padding:20px;color:#fff;grid-column:span 2">
+        <div style="font-size:12px;opacity:.8;margin-bottom:6px"><i class="ti ti-file-invoice"></i> إجمالي الأتعاب المتفق عليها</div>
+        <div style="font-size:28px;font-weight:800;letter-spacing:-0.5px">@totalAgreed.ToString("N2")</div>
+        <div style="font-size:11px;opacity:.7;margin-top:4px">ريال سعودي</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#155724,#28a745);border-radius:14px;padding:20px;color:#fff">
+        <div style="font-size:12px;opacity:.8;margin-bottom:6px"><i class="ti ti-check"></i> المدفوع</div>
+        <div style="font-size:24px;font-weight:700">@totalPaid.ToString("N2")</div>
+        <div style="font-size:11px;opacity:.7;margin-top:4px">@paidPct.ToString("F1")% من الإجمالي</div>
+    </div>
+    <div style="background:linear-gradient(135deg,#6b1a1a,#c0392b);border-radius:14px;padding:20px;color:#fff">
+        <div style="font-size:12px;opacity:.8;margin-bottom:6px"><i class="ti ti-clock"></i> المتبقي</div>
+        <div style="font-size:24px;font-weight:700">@totalRemaining.ToString("N2")</div>
+        <div style="font-size:11px;opacity:.7;margin-top:4px">غير مسدد</div>
+    </div>
+    <div style="background:var(--card-bg,#fff);border-radius:14px;padding:20px;border:1px solid #e8e8e0">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:10px">حالة السجلات</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:12px;color:#28a745;font-weight:600">مدفوع كاملاً</span>
+                <span style="background:#e8f5ee;color:#2d6a4f;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700">@countPaid</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:12px;color:#92711a;font-weight:600">قيد / جزئي</span>
+                <span style="background:#fff8e8;color:#92711a;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700">@countPending</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- شريط التقدم العام -->
+@if (totalAgreed > 0)
+{
+<div style="background:var(--card-bg,#fff);border-radius:12px;padding:16px 20px;margin-bottom:24px;border:1px solid #e8e8e0">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:13px;font-weight:600;color:#3a4a28">نسبة الإنجاز الإجمالية</span>
+        <span style="font-size:14px;font-weight:700;color:#2d6a4f">@paidPct.ToString("F1")%</span>
+    </div>
+    <div style="background:#e8e8e0;border-radius:99px;height:10px;overflow:hidden">
+        <div style="width:@paidPct.ToString("F1")%;background:linear-gradient(90deg,#2d6a4f,#74c69d);height:100%;border-radius:99px;transition:width .6s ease"></div>
+    </div>
+</div>
+}
+
+<!-- فلاتر -->
+<div class="filter-card" style="margin-bottom:20px">
+    <form method="get">
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:12px;align-items:end">
+            <div class="filter-group">
+                <label style="font-size:12px;color:#9a9890;margin-bottom:4px;display:block">بحث</label>
+                <input type="text" name="search" value="@ViewBag.Search" class="filter-input"
+                       placeholder="اسم المحامي أو رقم القضية...">
+            </div>
+            <div class="filter-group">
+                <label style="font-size:12px;color:#9a9890;margin-bottom:4px;display:block">الفرع</label>
+                <select name="branchId" class="filter-select">
+                    <option value="">كل الفروع</option>
+                    @foreach (var b in ViewBag.Branches) {
+                        <option value="@b.Id" selected="@(ViewBag.BranchId == b.Id ? "selected" : null)">@b.BranchName</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <label style="font-size:12px;color:#9a9890;margin-bottom:4px;display:block">الحالة</label>
+                <select name="status" class="filter-select">
+                    <option value="">كل الحالات</option>
+                    <option value="قيد الدفع"      selected="@(ViewBag.Status=="قيد الدفع"      ?"selected":null)">قيد الدفع</option>
+                    <option value="مدفوع جزئياً"  selected="@(ViewBag.Status=="مدفوع جزئياً"  ?"selected":null)">مدفوع جزئياً</option>
+                    <option value="مدفوع كاملاً"  selected="@(ViewBag.Status=="مدفوع كاملاً"  ?"selected":null)">مدفوع كاملاً</option>
+                    <option value="ملغى"           selected="@(ViewBag.Status=="ملغى"           ?"selected":null)">ملغى</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label style="font-size:12px;color:#9a9890;margin-bottom:4px;display:block">السنة</label>
+                <input type="number" name="year" value="@ViewBag.Year" class="filter-input" placeholder="2024">
+            </div>
+            <div style="display:flex;gap:8px">
+                <button type="submit" class="btn-primary"><i class="ti ti-search"></i></button>
+                <a href="/PrivateLawyerSettlements" class="btn-cancel" style="display:flex;align-items:center;padding:0 12px">
+                    <i class="ti ti-x"></i>
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@Html.AntiForgeryToken()
+
+<!-- الجدول -->
+<div class="table-card" style="border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)">
+    <table class="data-table">
+        <thead>
+            <tr style="background:linear-gradient(135deg,#1B4332,#2d6a4f)">
+                <th style="color:#fff">#</th>
+                <th style="color:#fff">رقم القضية</th>
+                <th style="color:#fff">السنة</th>
+                <th style="color:#fff">المحكمة</th>
+                <th style="color:#fff">الفرع</th>
+                <th style="color:#fff">اسم المحامي</th>
+                <th style="color:#fff">الجوال</th>
+                <th style="color:#fff">الأتعاب المتفق عليها</th>
+                <th style="color:#fff">المدفوع</th>
+                <th style="color:#fff">المتبقي</th>
+                <th style="color:#fff">طريقة الدفع</th>
+                <th style="color:#fff">تاريخ التعاقد</th>
+                <th style="color:#fff">الحالة</th>
+                <th style="color:#fff">إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="14" style="text-align:center;padding:60px;color:#9a9890">
+                        <div style="width:80px;height:80px;background:#f5f5f0;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+                            <i class="ti ti-user-off" style="font-size:36px;color:#c8c8b8"></i>
+                        </div>
+                        <div style="font-size:15px;font-weight:600;color:#6a6a50;margin-bottom:6px">لا توجد سجلات</div>
+                        <div style="font-size:13px;color:#b0b09a">أضف أول تسوية لمحامٍ خاص</div>
+                        <a href="/PrivateLawyerSettlements/Create" class="btn-primary" style="display:inline-flex;align-items:center;gap:6px;margin-top:16px">
+                            <i class="ti ti-plus"></i> إضافة الآن
+                        </a>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                int i = 1;
+                @foreach (var item in Model)
+                {
+                    var rem = item.AgreeAmount - item.PaidAmount;
+                    double rowPct = item.AgreeAmount > 0 ? (double)(item.PaidAmount / item.AgreeAmount * 100) : 0;
+                    <tr style="@(i % 2 == 0 ? "background:#fafaf7" : "")">
+                        <td style="color:#9a9890;font-size:12px">@(i++)</td>
+                        <td><strong style="color:#2d6a4f">@item.CaseNumber</strong></td>
+                        <td>@item.Year</td>
+                        <td style="color:#6a6a50">@(item.Court?.CourtName ?? "—")</td>
+                        <td style="color:#6a6a50">@(item.Branch?.BranchName ?? "—")</td>
+                        <td>
+                            <div style="font-weight:600">@item.LawyerName</div>
+                            @if (!string.IsNullOrEmpty(item.LawyerIBAN))
+                            {
+                                <div style="font-size:11px;color:#9a9890;direction:ltr;text-align:right">@item.LawyerIBAN</div>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(item.LawyerPhone))
+                            {
+                                <a href="tel:@item.LawyerPhone" style="color:#546B41;text-decoration:none;font-size:13px;direction:ltr;display:block">
+                                    <i class="ti ti-phone" style="font-size:11px"></i> @item.LawyerPhone
+                                </a>
+                            }
+                            else { <span style="color:#c8c8b8">—</span> }
+                        </td>
+                        <td style="font-weight:700;color:#1B4332">@item.AgreeAmount.ToString("N2")</td>
+                        <td>
+                            <div style="font-weight:600;color:#28a745">@item.PaidAmount.ToString("N2")</div>
+                            <div style="background:#e8e8e0;border-radius:99px;height:4px;margin-top:4px;overflow:hidden;min-width:60px">
+                                <div style="width:@rowPct.ToString("F0")%;background:#28a745;height:100%;border-radius:99px"></div>
+                            </div>
+                        </td>
+                        <td style="font-weight:600;color:@(rem > 0 ? "#c0392b" : "#2d6a4f")">@rem.ToString("N2")</td>
+                        <td>
+                            <span style="background:#f0f4ee;color:#546B41;padding:3px 8px;border-radius:6px;font-size:11px">
+                                <i class="ti ti-credit-card" style="font-size:10px"></i> @item.PaymentMethod
+                            </span>
+                        </td>
+                        <td style="color:#6a6a50;font-size:12px">@(item.ContractDate?.ToString("yyyy/MM/dd") ?? "—")</td>
+                        <td>@Html.Raw(StatusBadge(item.Status))</td>
+                        <td>
+                            <div style="display:flex;gap:5px">
+                                <a href="/PrivateLawyerSettlements/Edit/@item.Id"
+                                   class="btn-icon" title="تعديل"
+                                   style="display:inline-flex;align-items:center;gap:3px;padding:5px 10px;font-size:12px">
+                                    <i class="ti ti-edit"></i> تعديل
+                                </a>
+                                <button type="button" class="btn-icon danger"
+                                        onclick="showDelete(@item.Id,'@item.LawyerName','/PrivateLawyerSettlements/Delete')"
+                                        style="display:inline-flex;align-items:center;gap:3px;padding:5px 10px;font-size:12px">
+                                    <i class="ti ti-trash"></i> حذف
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                <!-- صف الإجمالي -->
+                <tr style="background:linear-gradient(135deg,#1B4332,#2d6a4f);color:#fff;font-weight:700">
+                    <td colspan="7" style="padding:12px 14px;text-align:center;font-size:13px">
+                        <i class="ti ti-calculator"></i> الإجمالي العام
+                    </td>
+                    <td style="padding:12px 14px">@totalAgreed.ToString("N2")</td>
+                    <td style="padding:12px 14px">@totalPaid.ToString("N2")</td>
+                    <td style="padding:12px 14px">@totalRemaining.ToString("N2")</td>
+                    <td colspan="4"></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@functions {
+    string StatusBadge(string s) => s switch {
+        "مدفوع كاملاً"  => "<span style='background:#e8f5ee;color:#155724;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px'><i class=\"ti ti-circle-check\" style=\"font-size:13px\"></i> مدفوع كاملاً</span>",
+        "مدفوع جزئياً"  => "<span style='background:#e8f0ff;color:#1a3a8f;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px'><i class=\"ti ti-circle-half\" style=\"font-size:13px\"></i> جزئي</span>",
+        "ملغى"           => "<span style='background:#fde8e8;color:#c0392b;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px'><i class=\"ti ti-ban\" style=\"font-size:13px\"></i> ملغى</span>",
+        _                => "<span style='background:#fff8e8;color:#92711a;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px'><i class=\"ti ti-clock\" style=\"font-size:13px\"></i> قيد الدفع</span>"
+    };
+}
+
+<!-- Delete Modal -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:28px;width:440px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+            <div style="width:44px;height:44px;background:#fde8e8;border-radius:50%;display:flex;align-items:center;justify-content:center">
+                <i class="ti ti-alert-triangle" style="font-size:22px;color:#c0392b"></i>
+            </div>
+            <div>
+                <h3 style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0">تأكيد الحذف</h3>
+                <p style="font-size:13px;color:#6a6a50;margin:4px 0 0">هل أنت متأكد من حذف <strong id="deleteName"></strong>؟</p>
+            </div>
+        </div>
+        <form id="deleteForm" method="post">
+            <input type="hidden" name="id" id="deleteId"/>
+            @Html.AntiForgeryToken()
+            <div style="margin-bottom:16px">
+                <label style="font-size:13px;font-weight:600;color:#3a4a28;display:block;margin-bottom:6px">
+                    <i class="ti ti-note" style="font-size:13px"></i> سبب الحذف
+                </label>
+                <input type="text" name="reason" placeholder="أدخل سبب الحذف..."
+                       style="width:100%;padding:10px 14px;border:1.5px solid #e0e0d8;border-radius:10px;font-family:Cairo,sans-serif;font-size:13px;box-sizing:border-box;outline:none"
+                       onfocus="this.style.borderColor='#546B41'" onblur="this.style.borderColor='#e0e0d8'"/>
+            </div>
+            <div style="display:flex;gap:10px">
+                <button type="submit" style="flex:1;padding:11px;background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;border:none;border-radius:10px;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;cursor:pointer">
+                    <i class="ti ti-trash"></i> تأكيد الحذف
+                </button>
+                <button type="button" onclick="closeModal()" style="flex:1;padding:11px;background:#f5f5f0;color:#3a4a28;border:none;border-radius:10px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">
+                    إلغاء
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+function showDelete(id,name,action){
+    document.getElementById("deleteName").textContent=name;
+    document.getElementById("deleteId").value=id;
+    document.getElementById("deleteForm").action=action;
+    document.getElementById("deleteModal").style.display="flex";
+}
+function closeModal(){document.getElementById("deleteModal").style.display="none";}
+</script>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .stat-card{background:var(--card-bg,#fff);border-radius:12px;padding:18px 20px;border:1px solid #e8e8e0;}
+    .data-table thead th{padding:13px 14px;font-size:13px}
+    </style>
+}

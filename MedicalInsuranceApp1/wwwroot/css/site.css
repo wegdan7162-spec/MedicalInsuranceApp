@@ -277,4 +277,152 @@ body {
 }
 
 .alert-danger {
-    
+    padding: 12px 16px;
+    background: #fdecea;
+    border-radius: 10px;
+    color: #c0392b;
+    font-size: 13px;
+    margin-bottom: 16px;
+    border: 1px solid #f5b7b1;
+}
+
+/* ===== Dark Mode Toggle Button ===== */
+#theme-toggle {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(154,177,122,0.35);
+    background: rgba(255,255,255,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#theme-toggle:hover {
+    background: rgba(195,204,155,0.3);
+}
+
+#theme-toggle i {
+    font-size: 18px;
+    color: #3a4a28;
+    transition: all 0.3s;
+}
+
+/* ===== Dark Mode ===== */
+body.dark-mode {
+    background: linear-gradient(135deg, #1a1f12 0%, #111811 50%, #0d120a 100%);
+    color: #d4d8c4;
+}
+
+body.dark-mode .sidebar {
+    background: #1e2418;
+    border-left: 1px solid rgba(154,177,122,0.15);
+}
+
+body.dark-mode .sidebar-brand {
+    border-bottom-color: rgba(154,177,122,0.15);
+}
+
+body.dark-mode .brand-text h3 {
+    color: #9AB17A;
+}
+
+body.dark-mode .brand-text span {
+    color: #7a9a5a;
+}
+
+body.dark-mode .sidebar-label {
+    color: #6a8a4a;
+}
+
+body.dark-mode .nav-item {
+    color: #c4cca8;
+}
+
+body.dark-mode .nav-item:hover {
+    background: rgba(154,177,122,0.15);
+    color: #d4e4b4;
+}
+
+body.dark-mode .nav-item.active {
+    background: rgba(154,177,122,0.25);
+    color: #c3cc9b;
+}
+
+body.dark-mode .sidebar-footer {
+    border-top-color: rgba(154,177,122,0.15);
+}
+
+body.dark-mode .user-info .uname {
+    color: #c4cca8;
+}
+
+body.dark-mode .user-info .ujob {
+    color: #7a9a5a;
+}
+
+body.dark-mode .topbar {
+    background: #1e2418;
+    border-bottom-color: rgba(154,177,122,0.15);
+}
+
+body.dark-mode .topbar-title {
+    color: #9AB17A;
+}
+
+body.dark-mode .tb-btn {
+    background: rgba(30,36,24,0.8);
+    border-color: rgba(154,177,122,0.2);
+}
+
+body.dark-mode .tb-btn:hover {
+    background: rgba(154,177,122,0.15);
+}
+
+body.dark-mode .tb-btn i {
+    color: #9AB17A;
+}
+
+body.dark-mode #theme-toggle {
+    background: rgba(30,36,24,0.8);
+    border-color: rgba(154,177,122,0.2);
+}
+
+body.dark-mode #theme-toggle:hover {
+    background: rgba(154,177,122,0.15);
+}
+
+body.dark-mode #theme-toggle i {
+    color: #f0c040;
+}
+
+body.dark-mode .page-content {
+    color: #d4d8c4;
+}
+
+/* ===== عناوين الحقول — أبيض في كل الصفحات ===== */
+.form-label,
+label.form-label,
+.filter-label,
+label.filter-label,
+.info-label,
+.section-title,
+.page-content label:not(.nav-item):not(.btn):not([class*="modal"]) {
+    color: #ffffff !important;
+}
+
+.section-title {
+    border-bottom-color: rgba(255,255,255,0.2) !important;
+}
+
+/* عناوين داخل المودالز والبطاقات البيضاء — تبقى داكنة */
+.modal label,
+.modal .form-label,
+.delete-modal label,
+.delete-modal .form-label,
+[id*="Modal"] label,
+[id*="modal"] label {
+    color: #333333 !important;
+}

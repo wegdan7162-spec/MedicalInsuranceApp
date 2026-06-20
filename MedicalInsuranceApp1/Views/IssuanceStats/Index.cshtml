@@ -1,0 +1,220 @@
+@model List<MedicalInsuranceApp1.Models.Entities.InsuranceContract>
+@{
+    ViewData["Title"] = "إحصائيات الإصدار";
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="/Dashboard/Index" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#ffffff">إحصائيات الإصدار</h2>
+            <p style="font-size:13px;color:#9a9890;margin-top:2px">ملخص عقود التأمين الطبي وأوامر التوريد والإيصالات</p>
+        </div>
+    </div>
+    <button onclick="window.print()" class="btn-cancel">
+        <i class="ti ti-printer"></i> طباعة
+    </button>
+</div>
+
+<!-- فلاتر -->
+<div class="filter-card" style="margin-bottom:24px">
+    <form method="get">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <select name="year" class="filter-select">
+                    <option value="">كل السنوات</option>
+                    @for (int y = DateTime.Now.Year + 1; y >= DateTime.Now.Year - 4; y--)
+                    {
+                        string? _ySel = ViewBag.Year?.ToString() == y.ToString() ? "selected" : null;
+                        <option value="@y" selected="@_ySel">@y</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                @{ string? _fp = ViewBag.FacilityType == "Private" ? "selected" : null;
+                   string? _fg = ViewBag.FacilityType == "Public"  ? "selected" : null; }
+                <select name="facilityType" class="filter-select">
+                    <option value="">خاص وحكومي</option>
+                    <option value="Private" selected="@_fp">خاص فقط</option>
+                    <option value="Public"  selected="@_fg">حكومي فقط</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                @{ string? _sa = ViewBag.Status == "نشط"  ? "selected" : null;
+                   string? _se = ViewBag.Status == "منتهي" ? "selected" : null; }
+                <select name="status" class="filter-select">
+                    <option value="">كل الحالات</option>
+                    <option value="نشط"  selected="@_sa">نشط</option>
+                    <option value="منتهي" selected="@_se">منتهي</option>
+                </select>
+            </div>
+            <div class="filter-group" style="display:flex;gap:8px">
+                <button type="submit" class="btn-primary" style="flex:1"><i class="ti ti-search"></i> تصفية</button>
+                <a href="/IssuanceStats" class="btn-cancel" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px">
+                    <i class="ti ti-x"></i> إعادة
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div id="printArea">
+
+<!-- بطاقات العقود -->
+<div style="font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:12px">
+    <i class="ti ti-file-text" style="margin-left:6px"></i> ملخص العقود
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px">
+    <div class="stat-card" style="border-right:4px solid #1a3a5c">
+        <div class="stat-label">إجمالي العقود</div>
+        <div class="stat-value" style="color:#1a3a5c">@ViewBag.TotalContracts</div>
+        <div class="stat-sub">خاص: @ViewBag.PrivateCount &nbsp;|&nbsp; حكومي: @ViewBag.PublicCount</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #2d6a4f">
+        <div class="stat-label">نشطة</div>
+        <div class="stat-value" style="color:#2d6a4f">@ViewBag.ActiveContracts</div>
+        <div class="stat-sub">منتهية: @ViewBag.ExpiredContracts &nbsp;|&nbsp; ملغية: @ViewBag.CancelledContracts</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #c9a84c">
+        <div class="stat-label">أوامر التوريد</div>
+        <div class="stat-value" style="color:#c9a84c">@ViewBag.TotalOrders</div>
+        <div class="stat-sub">قيد التحصيل: @ViewBag.PendingOrders &nbsp;|&nbsp; مُوَرَّد: @ViewBag.CompletedOrders</div>
+    </div>
+</div>
+
+<!-- بطاقات الأقساط -->
+<div style="font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:12px">
+    <i class="ti ti-calculator" style="margin-left:6px"></i> إجماليات الأقساط والخزينة
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px">
+    <div class="stat-card" style="border-right:4px solid #1a3a5c">
+        <div class="stat-label">إجمالي الأقساط</div>
+        <div class="stat-value" style="color:#1a3a5c;font-size:16px">@(((decimal)ViewBag.TotalPremium).ToString("N3"))</div>
+        <div class="stat-sub">خاص: @(((decimal)ViewBag.TotalPrivatePremium).ToString("N3"))</div>
+        <div class="stat-sub">حكومي: @(((decimal)ViewBag.TotalPublicPremium).ToString("N3"))</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #c9a84c">
+        <div class="stat-label">تحت التحصيل</div>
+        <div class="stat-value" style="color:#c9a84c;font-size:16px">@(((decimal)ViewBag.TotalUnderCollection).ToString("N3"))</div>
+        <div class="stat-sub">رسوم الإشراف: @(((decimal)ViewBag.TotalSupervision).ToString("N3"))</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #6c3483">
+        <div class="stat-label">الخزينة المحصلة</div>
+        <div class="stat-value" style="color:#6c3483;font-size:16px">@(((decimal)ViewBag.TotalTreasury).ToString("N3"))</div>
+        <div class="stat-sub">إيصالات: @ViewBag.TotalReceipts | مجموع: @(((decimal)ViewBag.TotalReceiptAmount).ToString("N3"))</div>
+    </div>
+</div>
+
+<!-- جدول تفصيلي بالعقود -->
+<div class="table-card">
+    <div style="font-size:14px;font-weight:700;color:#1a3a5c;margin-bottom:16px">
+        <i class="ti ti-list-details" style="margin-left:6px"></i>
+        تفاصيل العقود (@Model.Count عقد)
+    </div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>رقم العقد</th>
+                <th>اسم المنشأة</th>
+                <th>النوع</th>
+                <th>بداية التأمين</th>
+                <th>نهاية التأمين</th>
+                <th>القسط الخاص</th>
+                <th>القسط الحكومي</th>
+                <th>رسوم الإشراف</th>
+                <th>تحت التحصيل</th>
+                <th>الخزينة</th>
+                <th>أوامر التوريد</th>
+                <th>إيصالات</th>
+                <th>الحالة</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="14" style="text-align:center;padding:40px;color:#9a9890">
+                        لا توجد عقود بهذه المعايير
+                    </td>
+                </tr>
+            }
+            else
+            {
+                int i = 1;
+                @foreach (var c in Model)
+                {
+                <tr>
+                    <td style="color:#9a9890">@(i++)</td>
+                    <td style="font-family:monospace;font-size:11px">@(c.ContractNumber ?? "—")</td>
+                    <td><strong style="font-size:13px">@c.FacilityName</strong></td>
+                    <td>
+                        @if (c.FacilityType == MedicalInsuranceApp1.Models.Entities.FacilityType.Private)
+                        { <span style="background:#e8f0fe;color:#1a3a5c;padding:2px 7px;border-radius:10px;font-size:11px">خاص</span> }
+                        else
+                        { <span style="background:#e8f5ee;color:#2d6a4f;padding:2px 7px;border-radius:10px;font-size:11px">حكومي</span> }
+                    </td>
+                    <td style="font-size:11px;color:#6a6a50">@c.InsuranceStartDate.ToString("yyyy/MM/dd")</td>
+                    <td style="font-size:11px;color:#6a6a50">@c.InsuranceEndDate.ToString("yyyy/MM/dd")</td>
+                    <td style="font-weight:600;color:#1a3a5c;font-size:12px">@c.PrivatePremium.ToString("N3")</td>
+                    <td style="font-weight:600;color:#2d6a4f;font-size:12px">@c.PublicPremium.ToString("N3")</td>
+                    <td style="color:#c9a84c;font-size:12px">@c.SupervisionFee.ToString("N3")</td>
+                    <td style="color:#c9a84c;font-weight:600;font-size:12px">@c.UnderCollectionAmount.ToString("N3")</td>
+                    <td style="font-weight:700;color:#6c3483;font-size:12px">@c.TreasuryAmount.ToString("N3")</td>
+                    <td style="text-align:center">
+                        <span style="background:#e8f0fe;color:#1a3a5c;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">
+                            @c.SupplyOrders.Count()
+                        </span>
+                    </td>
+                    <td style="text-align:center">
+                        <span style="background:#f0eaf8;color:#6c3483;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">
+                            @c.Receipts.Count()
+                        </span>
+                    </td>
+                    <td>
+                        @if (c.Status == "نشط")
+                        { <span style="background:#e8f5ee;color:#2d6a4f;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">نشط</span> }
+                        else if (c.Status == "منتهي")
+                        { <span style="background:#f0f0e8;color:#6a6a50;padding:2px 8px;border-radius:10px;font-size:11px">منتهي</span> }
+                        else
+                        { <span style="background:#fde8e8;color:#c0392b;padding:2px 8px;border-radius:10px;font-size:11px">ملغي</span> }
+                    </td>
+                </tr>
+                }
+            }
+        </tbody>
+        @if (Model.Any())
+        {
+        <tfoot>
+            <tr style="font-weight:700;background:var(--sidebar-bg,#f5f5f0);font-size:12px">
+                <td colspan="6" style="padding:10px 14px">الإجمالي (@Model.Count عقد)</td>
+                <td style="padding:10px 14px;color:#1a3a5c">@(((decimal)ViewBag.TotalPrivatePremium).ToString("N3"))</td>
+                <td style="padding:10px 14px;color:#2d6a4f">@(((decimal)ViewBag.TotalPublicPremium).ToString("N3"))</td>
+                <td style="padding:10px 14px;color:#c9a84c">@(((decimal)ViewBag.TotalSupervision).ToString("N3"))</td>
+                <td style="padding:10px 14px;color:#c9a84c">@(((decimal)ViewBag.TotalUnderCollection).ToString("N3"))</td>
+                <td style="padding:10px 14px;color:#6c3483">@(((decimal)ViewBag.TotalTreasury).ToString("N3"))</td>
+                <td colspan="3"></td>
+            </tr>
+        </tfoot>
+        }
+    </table>
+</div>
+
+</div><!-- end printArea -->
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .stat-card{background:var(--card-bg,#fff);border-radius:12px;padding:16px 20px;border:1px solid #e8e8e0;}
+    .stat-label{font-size:12px;color:#9a9890;margin-bottom:6px}
+    .stat-value{font-size:22px;font-weight:700;margin-bottom:4px}
+    .stat-sub{font-size:11px;color:#6a6a50;margin-top:2px}
+    @@media print{
+        body *{visibility:hidden}
+        #printArea,#printArea *{visibility:visible}
+        #printArea{position:absolute;left:0;top:0;width:100%}
+        .table-card{box-shadow:none;border:1px solid #ccc}
+    }
+    </style>
+}

@@ -1,0 +1,319 @@
+@model List<MedicalInsuranceApp1.Models.Entities.SupplyOrder>
+@{
+    ViewData["Title"] = "أوامر التوريد";
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="/InsuranceContracts" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#ffffff">أوامر التوريد</h2>
+            <p style="font-size:13px;color:#9a9890;margin-top:2px">
+                إجمالي @Model.Count أمر | قيد التحصيل: @ViewBag.CountPending | مُوَرَّد: @ViewBag.CountCollected
+            </p>
+        </div>
+    </div>
+    <a href="/SupplyOrders/Create" class="btn-primary">
+        <i class="ti ti-plus"></i> أمر توريد جديد
+    </a>
+</div>
+
+<!-- بطاقة الإجمالي -->
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+    <div class="stat-card" style="border-right:4px solid #1a3a5c">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">إجمالي أوامر التوريد</div>
+        <div style="font-size:18px;font-weight:700;color:#1a3a5c">@(((decimal)ViewBag.TotalAmount).ToString("N3"))</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #c9a84c">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">قيد التحصيل</div>
+        <div style="font-size:22px;font-weight:700;color:#c9a84c">@ViewBag.CountPending</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #2d6a4f">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">مُوَرَّدة</div>
+        <div style="font-size:22px;font-weight:700;color:#2d6a4f">@ViewBag.CountCollected</div>
+    </div>
+</div>
+
+<!-- فلاتر -->
+<div class="filter-card" style="margin-bottom:20px">
+    <form method="get">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <select name="contractId" class="filter-select">
+                    <option value="">كل العقود</option>
+                    @foreach (var c in (IEnumerable<MedicalInsuranceApp1.Models.Entities.InsuranceContract>)ViewBag.Contracts)
+                    {
+                        string? _cSel = ViewBag.ContractId?.ToString() == c.Id.ToString() ? "selected" : null;
+                        <option value="@c.Id" selected="@_cSel">@c.FacilityName</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                @{ string? _sp = ViewBag.Status == "قيد التحصيل" ? "selected" : null;
+                   string? _ss = ViewBag.Status == "مُوَرَّد"    ? "selected" : null;
+                   string? _sc = ViewBag.Status == "ملغي"        ? "selected" : null; }
+                <select name="status" class="filter-select">
+                    <option value="">كل الحالات</option>
+                    <option value="قيد التحصيل" selected="@_sp">قيد التحصيل</option>
+                    <option value="مُوَرَّد"    selected="@_ss">مُوَرَّد</option>
+                    <option value="ملغي"        selected="@_sc">ملغي</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <select name="year" class="filter-select">
+                    <option value="">كل السنوات</option>
+                    @for (int y = DateTime.Now.Year + 1; y >= DateTime.Now.Year - 4; y--)
+                    {
+                        string? _ySel = ViewBag.Year?.ToString() == y.ToString() ? "selected" : null;
+                        <option value="@y" selected="@_ySel">@y</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group" style="display:flex;gap:8px">
+                <button type="submit" class="btn-primary" style="flex:1"><i class="ti ti-search"></i> بحث</button>
+                <a href="/SupplyOrders" class="btn-cancel" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px">
+                    <i class="ti ti-x"></i> إعادة
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@Html.AntiForgeryToken()
+
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>رقم الأمر</th>
+                <th>تاريخ الأمر</th>
+                <th>المنشأة</th>
+                <th>الفترة</th>
+                <th>المبلغ</th>
+                <th>الحالة</th>
+                <th>مرحلة سير العمل</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="8" style="text-align:center;padding:40px;color:#9a9890">
+                        <i class="ti ti-truck-delivery" style="font-size:32px;display:block;margin-bottom:8px"></i>
+                        لا توجد أوامر توريد
+                    </td>
+                </tr>
+            }
+            else
+            {
+                int i = 1;
+                @foreach (var item in Model)
+                {
+                <tr>
+                    <td style="color:#9a9890">@(i++)</td>
+                    <td style="font-family:monospace;font-size:12px">@(item.OrderNumber ?? "—")</td>
+                    <td style="font-size:12px;color:#6a6a50">@item.OrderDate.ToString("yyyy/MM/dd")</td>
+                    <td>
+                        <strong>@(item.FacilityName ?? item.Contract?.FacilityName ?? "—")</strong>
+                        @if (!string.IsNullOrEmpty(item.QuarterDescription))
+                        { <div style="font-size:11px;color:#9a9890">@item.QuarterDescription</div> }
+                    </td>
+                    <td style="font-size:12px;color:#6a6a50">
+                        @item.CoverageFrom.ToString("yyyy/MM/dd")<br/>
+                        <span style="color:#9a9890">حتى</span> @item.CoverageTo.ToString("yyyy/MM/dd")
+                    </td>
+                    <td style="font-weight:700;color:#1a3a5c;font-size:14px">@item.Amount.ToString("N3")</td>
+                    <td>
+                        @if (item.Status == "مُوَرَّد")
+                        { <span class="badge-status collected">مُوَرَّد</span> }
+                        else if (item.Status == "قيد التحصيل")
+                        { <span class="badge-status pending">قيد التحصيل</span> }
+                        else
+                        { <span class="badge-status cancelled">ملغي</span> }
+                    </td>
+                    <!-- عمود مرحلة سير العمل -->
+                    <td>
+                        @{
+                            var wf = item.WorkflowStatus ?? "مسودة";
+                        }
+                        @if (wf == "مسودة")
+                        {
+                            <span class="badge-wf draft"><i class="ti ti-pencil"></i> مسودة</span>
+                        }
+                        else if (wf == "في_انتظار_اكتتاب")
+                        {
+                            <div>
+                                <span class="badge-wf waiting"><i class="ti ti-clock"></i> انتظار اعتماد الاكتتاب</span>
+                                @if (item.Receipt != null)
+                                {
+                                    <div style="font-size:11px;color:#555;margin-top:4px">
+                                        <i class="ti ti-receipt" style="color:#6c3483"></i>
+                                        <strong>@item.Receipt.ReceiptNumber</strong>
+                                        — @item.Receipt.TotalAmount.ToString("N3") د.ل
+                                        <br/><span style="color:#9a9890">@item.Receipt.ReceiptDate.ToString("yyyy/MM/dd")</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else if (wf == "معتمد_اكتتاب")
+                        {
+                            <div>
+                                <span class="badge-wf approved"><i class="ti ti-check"></i> معتمد الاكتتاب</span>
+                                @if (!string.IsNullOrEmpty(item.UnderwritingApprovedBy))
+                                {
+                                    <div style="font-size:11px;color:#2d6a4f;margin-top:3px">
+                                        <i class="ti ti-user-check"></i> @item.UnderwritingApprovedBy
+                                        <br/><span style="color:#9a9890">@item.UnderwritingApprovedAt?.ToString("yyyy/MM/dd HH:mm")</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else if (wf == "معتمد_خزينة")
+                        {
+                            <div>
+                                <span class="badge-wf treasury"><i class="ti ti-building-bank"></i> معتمد الخزينة</span>
+                                @if (!string.IsNullOrEmpty(item.UnderwritingVerifiedBy))
+                                {
+                                    <div style="font-size:11px;color:#1a3a5c;margin-top:3px">
+                                        <i class="ti ti-user-check"></i> @item.UnderwritingVerifiedBy
+                                        <br/><span style="color:#9a9890">@item.UnderwritingVerifiedAt?.ToString("yyyy/MM/dd HH:mm")</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else if (wf == "مؤكد" || wf == "مغلق")
+                        {
+                            <span class="badge-wf closed"><i class="ti ti-lock"></i> @wf</span>
+                        }
+                        else
+                        {
+                            <span class="badge-wf draft">@wf</span>
+                        }
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+                            @* زر إيصال القبض — فقط إن لم يصدر إيصال بعد *@
+                            @if (item.WorkflowStatus == "مسودة" || item.WorkflowStatus == null)
+                            {
+                                <a href="/ReceiptVouchers/Create?supplyOrderId=@item.Id" class="btn-icon"
+                                   style="display:inline-flex;align-items:center;gap:3px;padding:4px 8px;background:#f0eaf8;color:#6c3483;font-size:11px">
+                                    <i class="ti ti-receipt"></i> قبض
+                                </a>
+                            }
+                            @* زر اعتماد الاكتتاب — يظهر فقط في انتظار الاكتتاب *@
+                            @if (item.WorkflowStatus == "في_انتظار_اكتتاب")
+                            {
+                                <button type="button"
+                                        onclick="showApprove(@item.Id, '@(item.FacilityName ?? item.OrderNumber)')"
+                                        style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;background:#1B4332;color:#fff;border:none;border-radius:6px;font-family:Cairo,sans-serif;font-size:12px;font-weight:600;cursor:pointer">
+                                    <i class="ti ti-check"></i> اعتماد الاكتتاب
+                                </button>
+                            }
+                            @* زر تأكيد الخزينة — بعد اعتماد الاكتتاب *@
+                            @if (item.WorkflowStatus == "معتمد_اكتتاب")
+                            {
+                                <a href="/ReceiptVouchers/TreasuryConfirm?supplyOrderId=@item.Id"
+                                   style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;background:#1a3a5c;color:#fff;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none">
+                                    <i class="ti ti-building-bank"></i> تأكيد الخزينة
+                                </a>
+                            }
+                            <a href="/SupplyOrders/Edit/@item.Id" class="btn-icon"
+                               style="display:inline-flex;align-items:center;gap:3px;padding:4px 8px">
+                                <i class="ti ti-edit"></i>
+                            </a>
+                            <button type="button" class="btn-icon danger"
+                                    onclick="showDelete(@item.Id,'أمر توريد @(item.OrderNumber ?? item.FacilityName)')"
+                                    style="display:inline-flex;align-items:center;gap:3px;padding:4px 8px">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Approve Modal -->
+<div id="approveModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:var(--card-bg,#fff);border-radius:16px;padding:28px;width:460px;max-width:90vw">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <div style="width:40px;height:40px;border-radius:50%;background:#e8f5ee;display:flex;align-items:center;justify-content:center">
+                <i class="ti ti-check" style="color:#1B4332;font-size:20px"></i>
+            </div>
+            <h3 style="font-size:16px;font-weight:700;color:#1B4332">اعتماد أمر التوريد — قسم الاكتتاب</h3>
+        </div>
+        <p style="font-size:13px;color:#6a6a50;margin-bottom:6px">
+            هل تؤكد اعتماد أمر التوريد الخاص بـ <strong id="approveName"></strong>؟
+        </p>
+        <p style="font-size:12px;color:#888;margin-bottom:20px;background:#f0faf4;padding:10px;border-radius:8px;border-right:3px solid #1B4332">
+            <i class="ti ti-info-circle"></i>
+            سيتم توليد الجانب الدائن للقيد المحاسبي آلياً (إيرادات أقساط التأمين) وتسجيل اعتمادك.
+        </p>
+        <form id="approveForm" method="post" action="/SupplyOrders/UnderwritingApprove">
+            <input type="hidden" name="id" id="approveId"/>
+            @Html.AntiForgeryToken()
+            <div style="display:flex;gap:10px">
+                <button type="submit" style="flex:1;padding:10px;background:#1B4332;color:#fff;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">
+                    <i class="ti ti-check"></i> تأكيد الاعتماد
+                </button>
+                <button type="button" onclick="document.getElementById('approveModal').style.display='none'"
+                        style="flex:1;padding:10px;background:#f5f5f0;color:#3a4a28;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">
+                    إلغاء
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:var(--card-bg,#fff);border-radius:16px;padding:28px;width:420px;max-width:90vw">
+        <h3 style="font-size:16px;font-weight:700;color:#c0392b;margin-bottom:8px">تأكيد الحذف</h3>
+        <p style="font-size:13px;color:#6a6a50;margin-bottom:16px">هل أنت متأكد من حذف <strong id="deleteName"></strong>؟</p>
+        <form id="deleteForm" method="post" action="/SupplyOrders/Delete">
+            <input type="hidden" name="id" id="deleteId"/>
+            @Html.AntiForgeryToken()
+            <div style="margin-bottom:16px">
+                <input type="text" name="reason" placeholder="سبب الحذف..."
+                       style="width:100%;padding:10px 12px;border:1px solid #e0e0d8;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;box-sizing:border-box"/>
+            </div>
+            <div style="display:flex;gap:10px">
+                <button type="submit" style="flex:1;padding:10px;background:#c0392b;color:#fff;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">حذف</button>
+                <button type="button" onclick="document.getElementById('deleteModal').style.display='none'" style="flex:1;padding:10px;background:#f5f5f0;color:#3a4a28;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+function showDelete(id, name) {
+    document.getElementById("deleteName").textContent = name;
+    document.getElementById("deleteId").value = id;
+    document.getElementById("deleteModal").style.display = "flex";
+}
+function showApprove(id, name) {
+    document.getElementById("approveName").textContent = name;
+    document.getElementById("approveId").value = id;
+    document.getElementById("approveModal").style.display = "flex";
+}
+</script>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .stat-card{background:var(--card-bg,#fff);border-radius:12px;padding:16px 20px;border:1px solid #e8e8e0;}
+    .badge-status,.badge-wf{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+    .badge-status.collected{background:#e8f5ee;color:#2d6a4f}
+    .badge-status.pending{background:#fff8e8;color:#92711a}
+    .badge-status.cancelled{background:#fde8e8;color:#c0392b}
+    .badge-wf.draft{background:#f0f0ec;color:#777}
+    .badge-wf.waiting{background:#fff3cd;color:#856404;border:1px solid #ffc107}
+    .badge-wf.approved{background:#e8f5ee;color:#1B4332;border:1px solid #a8d5b8}
+    .badge-wf.closed{background:#e8e8f8;color:#3a3a8a}
+    .badge-wf.treasury{background:#e8f0f8;color:#1a3a5c;border:1px solid #a0b8d8}
+    </style>
+}

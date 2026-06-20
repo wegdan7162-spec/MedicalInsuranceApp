@@ -4,9 +4,14 @@
 }
 
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-    <div>
-        <h2 style="font-size:18px;font-weight:700;color:#ffffff">إدارة المحاكم</h2>
-        <p style="font-size:13px;color:#9a9890;margin-top:2px">إجمالي @Model.Count محكمة</p>
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="/Dashboard/Index" class="btn-back" title="رجوع للرئيسية">
+            <i class="ti ti-arrow-right"></i>
+        </a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#ffffff">إدارة المحاكم</h2>
+            <p style="font-size:13px;color:#9a9890;margin-top:2px">إجمالي @Model.Count محكمة</p>
+        </div>
     </div>
     <a href="/Courts/Create" class="btn-primary">
         <i class="ti ti-plus"></i> محكمة جديدة
@@ -35,12 +40,13 @@
                         <td><strong>@c.CourtName</strong></td>
                         <td>
                             <div style="display:flex;gap:6px">
-                                <a href="/Courts/Edit/@c.Id" class="btn-icon" title="تعديل">
-                                    <i class="ti ti-edit"></i>
+                                <a href="/Courts/Edit/@c.Id" class="btn-icon" title="تعديل" style="display:inline-flex;align-items:center;gap:4px">
+                                    <i class="ti ti-edit"></i> <span style="font-size:12px">تعديل</span>
                                 </a>
                                 <button type="button" class="btn-icon danger"
-                                        onclick="showDelete(@c.Id, '@c.CourtName', '/Courts/Delete')">
-                                    <i class="ti ti-trash"></i>
+                                        onclick="showDelete(@c.Id, '@c.CourtName', '/Courts/Delete')"
+                                        style="display:inline-flex;align-items:center;gap:4px">
+                                    <i class="ti ti-trash"></i> <span style="font-size:12px">حذف</span>
                                 </button>
                             </div>
                         </td>

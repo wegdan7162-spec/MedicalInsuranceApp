@@ -237,3 +237,13 @@
     .form-file:hover {
         border-color: #1B4332;
     }
+
+/* ===== عناوين الحقول — أبيض في كل الصفحات ===== */
+.form-label,
+label.form-label,
+.filter-label,
+label.filter-label,
+.info-label,
+.section-title {
+    color: #ffffff !important;
+}

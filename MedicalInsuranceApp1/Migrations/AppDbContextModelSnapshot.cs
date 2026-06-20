@@ -54,6 +54,224 @@ namespace MedicalInsuranceApp1.Migrations
                     b.ToTable("TblEvents");
                 });
 
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.Bank", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BankCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TblBanks");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.BankAccount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountNumber")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("BankBranch")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal>("CurrentBalance")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("OpeningBalance")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TblBankAccounts");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.BankBranch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("BankId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("BranchCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("BranchName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankId");
+
+                    b.ToTable("TblBankBranches");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.BankTransaction", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BankAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CommissionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("CreditAmount")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("DebitAmount")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("DocType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DocumentNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("EntryNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("FriendlyClaimId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OutterClaimId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("RunningBalance")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankAccountId")
+                        .HasDatabaseName("IX_BankTransactions_AccountId");
+
+                    b.HasIndex("CommissionId");
+
+                    b.HasIndex("FriendlyClaimId");
+
+                    b.HasIndex("OutterClaimId");
+
+                    b.HasIndex("TransactionDate")
+                        .HasDatabaseName("IX_BankTransactions_Date");
+
+                    b.ToTable("TblBankTransactions");
+                });
+
             modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.Branch", b =>
                 {
                     b.Property<int>("Id")
@@ -70,20 +288,159 @@ namespace MedicalInsuranceApp1.Migrations
                     b.Property<bool?>("Del")
                         .HasColumnType("bit");
 
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DeletedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("DeleteReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.ToTable("TblBranch", (string)null);
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.CaseFeeSettlement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AgreeAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CaseNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("ContractDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CourtId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LawyerName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("CourtId");
+
+                    b.ToTable("TblCaseFeeSettlement");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.Commission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AuthorizationNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("BeneficiaryName")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<decimal>("CommissionAmount")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("CommissionRate")
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EntryNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("PremiumAmount")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SupplierName")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TblCommissions");
                 });
 
             modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.Court", b =>
@@ -102,120 +459,18 @@ namespace MedicalInsuranceApp1.Migrations
                     b.Property<bool?>("Del")
                         .HasColumnType("bit");
 
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DeletedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("DeleteReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.ToTable("TblCourt1", (string)null);
-                });
-
-            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.CourtCase", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("BranchId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Place")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("IncidentDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("FileStatus")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ClaimStatus")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("CourtId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("FileExtension")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("FileIcon")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("FileName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<long>("Num")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("PlaintiffName")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime>("RegDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double>("Reserve")
-                        .HasColumnType("float");
-
-                    b.Property<double>("Setteld")
-                        .HasColumnType("float");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Year")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BranchId");
-
-                    b.HasIndex("CourtId");
-
-                    b.HasIndex("Year", "Num")
-                        .IsUnique()
-                        .HasDatabaseName("IX_CourtCases_Year_Num");
-
-                    b.ToTable("TblCourtsN");
-                });
-
-            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.CourtFile", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CourtsNId")
-                        .HasColumnType("int");
-
-                    b.Property<byte[]>("FileData")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CourtsNId");
-
-                    b.ToTable("TblCourtFiles");
                 });
 
             modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.Expense", b =>
@@ -301,6 +556,18 @@ namespace MedicalInsuranceApp1.Migrations
                     b.Property<int?>("CourtId")
                         .HasColumnType("int");
 
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FileExtension")
                         .HasColumnType("nvarchar(max)");
 
@@ -346,20 +613,6 @@ namespace MedicalInsuranceApp1.Migrations
 
                     b.Property<int>("Year")
                         .HasColumnType("int");
-
-                    b.Property<bool?>("Del")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeletedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("DeleteReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
 
                     b.HasKey("Id");
 
@@ -431,6 +684,234 @@ namespace MedicalInsuranceApp1.Migrations
                     b.ToTable("TblIncidentPlace");
                 });
 
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.InsuranceContract", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContractNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FacilityName")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("FacilityType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("InsuranceEndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("InsuranceStartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<decimal>("PrepaidAmount")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("PrivatePremium")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("PublicPremium")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<decimal>("SupervisionFee")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("TreasuryAmount")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("UnderCollectionAmount")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TblInsuranceContracts");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.Marketer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TblMarketers");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.MarketerCommissionItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("CommissionAmount")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("CommissionRate")
+                        .HasColumnType("decimal(5,4)");
+
+                    b.Property<string>("FacilityName")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<decimal>("NetPremiums")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("Period")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("RecordId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ReturnedPremiums")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("TotalPremiums")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RecordId");
+
+                    b.ToTable("TblMarketerCommissionItems");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.MarketerCommissionRecord", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CheckNumber")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MarketerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("PreparedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ReceiptNumbers")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ReviewedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("SettlementDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SupplyOrderNumbers")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MarketerId");
+
+                    b.ToTable("TblMarketerCommissionRecords");
+                });
+
             modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.Message", b =>
                 {
                     b.Property<int>("Id")
@@ -480,6 +961,18 @@ namespace MedicalInsuranceApp1.Migrations
                     b.Property<int>("CourtId")
                         .HasColumnType("int");
 
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FileExtension")
                         .HasColumnType("nvarchar(max)");
 
@@ -524,20 +1017,6 @@ namespace MedicalInsuranceApp1.Migrations
                     b.Property<int>("Year")
                         .HasColumnType("int");
 
-                    b.Property<bool?>("Del")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeletedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("DeleteReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BranchId");
@@ -571,6 +1050,94 @@ namespace MedicalInsuranceApp1.Migrations
                     b.ToTable("TblOutterFiles");
                 });
 
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.PaymentAuthorization", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<DateTime>("AuthorizationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AuthorizationNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("BankAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("BeneficiaryName")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("BeneficiaryType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("CheckNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("CommissionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int?>("LinkedTransactionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankAccountId");
+
+                    b.HasIndex("CommissionId");
+
+                    b.HasIndex("LinkedTransactionId");
+
+                    b.ToTable("TblPaymentAuthorizations");
+                });
+
             modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.PlaintiffName", b =>
                 {
                     b.Property<int>("Id")
@@ -585,16 +1152,14 @@ namespace MedicalInsuranceApp1.Migrations
                     b.Property<bool?>("Del")
                         .HasColumnType("bit");
 
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DeletedBy")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("DeleteReason")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
@@ -615,7 +1180,528 @@ namespace MedicalInsuranceApp1.Migrations
                     b.ToTable("TblPlainitiffName");
                 });
 
-            modelBuilder.Entity("MedicalInsuranceApp1.Models.Identity.ApplicationRole", b =>
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.PrivateLawyerSettlement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AgreeAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("CaseNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("ContractDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ContractEndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CourtId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LawyerIBAN")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("LawyerName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("LawyerPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("CourtId");
+
+                    b.ToTable("TblPrivateLawyerSettlement");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.ReceiptVoucher", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BankAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("BankName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("CheckNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("CollectionType")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ContractId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("DinarAmount")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("DirhamAmount")
+                        .HasColumnType("decimal(5,3)");
+
+                    b.Property<string>("FacilityName")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int?>("LinkedTransactionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("PaymentMethod")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("ReceiptDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ReceiptNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("SupervisionFee")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<int?>("SupplyOrderId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("TreasuryAmount")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BankAccountId");
+
+                    b.HasIndex("ContractId");
+
+                    b.HasIndex("LinkedTransactionId");
+
+                    b.HasIndex("ReceiptDate")
+                        .HasDatabaseName("IX_ReceiptVouchers_Date");
+
+                    b.HasIndex("SupplyOrderId")
+                        .IsUnique()
+                        .HasFilter("[SupplyOrderId] IS NOT NULL");
+
+                    b.ToTable("TblReceiptVouchers");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.ReservationSettlement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("BranchId")
+                        .HasColumnType("int");
+
+                    b.Property<long>("ClaimNum")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int?>("PlaintiffNameId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ReservationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("ReserveAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("SettledAmount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BranchId");
+
+                    b.HasIndex("PlaintiffNameId");
+
+                    b.ToTable("TblReservationSettlement");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.RolePermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("CanAdd")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanDelete")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanEdit")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanView")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Module")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TblRolePermissions");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.Supplier", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ContractNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("EntityType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TblSuppliers");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.SupplyOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<int?>("ContractId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CoverageFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CoverageTo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool?>("Del")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DeleteReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FacilityName")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("OrderDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OrderNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("QuarterDescription")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("WorkflowStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasDefaultValue("مسودة")
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UnderwritingApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UnderwritingApprovedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UnderwritingVerifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UnderwritingVerifiedBy")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ContractId");
+
+                    b.ToTable("TblSupplyOrders");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.UserActivity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Controller")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IPAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PageTitle")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("VisitedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TblUserActivity");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.UserSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IPAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("LoginAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LogoutAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TblUserSession");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.ViewModels.Identity.ApplicationRole", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
@@ -651,13 +1737,16 @@ namespace MedicalInsuranceApp1.Migrations
                     b.ToTable("AppRoles", (string)null);
                 });
 
-            modelBuilder.Entity("MedicalInsuranceApp1.Models.Identity.ApplicationUser", b =>
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.ViewModels.Identity.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
+
+                    b.Property<bool?>("Approval")
+                        .HasColumnType("bit");
 
                     b.Property<string>("BranchId")
                         .HasColumnType("nvarchar(max)");
@@ -667,6 +1756,9 @@ namespace MedicalInsuranceApp1.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
@@ -686,6 +1778,9 @@ namespace MedicalInsuranceApp1.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("LastAccessTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("datetime2");
 
@@ -694,6 +1789,9 @@ namespace MedicalInsuranceApp1.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTime?>("ModifiedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -758,6 +1856,91 @@ namespace MedicalInsuranceApp1.Migrations
                         .HasDatabaseName("IX_AppUsers_OldUserId");
 
                     b.ToTable("AppUsers", (string)null);
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.ViewModels.Identity.Employee", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("Modified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Specialization")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("WorkPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("YearsOfExperience")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
+
+                    b.ToTable("Employee");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.ViewModels.Identity.UserProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Gender")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("Modified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique()
+                        .HasFilter("[UserId] IS NOT NULL");
+
+                    b.ToTable("UserProfile");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -866,7 +2049,50 @@ namespace MedicalInsuranceApp1.Migrations
                     b.ToTable("AppUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.CourtCase", b =>
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.BankBranch", b =>
+                {
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.Bank", "Bank")
+                        .WithMany("Branches")
+                        .HasForeignKey("BankId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Bank");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.BankTransaction", b =>
+                {
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.BankAccount", "BankAccount")
+                        .WithMany("Transactions")
+                        .HasForeignKey("BankAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.Commission", "Commission")
+                        .WithMany("Transactions")
+                        .HasForeignKey("CommissionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.FriendlyClaim", "FriendlyClaim")
+                        .WithMany()
+                        .HasForeignKey("FriendlyClaimId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.OutterClaim", "OutterClaim")
+                        .WithMany()
+                        .HasForeignKey("OutterClaimId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("BankAccount");
+
+                    b.Navigation("Commission");
+
+                    b.Navigation("FriendlyClaim");
+
+                    b.Navigation("OutterClaim");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.CaseFeeSettlement", b =>
                 {
                     b.HasOne("MedicalInsuranceApp1.Models.Entities.Branch", "Branch")
                         .WithMany()
@@ -879,17 +2105,6 @@ namespace MedicalInsuranceApp1.Migrations
                     b.Navigation("Branch");
 
                     b.Navigation("Court");
-                });
-
-            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.CourtFile", b =>
-                {
-                    b.HasOne("MedicalInsuranceApp1.Models.Entities.CourtCase", "CourtCase")
-                        .WithMany("Files")
-                        .HasForeignKey("CourtsNId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CourtCase");
                 });
 
             modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.Expense", b =>
@@ -929,6 +2144,28 @@ namespace MedicalInsuranceApp1.Migrations
                     b.Navigation("FriendlyClaim");
                 });
 
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.MarketerCommissionItem", b =>
+                {
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.MarketerCommissionRecord", "Record")
+                        .WithMany("Items")
+                        .HasForeignKey("RecordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Record");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.MarketerCommissionRecord", b =>
+                {
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.Marketer", "Marketer")
+                        .WithMany("CommissionRecords")
+                        .HasForeignKey("MarketerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Marketer");
+                });
+
             modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.OutterClaim", b =>
                 {
                     b.HasOne("MedicalInsuranceApp1.Models.Entities.Branch", "Branch")
@@ -963,9 +2200,122 @@ namespace MedicalInsuranceApp1.Migrations
                     b.Navigation("OutterClaim");
                 });
 
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.PaymentAuthorization", b =>
+                {
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.BankAccount", "BankAccount")
+                        .WithMany()
+                        .HasForeignKey("BankAccountId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.Commission", "Commission")
+                        .WithMany()
+                        .HasForeignKey("CommissionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.BankTransaction", "LinkedTransaction")
+                        .WithMany()
+                        .HasForeignKey("LinkedTransactionId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("BankAccount");
+
+                    b.Navigation("Commission");
+
+                    b.Navigation("LinkedTransaction");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.PrivateLawyerSettlement", b =>
+                {
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId");
+
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.Court", "Court")
+                        .WithMany()
+                        .HasForeignKey("CourtId");
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("Court");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.ReceiptVoucher", b =>
+                {
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.BankAccount", "BankAccount")
+                        .WithMany()
+                        .HasForeignKey("BankAccountId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.InsuranceContract", "Contract")
+                        .WithMany("Receipts")
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.BankTransaction", "LinkedTransaction")
+                        .WithMany()
+                        .HasForeignKey("LinkedTransactionId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.SupplyOrder", "SupplyOrder")
+                        .WithOne("Receipt")
+                        .HasForeignKey("MedicalInsuranceApp1.Models.Entities.ReceiptVoucher", "SupplyOrderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("BankAccount");
+
+                    b.Navigation("Contract");
+
+                    b.Navigation("LinkedTransaction");
+
+                    b.Navigation("SupplyOrder");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.ReservationSettlement", b =>
+                {
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.Branch", "Branch")
+                        .WithMany()
+                        .HasForeignKey("BranchId");
+
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.PlaintiffName", "Plaintiff")
+                        .WithMany()
+                        .HasForeignKey("PlaintiffNameId");
+
+                    b.Navigation("Branch");
+
+                    b.Navigation("Plaintiff");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.SupplyOrder", b =>
+                {
+                    b.HasOne("MedicalInsuranceApp1.Models.Entities.InsuranceContract", "Contract")
+                        .WithMany("SupplyOrders")
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Contract");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.ViewModels.Identity.Employee", b =>
+                {
+                    b.HasOne("MedicalInsuranceApp1.Models.ViewModels.Identity.ApplicationUser", "ApplicationUser")
+                        .WithOne("Employee")
+                        .HasForeignKey("MedicalInsuranceApp1.Models.ViewModels.Identity.Employee", "UserId");
+
+                    b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.ViewModels.Identity.UserProfile", b =>
+                {
+                    b.HasOne("MedicalInsuranceApp1.Models.ViewModels.Identity.ApplicationUser", "ApplicationUser")
+                        .WithOne("UserProfile")
+                        .HasForeignKey("MedicalInsuranceApp1.Models.ViewModels.Identity.UserProfile", "UserId");
+
+                    b.Navigation("ApplicationUser");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
-                    b.HasOne("MedicalInsuranceApp1.Models.Identity.ApplicationRole", null)
+                    b.HasOne("MedicalInsuranceApp1.Models.ViewModels.Identity.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -974,7 +2324,7 @@ namespace MedicalInsuranceApp1.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("MedicalInsuranceApp1.Models.Identity.ApplicationUser", null)
+                    b.HasOne("MedicalInsuranceApp1.Models.ViewModels.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -983,7 +2333,7 @@ namespace MedicalInsuranceApp1.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("MedicalInsuranceApp1.Models.Identity.ApplicationUser", null)
+                    b.HasOne("MedicalInsuranceApp1.Models.ViewModels.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -992,13 +2342,13 @@ namespace MedicalInsuranceApp1.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
-                    b.HasOne("MedicalInsuranceApp1.Models.Identity.ApplicationRole", null)
+                    b.HasOne("MedicalInsuranceApp1.Models.ViewModels.Identity.ApplicationRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("MedicalInsuranceApp1.Models.Identity.ApplicationUser", null)
+                    b.HasOne("MedicalInsuranceApp1.Models.ViewModels.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1007,16 +2357,26 @@ namespace MedicalInsuranceApp1.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
                 {
-                    b.HasOne("MedicalInsuranceApp1.Models.Identity.ApplicationUser", null)
+                    b.HasOne("MedicalInsuranceApp1.Models.ViewModels.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.CourtCase", b =>
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.Bank", b =>
                 {
-                    b.Navigation("Files");
+                    b.Navigation("Branches");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.BankAccount", b =>
+                {
+                    b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.Commission", b =>
+                {
+                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.FriendlyClaim", b =>
@@ -1024,9 +2384,38 @@ namespace MedicalInsuranceApp1.Migrations
                     b.Navigation("Files");
                 });
 
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.InsuranceContract", b =>
+                {
+                    b.Navigation("Receipts");
+
+                    b.Navigation("SupplyOrders");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.Marketer", b =>
+                {
+                    b.Navigation("CommissionRecords");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.MarketerCommissionRecord", b =>
+                {
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.OutterClaim", b =>
                 {
                     b.Navigation("Files");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.Entities.SupplyOrder", b =>
+                {
+                    b.Navigation("Receipt");
+                });
+
+            modelBuilder.Entity("MedicalInsuranceApp1.Models.ViewModels.Identity.ApplicationUser", b =>
+                {
+                    b.Navigation("Employee");
+
+                    b.Navigation("UserProfile");
                 });
 #pragma warning restore 612, 618
         }

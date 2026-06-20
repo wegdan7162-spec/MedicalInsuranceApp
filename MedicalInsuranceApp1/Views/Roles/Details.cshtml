@@ -1,0 +1,190 @@
+@model MedicalInsuranceApp1.Models.ViewModels.RoleDetailsVM
+@{
+    ViewData["Title"] = $"تفاصيل الدور — {Model.Name}";
+}
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/Roles" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+    <div style="flex:1">
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">
+            <i class="ti ti-shield-check"></i> @Model.Name
+        </h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">
+            @(string.IsNullOrEmpty(Model.Description) ? "بدون وصف" : Model.Description)
+        </p>
+    </div>
+    <span class="status-badge @(Model.IsActive ? "active" : "inactive")">
+        @(Model.IsActive ? "فعال" : "معطل")
+    </span>
+    <a href="/Roles/Edit/@Model.Id" class="btn-primary">
+        <i class="ti ti-edit"></i> تعديل
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert-success" style="margin-bottom:16px;padding:12px 16px;background:#d1fae5;
+         border-radius:10px;color:#065f46;font-size:13px">
+        <i class="ti ti-check"></i> @TempData["Success"]
+    </div>
+}
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+    @* ===== المستخدمون ===== *@
+    <div>
+        <div class="form-card">
+            <div class="form-section-title" style="display:flex;justify-content:space-between;align-items:center">
+                <span><i class="ti ti-users"></i> المستخدمون (@Model.Users.Count)</span>
+            </div>
+
+            @if (Model.Users.Any())
+            {
+                <table style="width:100%;font-size:13px;border-collapse:collapse">
+                    <thead>
+                        <tr style="background:#f8f6f0">
+                            <th style="padding:8px;text-align:right">الاسم</th>
+                            <th style="padding:8px;text-align:right">المسمى</th>
+                            <th style="padding:8px;text-align:center">إزالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var u in Model.Users)
+                    {
+                        <tr style="border-bottom:1px solid #f0ede4">
+                            <td style="padding:8px">@u.FullName</td>
+                            <td style="padding:8px;color:#6a6860">@(u.UserJob ?? "-")</td>
+                            <td style="padding:8px;text-align:center">
+                                <form action="/Roles/RemoveUser" method="post" style="display:inline"
+                                      onsubmit="return confirm('إزالة @u.FullName من الدور؟')">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="roleId" value="@Model.Id">
+                                    <input type="hidden" name="userId" value="@u.Id">
+                                    <button type="submit" class="btn-icon danger" title="إزالة">
+                                        <i class="ti ti-user-minus"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p style="font-size:13px;color:#9a9890;text-align:center;padding:16px">
+                    لا يوجد مستخدمون في هذا الدور
+                </p>
+            }
+
+            @if (Model.AvailableUsers.Any())
+            {
+                <div style="margin-top:16px;border-top:1px solid #f0ede4;padding-top:16px">
+                    <p style="font-size:12px;font-weight:600;color:#6a6860;margin-bottom:8px">
+                        إضافة مستخدم للدور:
+                    </p>
+                    <form action="/Roles/AssignUser" method="post" style="display:flex;gap:8px">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="roleId" value="@Model.Id">
+                        <select name="userId" class="form-select" style="flex:1">
+                            <option value="">-- اختر مستخدم --</option>
+                            @foreach (var u in Model.AvailableUsers)
+                            {
+                                <option value="@u.Id">@u.FullName (@u.UserName)</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn-save" style="white-space:nowrap">
+                            <i class="ti ti-user-plus"></i> تعيين
+                        </button>
+                    </form>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* ===== الصلاحيات ===== *@
+    <div>
+        <div class="form-card">
+            <div class="form-section-title">
+                <i class="ti ti-lock"></i> الصلاحيات
+            </div>
+            <form action="/Roles/SavePermissions" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="roleId" value="@Model.Id">
+
+                <table style="width:100%;font-size:13px;border-collapse:collapse">
+                    <thead>
+                        <tr style="background:#f8f6f0">
+                            <th style="padding:8px;text-align:right">الوحدة</th>
+                            <th style="padding:6px;text-align:center;width:52px">عرض</th>
+                            <th style="padding:6px;text-align:center;width:52px">إضافة</th>
+                            <th style="padding:6px;text-align:center;width:52px">تعديل</th>
+                            <th style="padding:6px;text-align:center;width:52px">حذف</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @for (int i = 0; i < Model.Permissions.Count; i++)
+                    {
+                        var p = Model.Permissions[i];
+                        <tr style="border-bottom:1px solid #f0ede4">
+                            <td style="padding:8px;font-weight:500">
+                                <input type="hidden" name="modules" value="@p.Module">
+                                @p.ModuleLabel
+                            </td>
+                            <td style="text-align:center;padding:6px">
+                                <input type="checkbox" name="canView_idx" value="@i"
+                                       @(p.CanView ? "checked" : "")
+                                       style="width:16px;height:16px;accent-color:#1B4332">
+                            </td>
+                            <td style="text-align:center;padding:6px">
+                                <input type="checkbox" name="canAdd_idx" value="@i"
+                                       @(p.CanAdd ? "checked" : "")
+                                       style="width:16px;height:16px;accent-color:#1B4332">
+                            </td>
+                            <td style="text-align:center;padding:6px">
+                                <input type="checkbox" name="canEdit_idx" value="@i"
+                                       @(p.CanEdit ? "checked" : "")
+                                       style="width:16px;height:16px;accent-color:#1B4332">
+                            </td>
+                            <td style="text-align:center;padding:6px">
+                                <input type="checkbox" name="canDelete_idx" value="@i"
+                                       @(p.CanDelete ? "checked" : "")
+                                       style="width:16px;height:16px;accent-color:#1B4332">
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+
+                <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+                    <button type="button" onclick="selectAll()" class="btn-cancel"
+                            style="font-size:12px">
+                        <i class="ti ti-check"></i> تحديد الكل
+                    </button>
+                    <button type="button" onclick="clearAll()" class="btn-cancel"
+                            style="font-size:12px">
+                        <i class="ti ti-x"></i> إلغاء الكل
+                    </button>
+                    <button type="submit" class="btn-save">
+                        <i class="ti ti-device-floppy"></i> حفظ الصلاحيات
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/roles.css">
+}
+@section Scripts {
+<script>
+function selectAll() {
+    document.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = true);
+}
+function clearAll() {
+    document.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = false);
+}
+</script>
+}

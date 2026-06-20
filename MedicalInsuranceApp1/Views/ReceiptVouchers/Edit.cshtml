@@ -1,0 +1,105 @@
+@model MedicalInsuranceApp1.Models.Entities.ReceiptVoucher
+@{
+    ViewData["Title"] = "تعديل إيصال القبض";
+    var ctLabels = new Dictionary<MedicalInsuranceApp1.Models.Entities.CollectionType,string>{
+        {MedicalInsuranceApp1.Models.Entities.CollectionType.Mandatory,"إلزامي"},
+        {MedicalInsuranceApp1.Models.Entities.CollectionType.MedicalCard,"بطاقة طبية"},
+        {MedicalInsuranceApp1.Models.Entities.CollectionType.Supplemental,"تكميلي"},
+        {MedicalInsuranceApp1.Models.Entities.CollectionType.Marine,"بحري"},
+        {MedicalInsuranceApp1.Models.Entities.CollectionType.Fires,"حرائق"},
+        {MedicalInsuranceApp1.Models.Entities.CollectionType.Miscellaneous,"متنوع"},
+        {MedicalInsuranceApp1.Models.Entities.CollectionType.Various,"مختلف"},
+    };
+}
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/ReceiptVouchers" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">تعديل إيصال القبض</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">@(Model.ReceiptNumber ?? "—") — @(Model.FacilityName ?? "—")</p>
+    </div>
+</div>
+
+<div class="table-card" style="max-width:820px">
+    <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+        @Html.AntiForgeryToken()
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">رقم الإيصال</label>
+                <input asp-for="ReceiptNumber" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">تاريخ الإيصال</label>
+                <input asp-for="ReceiptDate" type="date" class="form-input" required />
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">اسم المنشأة</label>
+                <input asp-for="FacilityName" class="form-input" required />
+            </div>
+            <input type="hidden" asp-for="DirhamAmount" value="0" />
+            <input type="hidden" asp-for="SupervisionFee" />
+            <div class="form-group" style="grid-column:1/-1;background:#e8f0fe;padding:14px;border-radius:10px;border:1px solid #b0c8f8">
+                <label class="form-label" style="color:#1a3a5c">المبلغ الإجمالي (د.ل)</label>
+                <input asp-for="DinarAmount" type="number" step="0.001" min="0" class="form-input"
+                       id="dinarAmt" oninput="syncTotal()"
+                       style="font-size:20px;font-weight:800;color:#1a3a5c;text-align:center" />
+                <input type="hidden" asp-for="TotalAmount" id="totalAmt" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">طريقة الدفع</label>
+                <select asp-for="PaymentMethod" class="form-input">
+                    <option value="نقدي">نقدي</option>
+                    <option value="صك">صك</option>
+                    <option value="تحويل">تحويل مصرفي</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">رقم الصك / بيان الصك</label>
+                <input asp-for="CheckNumber" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">اسم المصرف</label>
+                <input asp-for="BankName" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">نوع التحصيل</label>
+                <select asp-for="CollectionType" class="form-input">
+                    @foreach (var ct in (IEnumerable<MedicalInsuranceApp1.Models.Entities.CollectionType>)ViewBag.CollectionTypes)
+                    {
+                        <option value="@((int)ct)">@(ctLabels.TryGetValue(ct, out var lbl) ? lbl : ct.ToString())</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">ملاحظات</label>
+                <textarea asp-for="Notes" class="form-input" rows="2"></textarea>
+            </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:24px">
+            <button type="submit" class="btn-primary"><i class="ti ti-device-floppy"></i> حفظ التعديلات</button>
+            <a href="/ReceiptVouchers" class="btn-cancel">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+function syncTotal() {
+    var d = parseFloat(document.getElementById("dinarAmt").value) || 0;
+    document.getElementById("totalAmt").value = d.toFixed(3);
+}
+// تزامن عند تحميل الصفحة
+syncTotal();
+</script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .form-group{display:flex;flex-direction:column;gap:6px;}
+    .form-label{font-size:13px;font-weight:600;}
+    .form-input{padding:10px 12px;border:1px solid #e0e0d8;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;background:var(--input-bg,#fafaf8);}
+    .form-input:focus{outline:none;border-color:#1B4332;box-shadow:0 0 0 3px rgba(27,67,50,0.1);}
+    </style>
+}

@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using MedicalInsuranceApp1.Data;
 using MedicalInsuranceApp1.Models.Entities;
-using MedicalInsuranceApp1.Models.Identity;
 using MedicalInsuranceApp1.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using MedicalInsuranceApp1.Models.ViewModels.Identity;
 
 namespace MedicalInsuranceApp1.Controllers
 {

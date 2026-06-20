@@ -1,4 +1,18 @@
-﻿<!DOCTYPE html>
+@using MedicalInsuranceApp1.Infrastrcture
+@using MedicalInsuranceApp1.Models.ViewModels.Identity
+@inject Microsoft.AspNetCore.Identity.UserManager<ApplicationUser> _LayoutUserMgr
+@inject IPermissionService _LayoutPermSvc
+@{
+    var _layoutUser = await _LayoutUserMgr.GetUserAsync(User);
+    var _layoutPerms = _layoutUser != null
+        ? await _LayoutPermSvc.GetUserPermissionsAsync(_layoutUser.Id)
+        : new Dictionary<string, bool[]>();
+
+    // index 0=View, 1=Add, 2=Edit, 3=Delete
+    bool CanView(string module) =>
+        _layoutPerms.ContainsKey(module) && _layoutPerms[module][0];
+}
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="utf-8">
@@ -17,7 +31,7 @@
             <div class="sidebar-brand">
                 <img src="/image/Medical.jpg" alt="شعار" class="brand-logo" />
                 <div class="brand-text">
-                    <h3>منظومة المطالبات</h3>
+                    <h3>منظومة مطالبات</h3>
                     <span>فرع التامين الطبي</span>
                 </div>
             </div>
@@ -28,67 +42,330 @@
                 var isTrash = ctrl == "Trash";
             }
 
+            @if (CanView(AppModules.Dashboard))
+            {
             <div class="sidebar-section">
                 <div class="sidebar-label">الرئيسية</div>
                 <a href="/Dashboard/Index" class="nav-item @(ctrl == "Dashboard" ? "active" : "")">
                     <i class="ti ti-layout-dashboard"></i> لوحة التحكم
                 </a>
             </div>
+            }
 
+            @{
+                bool showClaims = CanView(AppModules.OutterClaims) || CanView(AppModules.FriendlyClaims);
+            }
+            @if (showClaims)
+            {
             <div class="sidebar-section">
                 <div class="sidebar-label">المطالبات</div>
+                @if (CanView(AppModules.OutterClaims))
+                {
                 <a href="/OutterClaims" class="nav-item @(ctrl == "OutterClaims" && action != "Inventory" ? "active" : "")">
                     <i class="ti ti-gavel"></i> مطالبات القضايا
                 </a>
+                }
+                @if (CanView(AppModules.FriendlyClaims))
+                {
                 <a href="/FriendlyClaims" class="nav-item @(ctrl == "FriendlyClaims" ? "active" : "")">
                     <i class="ti ti-handshake"></i> مطالبات الصلح الودي
                 </a>
+                }
+                @if (CanView(AppModules.Reports))
+                {
+                <a href="/Reports" class="nav-item @(ctrl == "Reports" ? "active" : "")">
+                    <i class="ti ti-chart-bar"></i> التقارير
+                </a>
+                }
             </div>
+            }
 
+            @{
+                bool showAdmin = CanView(AppModules.Branches) || CanView(AppModules.Plaintiffs);
+            }
+            @if (showAdmin)
+            {
             <div class="sidebar-section">
                 <div class="sidebar-label">الادارة</div>
+                @if (CanView(AppModules.Branches))
+                {
                 <a href="/Branches" class="nav-item @(ctrl == "Branches" ? "active" : "")">
                     <i class="ti ti-building"></i> الفروع
                 </a>
-                <a href="/Courts" class="nav-item @(ctrl == "Courts" ? "active" : "")">
-                    <i class="ti ti-building-courthouse"></i> المحاكم
-                </a>
+                }
+                @if (CanView(AppModules.Plaintiffs))
+                {
                 <a href="/Plaintiffs" class="nav-item @(ctrl == "Plaintiffs" ? "active" : "")">
                     <i class="ti ti-user-search"></i> المدعين
                 </a>
+                }
             </div>
+            }
 
+            @{
+                bool showHR = CanView(AppModules.Courts);
+            }
+            @if (showHR)
+            {
+            <div class="sidebar-section">
+                <div class="sidebar-label">الموارد البشرية</div>
+                @if (CanView(AppModules.Courts))
+                {
+                <a href="/Courts" class="nav-item @(ctrl == "Courts" ? "active" : "")">
+                    <i class="ti ti-building-courthouse"></i> المحاكم
+                </a>
+                }
+            </div>
+            }
+
+
+            @{
+                bool showFinance = CanView(AppModules.Banks)
+                                || CanView(AppModules.BankAccounts)
+                                || CanView(AppModules.BankTransactions)
+                                || CanView(AppModules.BankStatement)
+                                || CanView(AppModules.Commissions)
+                                || CanView(AppModules.CommissionsReport)
+                                || CanView(AppModules.Marketers)
+                                || CanView(AppModules.MarketersReport)
+                                || CanView(AppModules.Suppliers);
+            }
+            @if (showFinance)
+            {
+            <div class="sidebar-section">
+                <div class="sidebar-label">الجزء المالي</div>
+                @if (CanView(AppModules.Banks))
+                {
+                <a href="/Banks" class="nav-item @(ctrl == "Banks" ? "active" : "")">
+                    <i class="ti ti-building-bank"></i> المصارف وفروعها
+                </a>
+                }
+                @if (CanView(AppModules.BankAccounts))
+                {
+                <a href="/BankAccounts" class="nav-item @(ctrl == "BankAccounts" ? "active" : "")">
+                    <i class="ti ti-building-bank"></i> الحسابات المصرفية
+                </a>
+                }
+                @if (CanView(AppModules.BankTransactions))
+                {
+                <a href="/BankTransactions" class="nav-item @(ctrl == "BankTransactions" && action != "MonthlyStatement" ? "active" : "")">
+                    <i class="ti ti-arrows-exchange"></i> حركات الحسابات
+                </a>
+                }
+                @if (CanView(AppModules.BankStatement))
+                {
+                <a href="/BankTransactions/MonthlyStatement" class="nav-item @(ctrl == "BankTransactions" && action == "MonthlyStatement" ? "active" : "")">
+                    <i class="ti ti-file-spreadsheet"></i> كشف حركة المصارف
+                </a>
+                }
+                @if (CanView(AppModules.Commissions))
+                {
+                <a href="/Commissions" class="nav-item @(ctrl == "Commissions" && action != "Report" ? "active" : "")">
+                    <i class="ti ti-receipt-2"></i> العمولات
+                </a>
+                }
+                @if (CanView(AppModules.CommissionsReport))
+                {
+                <a href="/Commissions/Report" class="nav-item @(ctrl == "Commissions" && action == "Report" ? "active" : "")">
+                    <i class="ti ti-report-money"></i> كشف بيان العمولات
+                </a>
+                }
+                @if (CanView(AppModules.Marketers))
+                {
+                <a href="/Marketers" class="nav-item @(ctrl == "Marketers" && action != "CommissionsReport" ? "active" : "")">
+                    <i class="ti ti-users"></i> المسوقون
+                </a>
+                }
+                @if (CanView(AppModules.MarketersReport))
+                {
+                <a href="/Marketers/CommissionsReport" class="nav-item @(ctrl == "Marketers" && action == "CommissionsReport" ? "active" : "")">
+                    <i class="ti ti-report-money"></i> كشف عمولات المسوقين
+                </a>
+                }
+                @if (CanView(AppModules.Marketers))
+                {
+                <a href="/Marketers/Search" class="nav-item @(ctrl == "Marketers" && action == "Search" ? "active" : "")">
+                    <i class="ti ti-file-search"></i> البحث عن كشف عمولة
+                </a>
+                }
+                @if (CanView(AppModules.Suppliers))
+                {
+                <a href="/Suppliers" class="nav-item @(ctrl == "Suppliers" ? "active" : "")">
+                    <i class="ti ti-building-store"></i> الموردون
+                </a>
+                }
+            </div>
+            }
+
+            @{
+                bool showUnderwriting = CanView(AppModules.InsuranceContracts)
+                                     || CanView(AppModules.SupplyOrders)
+                                     || CanView(AppModules.ReceiptVouchers)
+                                     || CanView(AppModules.PaymentAuthorizations)
+                                     || CanView(AppModules.IssuanceStats);
+            }
+            @if (showUnderwriting)
+            {
+            <div class="sidebar-section">
+                <div class="sidebar-label">قسم الاكتتاب</div>
+                @if (CanView(AppModules.InsuranceContracts))
+                {
+                <a href="/InsuranceContracts" class="nav-item @(ctrl == "InsuranceContracts" ? "active" : "")">
+                    <i class="ti ti-file-text"></i> عقود التأمين الطبي
+                </a>
+                }
+                @if (CanView(AppModules.SupplyOrders))
+                {
+                <a href="/SupplyOrders" class="nav-item @(ctrl == "SupplyOrders" ? "active" : "")">
+                    <i class="ti ti-truck-delivery"></i> أوامر التوريد
+                </a>
+                }
+                @if (CanView(AppModules.ReceiptVouchers))
+                {
+                <a href="/ReceiptVouchers" class="nav-item @(ctrl == "ReceiptVouchers" ? "active" : "")">
+                    <i class="ti ti-receipt"></i> إيصالات القبض
+                </a>
+                }
+                @if (CanView(AppModules.PaymentAuthorizations))
+                {
+                <a href="/PaymentAuthorizations" class="nav-item @(ctrl == "PaymentAuthorizations" ? "active" : "")">
+                    <i class="ti ti-cash"></i> إذون الصرف
+                </a>
+                }
+                @if (CanView(AppModules.ReceiptVouchers))
+                {
+                <a href="/ReceiptVouchers/TreasuryMovement" class="nav-item @(ctrl == "ReceiptVouchers" && action == "TreasuryMovement" ? "active" : "")">
+                    <i class="ti ti-building-bank"></i> إدخال حركة خزينة
+                </a>
+                <a href="/ReceiptVouchers/DailyReport" class="nav-item @(ctrl == "ReceiptVouchers" && action == "DailyReport" ? "active" : "")">
+                    <i class="ti ti-calendar-stats"></i> الحركة اليومية للخزينة
+                </a>
+                }
+                @if (CanView(AppModules.AccountingEntries))
+                {
+                <a href="/AccountingEntries" class="nav-item @(ctrl == "AccountingEntries" && action != "Print" ? "active" : "")">
+                    <i class="ti ti-balance"></i> القيود المحاسبية
+                </a>
+                }
+                @if (CanView(AppModules.IssuanceStats))
+                {
+                <a href="/IssuanceStats" class="nav-item @(ctrl == "IssuanceStats" ? "active" : "")">
+                    <i class="ti ti-chart-bar"></i> إحصائيات الإصدار
+                </a>
+                }
+            </div>
+            }
+
+            @{
+                bool showSettings = CanView(AppModules.Users) || CanView(AppModules.Roles)
+                                 || CanView(AppModules.DataImport);
+            }
+            @if (showSettings)
+            {
             <div class="sidebar-section">
                 <div class="sidebar-label">الاعدادات</div>
+                @if (CanView(AppModules.Users))
+                {
                 <a href="/Users/Index" class="nav-item @(ctrl == "Users" ? "active" : "")">
                     <i class="ti ti-users"></i> المستخدمون
                 </a>
+                }
+                @if (CanView(AppModules.Roles))
+                {
                 <a href="/Roles" class="nav-item @(ctrl == "Roles" ? "active" : "")">
                     <i class="ti ti-key"></i> الادوار والصلاحيات
                 </a>
+                }
+                @if (CanView(AppModules.Users) || CanView(AppModules.Roles))
+                {
                 <a href="/Activity" class="nav-item @(ctrl == "Activity" ? "active" : "")">
                     <i class="ti ti-activity"></i> حركة المستخدمين
                 </a>
+                }
+                @if (CanView(AppModules.DataImport))
+                {
+                <a href="/Import" class="nav-item @(ctrl == "Import" ? "active" : "")">
+                    <i class="ti ti-file-upload"></i> استيراد بيانات Excel
+                </a>
+                }
             </div>
+            }
 
+            @{
+                bool showTrash = CanView(AppModules.Trash);
+            }
+            @if (showTrash)
+            {
             <div class="sidebar-section">
                 <div class="sidebar-label">سلة المحذوفات</div>
+                @if (CanView(AppModules.OutterClaims))
+                {
                 <a href="/Trash/OutterClaims" class="nav-item @(isTrash && action == "OutterClaims" ? "active" : "")">
                     <i class="ti ti-gavel"></i> مطالبات القضايا
                 </a>
+                }
+                @if (CanView(AppModules.FriendlyClaims))
+                {
                 <a href="/Trash/FriendlyClaims" class="nav-item @(isTrash && action == "FriendlyClaims" ? "active" : "")">
                     <i class="ti ti-handshake"></i> الصلح الودي
                 </a>
+                }
+                @if (CanView(AppModules.Branches))
+                {
                 <a href="/Trash/Branches" class="nav-item @(isTrash && action == "Branches" ? "active" : "")">
                     <i class="ti ti-building"></i> الفروع
                 </a>
+                }
+                @if (CanView(AppModules.Courts))
+                {
                 <a href="/Trash/Courts" class="nav-item @(isTrash && action == "Courts" ? "active" : "")">
                     <i class="ti ti-building-courthouse"></i> المحاكم
                 </a>
+                }
+                @if (CanView(AppModules.Plaintiffs))
+                {
                 <a href="/Trash/Plaintiffs" class="nav-item @(isTrash && action == "Plaintiffs" ? "active" : "")">
                     <i class="ti ti-user-search"></i> المدعين
                 </a>
+                }
+                @if (CanView(AppModules.AccountingEntries))
+                {
+                <a href="/Trash/AccountingEntries" class="nav-item @(isTrash && action == "AccountingEntries" ? "active" : "")">
+                    <i class="ti ti-balance"></i> القيود المحاسبية
+                </a>
+                }
+                @if (CanView(AppModules.ReceiptVouchers))
+                {
+                <a href="/Trash/ReceiptVouchers" class="nav-item @(isTrash && action == "ReceiptVouchers" ? "active" : "")">
+                    <i class="ti ti-receipt"></i> إيصالات القبض
+                </a>
+                }
+                @if (CanView(AppModules.SupplyOrders))
+                {
+                <a href="/Trash/SupplyOrders" class="nav-item @(isTrash && action == "SupplyOrders" ? "active" : "")">
+                    <i class="ti ti-truck-delivery"></i> أوامر التوريد
+                </a>
+                }
+                @if (CanView(AppModules.InsuranceContracts))
+                {
+                <a href="/Trash/InsuranceContracts" class="nav-item @(isTrash && action == "InsuranceContracts" ? "active" : "")">
+                    <i class="ti ti-file-certificate"></i> عقود التأمين
+                </a>
+                }
+                @if (CanView(AppModules.BankDepositSlips))
+                {
+                <a href="/Trash/BankDepositSlips" class="nav-item @(isTrash && action == "BankDepositSlips" ? "active" : "")">
+                    <i class="ti ti-cash"></i> قسائم الإيداع
+                </a>
+                }
+                @if (CanView(AppModules.Commissions))
+                {
+                <a href="/Trash/Commissions" class="nav-item @(isTrash && action == "Commissions" ? "active" : "")">
+                    <i class="ti ti-percentage"></i> العمولات
+                </a>
+                }
             </div>
+            }
 
             <div class="sidebar-footer">
                 <div class="user-mini">
@@ -114,6 +391,9 @@
             <div class="topbar">
                 <div class="topbar-title">@ViewData["Title"]</div>
                 <div class="topbar-spacer"></div>
+                <button id="theme-toggle" onclick="toggleTheme()" title="تغيير الإضاءة">
+                    <i class="ti ti-moon" id="theme-icon"></i>
+                </button>
                 <a asp-controller="Account" asp-action="Profile" class="tb-btn">
                     <i class="ti ti-user"></i>
                 </a>
@@ -124,21 +404,85 @@
             </div>
 
             <div class="page-content">
-                @if (TempData["Success"] != null)
-                {
-                    <div class="alert-success">@TempData["Success"]</div>
-                }
-                @if (TempData["Error"] != null)
-                {
-                    <div class="alert-danger">@TempData["Error"]</div>
-                }
                 @RenderBody()
             </div>
         </div>
 
     </div>
 
+    <!-- ===== Toast Notifications ===== -->
+    <div id="toast-container" style="position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;align-items:center;gap:10px;pointer-events:none"></div>
+
+    @if (TempData["Success"] != null)
+    {
+        <script>document.addEventListener('DOMContentLoaded',()=>showToast('@Html.Raw(TempData["Success"]?.ToString()?.Replace("'", "\\'"))','success'));</script>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <script>document.addEventListener('DOMContentLoaded',()=>showToast('@Html.Raw(TempData["Error"]?.ToString()?.Replace("'", "\\'"))','error'));</script>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <script>document.addEventListener('DOMContentLoaded',()=>showToast('@Html.Raw(TempData["Warning"]?.ToString()?.Replace("'", "\\'"))','warning'));</script>
+    }
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script>
+    function showToast(message, type) {
+        const icons   = { success: '✔', error: '✖', warning: '⚠' };
+        const colors  = {
+            success: { bg: '#1B4332', border: '#2d6a4f', icon: '#74c69d' },
+            error:   { bg: '#6b1a1a', border: '#c0392b', icon: '#f5a0a0' },
+            warning: { bg: '#5a4000', border: '#d4a017', icon: '#ffd166' }
+        };
+        const c = colors[type] || colors.success;
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            display:flex;align-items:center;gap:12px;
+            background:${c.bg};border:1px solid ${c.border};
+            color:#fff;padding:14px 20px;border-radius:12px;
+            font-family:Cairo,sans-serif;font-size:14px;font-weight:600;
+            box-shadow:0 8px 24px rgba(0,0,0,0.3);
+            min-width:280px;max-width:480px;
+            pointer-events:all;cursor:pointer;
+            opacity:0;transform:translateY(-16px);
+            transition:opacity 0.3s ease,transform 0.3s ease;
+        `;
+        toast.innerHTML = `
+            <span style="font-size:18px;color:${c.icon}">${icons[type]}</span>
+            <span style="flex:1">${message}</span>
+            <span style="opacity:0.6;font-size:18px;line-height:1" onclick="this.parentElement.remove()">×</span>
+        `;
+        document.getElementById('toast-container').appendChild(toast);
+        requestAnimationFrame(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+        });
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-16px)';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+    </script>
+    <script>
+    // Dark Mode
+    (function () {
+        if (localStorage.getItem('darkMode') === '1') {
+            document.documentElement.classList.add('dark');
+        }
+    })();
+    document.addEventListener('DOMContentLoaded', function () {
+        var btn = document.getElementById('darkModeToggle');
+        if (btn) {
+            btn.addEventListener('click', function () {
+                document.documentElement.classList.toggle('dark');
+                localStorage.setItem('darkMode',
+                    document.documentElement.classList.contains('dark') ? '1' : '0');
+            });
+        }
+    });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

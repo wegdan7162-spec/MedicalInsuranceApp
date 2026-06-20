@@ -1,0 +1,197 @@
+@model MedicalInsuranceApp1.Models.Entities.MarketerCommissionRecord
+@{
+    ViewData["Title"] = "إضافة كشف عمولة";
+    var marketer = ViewBag.Marketer as MedicalInsuranceApp1.Models.Entities.Marketer;
+}
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/Marketers/Details/@marketer.Id" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">إضافة كشف عمولة</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">@marketer.Name</p>
+    </div>
+</div>
+
+<form method="post" asp-action="AddRecord" asp-route-marketerId="@marketer.Id" id="recordForm">
+    @Html.AntiForgeryToken()
+
+    <!-- معلومات الكشف -->
+    <div class="table-card" style="margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:#1a3a5c;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #e8e8e0">
+            <i class="ti ti-file-description"></i> بيانات الكشف
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:12px">
+            <div class="filter-group">
+                <label class="filter-label">تاريخ التسوية *</label>
+                <input asp-for="SettlementDate" type="date" class="filter-select" required>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">رقم الصك</label>
+                <input asp-for="CheckNumber" class="filter-select" placeholder="مثال: 447118" dir="ltr">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">أوامر توريد أرقم</label>
+                <input asp-for="SupplyOrderNumbers" class="filter-select" placeholder="مثال: 611، 612" dir="ltr">
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px">
+            <div class="filter-group">
+                <label class="filter-label">إيصالات قبض أرقم</label>
+                <input asp-for="ReceiptNumbers" class="filter-select" placeholder="مثال: 1962، 1963" dir="ltr">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">إعداد</label>
+                <input asp-for="PreparedBy" class="filter-select" placeholder="اسم المُعِد">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">مراجعة</label>
+                <input asp-for="ReviewedBy" class="filter-select" placeholder="اسم المراجع">
+            </div>
+        </div>
+    </div>
+
+    <!-- جدول البنود -->
+    <div class="table-card" style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #e8e8e0">
+            <div style="font-size:13px;font-weight:700;color:#1a3a5c">
+                <i class="ti ti-table"></i> بنود الكشف
+            </div>
+            <button type="button" onclick="addRow()" class="btn-primary" style="padding:6px 14px;font-size:12px">
+                <i class="ti ti-plus"></i> إضافة سطر
+            </button>
+        </div>
+
+        <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:12px" id="itemsTable">
+                <thead>
+                    <tr style="background:#f5f5f0">
+                        <th style="padding:8px 8px;text-align:right;border-bottom:1px solid #e0e0d8;min-width:200px">الجهة المورِدة *</th>
+                        <th style="padding:8px 8px;text-align:center;border-bottom:1px solid #e0e0d8;min-width:120px">الفترة</th>
+                        <th style="padding:8px 8px;text-align:left;border-bottom:1px solid #e0e0d8;min-width:110px">إجمالي الأقساط</th>
+                        <th style="padding:8px 8px;text-align:left;border-bottom:1px solid #e0e0d8;min-width:100px">المرجعة</th>
+                        <th style="padding:8px 8px;text-align:left;border-bottom:1px solid #e0e0d8;min-width:100px">الصافية</th>
+                        <th style="padding:8px 8px;text-align:center;border-bottom:1px solid #e0e0d8;min-width:80px">النسبة%</th>
+                        <th style="padding:8px 8px;text-align:left;border-bottom:1px solid #e0e0d8;min-width:110px;color:#6c3483">العمولة</th>
+                        <th style="padding:8px 8px;text-align:center;border-bottom:1px solid #e0e0d8;width:40px"></th>
+                    </tr>
+                </thead>
+                <tbody id="itemsBody">
+                    <!-- rows added by JS -->
+                </tbody>
+                <tfoot>
+                    <tr id="totalsRow" style="background:#f5f5f0;font-weight:700;display:none">
+                        <td colspan="2" style="padding:8px">الإجماليـات</td>
+                        <td style="padding:8px;text-align:left;color:#1a3a5c" id="sumTotal">0.000</td>
+                        <td style="padding:8px;text-align:left;color:#c0392b" id="sumReturned">0.000</td>
+                        <td style="padding:8px;text-align:left;color:#2d6a4f" id="sumNet">0.000</td>
+                        <td></td>
+                        <td style="padding:8px;text-align:left;color:#6c3483;font-size:14px" id="sumCommission">0.000</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <div style="display:flex;gap:10px">
+        <button type="submit" class="btn-primary" style="padding:10px 28px">
+            <i class="ti ti-device-floppy"></i> حفظ الكشف
+        </button>
+        <a href="/Marketers/Details/@marketer.Id" class="btn-cancel" style="text-decoration:none;padding:10px 20px">إلغاء</a>
+    </div>
+</form>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .item-input { border:1px solid #e0e0d8; border-radius:6px; padding:5px 8px; font-family:inherit; font-size:12px; width:100%; box-sizing:border-box; background:#fff; }
+    .item-input:focus { outline:none; border-color:#1a3a5c; }
+    </style>
+}
+
+@section Scripts {
+<script>
+var rowIndex = 0;
+
+function addRow() {
+    var tbody = document.getElementById('itemsBody');
+    var i = rowIndex++;
+    var tr = document.createElement('tr');
+    tr.id = 'row_' + i;
+    tr.style.borderBottom = '1px solid #f0f0e8';
+    tr.innerHTML = `
+        <td style="padding:5px 6px">
+            <input class="item-input" name="facilityNames" placeholder="اسم الجهة" required>
+        </td>
+        <td style="padding:5px 6px">
+            <input class="item-input" name="periods" placeholder="الفترة">
+        </td>
+        <td style="padding:5px 6px">
+            <input class="item-input num-input" name="totalPremiums" type="number" step="0.001" min="0" value="0"
+                   oninput="recalcRow(this.closest('tr')); updateTotals()">
+        </td>
+        <td style="padding:5px 6px">
+            <input class="item-input num-input" name="returnedPremiums" type="number" step="0.001" min="0" value="0"
+                   oninput="recalcRow(this.closest('tr')); updateTotals()">
+        </td>
+        <td style="padding:5px 6px">
+            <input class="item-input num-input" name="netPremiums" type="number" step="0.001" min="0" value="0" readonly
+                   style="background:#f8f8f4;color:#2d6a4f;font-weight:600">
+        </td>
+        <td style="padding:5px 6px">
+            <input class="item-input rate-input" name="commissionRates" type="number" step="0.0001" min="0" max="1" value="0"
+                   placeholder="0.05" oninput="recalcRow(this.closest('tr')); updateTotals()">
+        </td>
+        <td style="padding:5px 6px">
+            <input class="item-input num-input" name="commissionAmounts" type="number" step="0.001" min="0" value="0" readonly
+                   style="background:#f8f8f4;color:#6c3483;font-weight:700">
+        </td>
+        <td style="padding:5px 6px;text-align:center">
+            <button type="button" onclick="removeRow('row_${i}')" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:14px">
+                <i class="ti ti-x"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(tr);
+    document.getElementById('totalsRow').style.display = '';
+    tr.querySelector('input[name="facilityNames"]').focus();
+}
+
+function removeRow(id) {
+    var row = document.getElementById(id);
+    if (row) row.remove();
+    updateTotals();
+    if (document.getElementById('itemsBody').rows.length === 0)
+        document.getElementById('totalsRow').style.display = 'none';
+}
+
+function recalcRow(tr) {
+    var total    = parseFloat(tr.querySelector('[name="totalPremiums"]').value)    || 0;
+    var returned = parseFloat(tr.querySelector('[name="returnedPremiums"]').value) || 0;
+    var rate     = parseFloat(tr.querySelector('[name="commissionRates"]').value)  || 0;
+    var net      = total - returned;
+    var comm     = net * rate;
+    tr.querySelector('[name="netPremiums"]').value       = net.toFixed(3);
+    tr.querySelector('[name="commissionAmounts"]').value = comm.toFixed(3);
+}
+
+function updateTotals() {
+    var rows  = document.getElementById('itemsBody').rows;
+    var sT=0, sR=0, sN=0, sC=0;
+    for (var r of rows) {
+        sT += parseFloat(r.querySelector('[name="totalPremiums"]').value)     || 0;
+        sR += parseFloat(r.querySelector('[name="returnedPremiums"]').value)  || 0;
+        sN += parseFloat(r.querySelector('[name="netPremiums"]').value)       || 0;
+        sC += parseFloat(r.querySelector('[name="commissionAmounts"]').value) || 0;
+    }
+    document.getElementById('sumTotal').textContent      = sT.toFixed(3);
+    document.getElementById('sumReturned').textContent   = sR.toFixed(3);
+    document.getElementById('sumNet').textContent        = sN.toFixed(3);
+    document.getElementById('sumCommission').textContent = sC.toFixed(3);
+}
+
+// start with one empty row
+addRow();
+</script>
+}

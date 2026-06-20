@@ -1,0 +1,137 @@
+@model MedicalInsuranceApp1.Models.Entities.AccountingEntry
+@{
+    ViewData["Title"] = $"القيد المحاسبي رقم {Model.EntryNumber}";
+    Layout = "~/Views/Shared/_PrintLayout.cshtml";
+    var lines     = Model.Lines.OrderBy(l => l.LineOrder).ToList();
+    var totalDr   = lines.Sum(l => l.Debit);
+    var totalCr   = lines.Sum(l => l.Credit);
+    var bankName  = Model.BankDepositSlip?.BankAccount?.BankName
+                 ?? Model.BankDebitAccount
+                 ?? string.Empty;
+}
+
+<!-- رأس الشركة -->
+<div class="company-header">
+    <div>
+        <div class="company-name">شركة ليبيا للتأمين</div>
+        <div class="company-sub">إدارة الشئون المالية — قسم الحسابات والموازنة</div>
+    </div>
+    <div style="text-align:center">
+        <div class="doc-title" style="margin:0;font-size:15px">قيد محاسبي</div>
+        <div style="font-size:13px;font-weight:700;border:2px solid #ffff;padding:2px 14px">
+            رقم: @(Model.EntryNumber ?? Model.Id.ToString())
+        </div>
+    </div>
+    <div class="company-logo">ش.ل.ت</div>
+</div>
+
+<!-- معلومات القيد -->
+<div style="display:flex;gap:40px;margin-bottom:10px;font-size:11px">
+    <div class="field-row" style="margin:0">
+        <span class="field-label">التاريخ:</span>
+        <span class="field-value">@Model.EntryDate.ToString("yyyy/MM/dd")</span>
+    </div>
+    @if (!string.IsNullOrEmpty(bankName))
+    {
+        <div class="field-row" style="margin:0">
+            <span class="field-label">المصرف:</span>
+            <span class="field-value">@bankName</span>
+        </div>
+    }
+    <div class="field-row" style="margin:0">
+        <span class="field-label">الحالة:</span>
+        <span class="field-value">@Model.Status</span>
+    </div>
+</div>
+
+<div class="field-row">
+    <span class="field-label">البيان:</span>
+    <span class="field-value">@Model.Description</span>
+</div>
+
+@if (Model.SupplyOrder != null)
+{
+    <div class="field-row" style="font-size:10px;color:#555">
+        <span class="field-label">أمر التوريد:</span>
+        <span>@Model.SupplyOrder.OrderNumber — @(Model.SupplyOrder.FacilityName)</span>
+    </div>
+}
+
+<div style="height:8px"></div>
+
+<!-- جدول القيد المزدوج -->
+<table>
+    <thead>
+        <tr>
+            <th style="width:5%">م</th>
+            <th style="width:32%">الحساب</th>
+            <th style="width:33%">البيان</th>
+            <th style="width:15%">مدين</th>
+            <th style="width:15%">دائن</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{ int ln = 0; }
+        @foreach (var line in lines)
+        {
+            ln++;
+            <tr>
+                <td>@ln</td>
+                <td class="td-desc">@line.AccountName</td>
+                <td class="td-desc" style="font-size:10px">@line.LineDescription</td>
+                <td>@(line.Debit  > 0 ? line.Debit.ToString("N3")  : string.Empty)</td>
+                <td>@(line.Credit > 0 ? line.Credit.ToString("N3") : string.Empty)</td>
+            </tr>
+        }
+        @for (int i = ln + 1; i <= Math.Max(ln + 2, 6); i++)
+        {
+            <tr style="height:20px">
+                <td>@i</td>
+                <td></td><td></td><td></td><td></td>
+            </tr>
+        }
+        <!-- صف الإجمالي -->
+        <tr class="total-row">
+            <td colspan="3">الإجمالي</td>
+            <td>@totalDr.ToString("N3")</td>
+            <td>@totalCr.ToString("N3")</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- تنبيه التوازن -->
+@if (totalDr != totalCr)
+{
+    <div style="color:red;font-size:10px;margin-bottom:6px">
+        ⚠️ القيد غير متوازن — فرق: @Math.Abs(totalDr - totalCr).ToString("N3")
+    </div>
+}
+else
+{
+    <div style="color:green;font-size:10px;margin-bottom:6px">✅ القيد متوازن</div>
+}
+
+@if (Model.BankDepositSlip != null)
+{
+    <div style="font-size:10px;color:#555;border:1px dashed #1a3a5c;padding:4px 8px;margin-bottom:8px">
+        مرجع قسيمة الإيداع: <strong>@(Model.BankDepositSlip.SlipNumber ?? Model.BankDepositSlip.Id.ToString())</strong>
+        — تاريخ: <strong>@Model.BankDepositSlip.DepositDate.ToString("yyyy/MM/dd")</strong>
+        — مبلغ: <strong>@Model.BankDepositSlip.Amount.ToString("N3")</strong> د.ل
+    </div>
+}
+
+<!-- التوقيعات -->
+<div class="signatures" style="margin-top:40px">
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        المُعِد
+    </div>
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        رئيس مكتب الحسابات والموازنة
+    </div>
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        معتمد
+    </div>
+</div>

@@ -1,0 +1,415 @@
+@model IEnumerable<MedicalInsuranceApp1.Models.Entities.ReceiptVoucher>
+@{
+    ViewData["Title"] = "الحركة اليومية للخزينة";
+    DateTime selDate        = ViewBag.Date;
+    string   dateDisplay    = ViewBag.DateDisplay;
+    decimal  totalTreasury  = ViewBag.TotalTreasury;
+    decimal  totalBank      = ViewBag.TotalBank;
+    decimal  totalAmount    = ViewBag.TotalAmount;
+    decimal  totalSuper     = ViewBag.TotalSupervision;
+    var pendingOrders = ViewBag.PendingOrders as IEnumerable<MedicalInsuranceApp1.Models.Entities.SupplyOrder>;
+}
+
+<!-- أزرار التحكم -->
+<div class="no-print" style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/ReceiptVouchers" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">الحركة اليومية للخزينة</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">@dateDisplay</p>
+    </div>
+    <div style="margin-right:auto;display:flex;gap:10px;align-items:center">
+        <form method="get" style="display:flex;gap:8px;align-items:center">
+            <input type="date" name="date" value="@selDate.ToString("yyyy-MM-dd")"
+                   style="padding:7px 10px;border:1px solid #d8d8d0;border-radius:8px;font-family:inherit;font-size:13px">
+            <button type="submit" class="btn-primary" style="padding:7px 16px">
+                <i class="ti ti-search"></i> عرض
+            </button>
+        </form>
+        <a href="/ReceiptVouchers/TreasuryMovement"
+           class="btn-primary no-print" style="padding:7px 14px;background:#1B4332;gap:6px;text-decoration:none;display:inline-flex;align-items:center">
+            <i class="ti ti-plus"></i> إدخال حركة جديدة
+        </a>
+        <button onclick="saveAllBankAmounts()" id="saveAllBtn"
+                class="btn-primary no-print" style="padding:7px 14px;background:#1a3a5c;gap:6px">
+            <i class="ti ti-device-floppy"></i> حفظ الحركة المصرفية
+        </button>
+        <button onclick="window.print()" class="btn-cancel" style="padding:7px 16px">
+            <i class="ti ti-printer"></i> طباعة
+        </button>
+    </div>
+</div>
+
+<!-- التوكن المخفي للـ AJAX -->
+@Html.AntiForgeryToken()
+
+<!-- ══ أوامر توريد تنتظر اعتماد الخزينة ══ -->
+@if (pendingOrders != null && pendingOrders.Any())
+{
+<div class="no-print" style="margin-bottom:28px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="background:#e65c00;color:#fff;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:700">
+            @pendingOrders.Count() معلق
+        </div>
+        <span style="font-size:14px;font-weight:700;color:#e65c00">
+            أوامر توريد بانتظار تأكيد الخزينة
+        </span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">
+        @foreach (var so in pendingOrders)
+        {
+        <div style="background:#fff;border:1.5px solid #f0a040;border-radius:12px;padding:16px;
+                    box-shadow:0 2px 8px rgba(230,92,0,0.08)">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:#1B4332">
+                        @(so.Supplier?.Name ?? so.Receipt?.FacilityName ?? "—")
+                    </div>
+                    <div style="font-size:11px;color:#9a9890;margin-top:2px">
+                        أمر توريد رقم: @so.Id
+                    </div>
+                </div>
+                <span style="background:#fff3cd;color:#e65c00;font-size:11px;padding:3px 10px;
+                             border-radius:20px;font-weight:700;white-space:nowrap">
+                    معتمد اكتتاب
+                </span>
+            </div>
+            @if (so.Receipt != null)
+            {
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;
+                        background:#fafaf8;border-radius:8px;padding:10px;font-size:12px">
+                <div><span style="color:#9a9890">رقم الإيصال: </span>
+                     <strong>@(so.Receipt.ReceiptNumber ?? "—")</strong></div>
+                <div><span style="color:#9a9890">المبلغ: </span>
+                     <strong style="color:#1B4332">@so.Receipt.TotalAmount.ToString("N3") د.ل</strong></div>
+                <div><span style="color:#9a9890">تاريخ الإيصال: </span>
+                     <strong>@so.Receipt.ReceiptDate.ToString("yyyy/MM/dd")</strong></div>
+                <div><span style="color:#9a9890">طريقة الدفع: </span>
+                     <strong>@(so.Receipt.PaymentMethod ?? "—")</strong></div>
+            </div>
+            }
+            <a href="/ReceiptVouchers/TreasuryConfirm?supplyOrderId=@so.Id"
+               style="display:flex;align-items:center;justify-content:center;gap:6px;
+                      padding:9px 16px;background:#1a3a5c;color:#fff;border-radius:8px;
+                      font-size:13px;font-weight:700;text-decoration:none;width:100%">
+                <i class="ti ti-building-bank"></i>
+                فتح نموذج إدخال حركة الخزينة
+            </a>
+        </div>
+        }
+    </div>
+</div>
+}
+
+<!-- ══ كشف الحركة اليومية (للطباعة) ══ -->
+<!-- التقرير -->
+<div id="printArea">
+
+
+    @if (!Model.Any())
+    {
+    <div style="text-align:center;padding:40px;color:#9a9890;font-size:14px">
+        لا توجد إيصالات قبض بتاريخ @dateDisplay
+    </div>
+    }
+    else
+    {
+    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px">
+        <thead>
+            <tr style="background:#1a3a5c;color:#fff">
+                <th style="padding:8px 6px;border:1px solid #2a4a6c;text-align:center;width:35px">ت</th>
+                <th style="padding:8px 6px;border:1px solid #2a4a6c;text-align:center">رقم الإيصال</th>
+                <th style="padding:8px 6px;border:1px solid #2a4a6c;text-align:right">اسم الجهة</th>
+                <th style="padding:8px 6px;border:1px solid #2a4a6c;text-align:center" colspan="2">مدة التأمين</th>
+                <th style="padding:8px 6px;border:1px solid #2a4a6c;text-align:center">طريقة الدفع</th>
+                <th style="padding:8px 6px;border:1px solid #2a4a6c;text-align:center">المديسنون</th>
+                <th style="padding:8px 6px;border:1px solid #2a4a6c;text-align:center">المصرف</th>
+                <th style="padding:8px 6px;border:1px solid #2a4a6c;text-align:center">الخزينة</th>
+                <th style="padding:8px 6px;border:1px solid #2a4a6c;text-align:center">الإجمالي</th>
+                <th class="no-print" style="padding:8px 6px;border:1px solid #2a4a6c;text-align:center;width:110px">الإجراءات</th>
+            </tr>
+            <tr style="background:#e8edf5;font-size:11px;color:#555">
+                <th style="border:1px solid #ccc"></th>
+                <th style="border:1px solid #ccc"></th>
+                <th style="border:1px solid #ccc"></th>
+                <th style="padding:4px 6px;border:1px solid #ccc;text-align:center;width:90px">من</th>
+                <th style="padding:4px 6px;border:1px solid #ccc;text-align:center;width:90px">إلى</th>
+                <th style="border:1px solid #ccc"></th>
+                <th style="border:1px solid #ccc"></th>
+                <th style="border:1px solid #ccc"></th>
+                <th style="border:1px solid #ccc"></th>
+                <th style="border:1px solid #ccc"></th>
+                <th class="no-print" style="border:1px solid #ccc"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @{ int row = 1; }
+            @foreach (var rv in Model)
+            {
+            bool    isBank      = rv.PaymentMethod == "صك" || rv.PaymentMethod == "تحويل";
+            decimal bankAmt     = rv.BankDepositAmount ?? (isBank ? rv.TotalAmount - rv.SupervisionFee : 0);
+            decimal treasuryAmt = rv.TreasuryAmount;
+
+            var contract = rv.Contract ?? rv.SupplyOrder?.Contract;
+            DateTime? insFrom = contract?.InsuranceStartDate ?? rv.SupplyOrder?.CoverageFrom;
+            DateTime? insTo   = contract?.InsuranceEndDate   ?? rv.SupplyOrder?.CoverageTo;
+
+            <tr style="border-bottom:1px solid #e0e0e0;@(row % 2 == 0 ? "background:#f9f9f7" : "")">
+                <td style="padding:7px 6px;border:1px solid #ddd;text-align:center;color:#888">@row</td>
+                <td style="padding:7px 6px;border:1px solid #ddd;text-align:center;font-weight:700;color:#1a3a5c">
+                    @(rv.ReceiptNumber ?? "—")
+                </td>
+                <td style="padding:7px 6px;border:1px solid #ddd;font-weight:600">
+                    @(rv.FacilityName ?? rv.Contract?.FacilityName ?? "—")
+                </td>
+                <td style="padding:7px 6px;border:1px solid #ddd;text-align:center;direction:ltr;font-size:11px">
+                    @(insFrom.HasValue ? insFrom.Value.ToString("yyyy/MM/dd") : "—")
+                </td>
+                <td style="padding:7px 6px;border:1px solid #ddd;text-align:center;direction:ltr;font-size:11px">
+                    @(insTo.HasValue ? insTo.Value.ToString("yyyy/MM/dd") : "—")
+                </td>
+                <td style="padding:7px 6px;border:1px solid #ddd;text-align:center">
+                    <span style="font-size:11px;padding:2px 8px;border-radius:10px;
+                          background:@(rv.PaymentMethod=="نقدي"?"#e8f5ee":rv.PaymentMethod=="صك"?"#e8f0fe":"#fff8e1");
+                          color:@(rv.PaymentMethod=="نقدي"?"#2d6a4f":rv.PaymentMethod=="صك"?"#1a3a5c":"#f9a825")">
+                        @rv.PaymentMethod
+                    </span>
+                </td>
+                <td style="padding:7px 6px;border:1px solid #ddd;text-align:center;color:#bbb">0.000</td>
+                <td style="padding:4px 6px;border:1px solid #ddd;text-align:center">
+                    <div style="display:flex;align-items:center;gap:4px;justify-content:center">
+                        <input type="number" step="0.001" min="0"
+                               class="bank-amt-input no-print"
+                               data-id="@rv.Id"
+                               value="@bankAmt.ToString("F3", System.Globalization.CultureInfo.InvariantCulture)"
+                               style="width:90px;padding:5px 6px;border:1.5px solid #aac4e0;border-radius:6px;
+                                      text-align:center;font-size:12px;font-weight:700;color:#1a3a5c;
+                                      font-family:Cairo,sans-serif;background:#f0f6ff" />
+                        <span class="bank-status" data-id="@rv.Id" style="font-size:15px;width:16px;display:inline-block"></span>
+                        <span class="print-bank-amt" style="display:none;font-weight:700;color:#1a3a5c">
+                            @(bankAmt > 0 ? bankAmt.ToString("N3") : "—")
+                        </span>
+                    </div>
+                </td>
+                <td style="padding:7px 6px;border:1px solid #ddd;text-align:center;font-weight:@(treasuryAmt>0?"700":"400");color:@(treasuryAmt>0?"#2d6a4f":"#bbb")">
+                    @(treasuryAmt > 0 ? treasuryAmt.ToString("N3") : "—")
+                </td>
+                <td style="padding:7px 6px;border:1px solid #ddd;text-align:center;font-weight:700">
+                    @rv.TotalAmount.ToString("N3")
+                </td>
+                <td class="no-print" style="padding:5px 6px;border:1px solid #ddd;text-align:center;white-space:nowrap">
+                    <a href="/ReceiptVouchers/Edit/@rv.Id"
+                       style="display:inline-flex;align-items:center;gap:3px;padding:4px 9px;
+                              background:#1a3a5c;color:#fff;border-radius:6px;font-size:11px;
+                              text-decoration:none;margin-left:4px">
+                        <i class="ti ti-edit"></i> تعديل
+                    </a>
+                    <button onclick="confirmDelete(@rv.Id, '@(rv.ReceiptNumber ?? rv.Id.ToString())')"
+                            style="display:inline-flex;align-items:center;gap:3px;padding:4px 9px;
+                                   background:#c0392b;color:#fff;border-radius:6px;font-size:11px;
+                                   border:none;cursor:pointer;font-family:inherit">
+                        <i class="ti ti-trash"></i> حذف
+                    </button>
+                </td>
+            </tr>
+            row++;
+            }
+        </tbody>
+        <tfoot>
+            <tr style="background:#1a3a5c;color:#fff;font-weight:700;font-size:13px">
+                <td style="padding:9px 6px;border:1px solid #2a4a6c;text-align:center" colspan="6">الإجماليات</td>
+                <td style="padding:9px 6px;border:1px solid #2a4a6c;text-align:center">0.000</td>
+                <td style="padding:9px 6px;border:1px solid #2a4a6c;text-align:center">@totalBank.ToString("N3")</td>
+                <td style="padding:9px 6px;border:1px solid #2a4a6c;text-align:center">@totalTreasury.ToString("N3")</td>
+                <td style="padding:9px 6px;border:1px solid #2a4a6c;text-align:center">@totalAmount.ToString("N3")</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- بطاقات الملخص -->
+    <div class="no-print" style="display:flex;gap:16px;margin-bottom:28px;flex-wrap:wrap">
+        <div style="flex:1;min-width:120px;background:#e8f5ee;border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:11px;color:#2d6a4f">إجمالي الخزينة</div>
+            <div style="font-size:16px;font-weight:800;color:#2d6a4f;margin-top:4px">@totalTreasury.ToString("N3")</div>
+        </div>
+        <div style="flex:1;min-width:120px;background:#e8f0fe;border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:11px;color:#1a3a5c">إجمالي المصرف</div>
+            <div style="font-size:16px;font-weight:800;color:#1a3a5c;margin-top:4px">@totalBank.ToString("N3")</div>
+        </div>
+        <div style="flex:1;min-width:120px;background:#fff8e1;border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:11px;color:#f9a825">رسوم الإشراف</div>
+            <div style="font-size:16px;font-weight:800;color:#e65100;margin-top:4px">@totalSuper.ToString("N3")</div>
+        </div>
+        <div style="flex:1;min-width:120px;background:#f5f0ff;border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:11px;color:#6c3483">إجمالي اليوم</div>
+            <div style="font-size:16px;font-weight:800;color:#6c3483;margin-top:4px">@totalAmount.ToString("N3")</div>
+        </div>
+        <div style="flex:1;min-width:120px;background:#f5f5f0;border-radius:10px;padding:12px;text-align:center">
+            <div style="font-size:11px;color:#666">عدد الإيصالات</div>
+            <div style="font-size:16px;font-weight:800;color:#333;margin-top:4px">@Model.Count()</div>
+        </div>
+    </div>
+
+    <!-- التوقيعات -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:32px;margin-top:36px;padding-top:20px;border-top:1px solid #ddd">
+        <div style="text-align:center">
+            <div style="font-size:12px;font-weight:700;margin-bottom:48px">مالي اصال</div>
+            <div style="border-top:1px solid #333;padding-top:6px;font-size:11px;color:#666">التوقيع</div>
+        </div>
+        <div style="text-align:center">
+            <div style="font-size:12px;font-weight:700;margin-bottom:48px">رئيس مكتب الحسابات والميزانية</div>
+            <div style="border-top:1px solid #333;padding-top:6px;font-size:11px;color:#666">التوقيع</div>
+        </div>
+        <div style="text-align:center">
+            <div style="font-size:12px;font-weight:700;margin-bottom:48px">رئيس القسم</div>
+            <div style="border-top:1px solid #333;padding-top:6px;font-size:11px;color:#666">التوقيع</div>
+        </div>
+    </div>
+    }
+
+</div>
+
+<!-- ── مودال تأكيد الحذف ── -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:14px;padding:28px;max-width:400px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+        <div style="font-size:36px;margin-bottom:12px">🗑️</div>
+        <h3 style="color:#c0392b;margin-bottom:8px;font-size:16px">تأكيد الحذف</h3>
+        <p style="color:#555;font-size:13px;margin-bottom:6px">هل تريد حذف الإيصال رقم</p>
+        <p id="deleteReceiptNum" style="font-weight:800;color:#1a3a5c;font-size:15px;margin-bottom:16px"></p>
+        <label style="font-size:13px;font-weight:600;color:#333;display:block;margin-bottom:6px;text-align:right">سبب الحذف (اختياري)</label>
+        <input id="deleteReason" type="text" placeholder="سبب الحذف..."
+               style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;
+                      font-family:inherit;font-size:13px;margin-bottom:16px;text-align:right">
+        <form id="deleteForm" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="reason" id="deleteReasonInput" />
+            <div style="display:flex;gap:10px">
+                <button type="submit" style="flex:1;padding:10px;background:#c0392b;color:#fff;
+                                             border:none;border-radius:8px;font-family:inherit;
+                                             font-size:13px;font-weight:700;cursor:pointer">
+                    <i class="ti ti-trash"></i> تأكيد الحذف
+                </button>
+                <button type="button" onclick="closeDeleteModal()"
+                        style="flex:1;padding:10px;background:#f5f5f0;color:#333;border:none;
+                               border-radius:8px;font-family:inherit;font-size:13px;cursor:pointer">
+                    إلغاء
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+// ── حذف الإيصال ──
+function confirmDelete(id, receiptNum) {
+    document.getElementById("deleteReceiptNum").textContent = receiptNum;
+    document.getElementById("deleteForm").action = "/ReceiptVouchers/Delete/" + id;
+    document.getElementById("deleteReason").value = "";
+    document.getElementById("deleteModal").style.display = "flex";
+}
+function closeDeleteModal() {
+    document.getElementById("deleteModal").style.display = "none";
+}
+document.getElementById("deleteForm").addEventListener("submit", function() {
+    document.getElementById("deleteReasonInput").value =
+        document.getElementById("deleteReason").value;
+});
+
+// ── حفظ مبلغ المصرف لصف واحد ──
+async function saveBankAmt(id, amount) {
+    var statusEl = document.querySelector(".bank-status[data-id='" + id + "']");
+    statusEl.textContent = "⏳";
+
+    var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+    try {
+        var resp = await fetch("/ReceiptVouchers/UpdateBankDeposit", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: "id=" + encodeURIComponent(id)
+                + "&amount=" + encodeURIComponent(amount)
+                + "&__RequestVerificationToken=" + encodeURIComponent(token)
+        });
+        var data = await resp.json();
+        if (data.success) {
+            statusEl.textContent = "✅";
+            statusEl.title = "تم الحفظ";
+            // تحديث قيمة طباعة
+            var printSpan = document.querySelector(".bank-status[data-id='" + id + "']")
+                            ?.closest("div")?.querySelector(".print-bank-amt");
+            if (printSpan) {
+                printSpan.textContent = parseFloat(amount).toLocaleString("ar-LY",
+                    { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+            }
+        } else {
+            statusEl.textContent = "❌";
+            statusEl.title = data.message || "خطأ";
+        }
+    } catch {
+        statusEl.textContent = "❌";
+        statusEl.title = "خطأ في الاتصال";
+    }
+    // تلاشي الأيقونة بعد 4 ثوانٍ
+    setTimeout(() => { if (statusEl.textContent !== "❌") statusEl.textContent = ""; }, 4000);
+}
+
+// ── حفظ الكل عند الضغط على الزر ──
+async function saveAllBankAmounts() {
+    var btn = document.getElementById("saveAllBtn");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="ti ti-loader"></i> جاري الحفظ...';
+
+    var inputs = document.querySelectorAll(".bank-amt-input");
+    for (var inp of inputs) {
+        var id  = inp.dataset.id;
+        var amt = parseFloat(inp.value) || 0;
+        await saveBankAmt(id, amt);
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-circle-check"></i> تم الحفظ';
+    setTimeout(() => {
+        btn.innerHTML = '<i class="ti ti-device-floppy"></i> حفظ الحركة المصرفية';
+    }, 3000);
+}
+
+// ── حفظ تلقائي عند مغادرة الحقل ──
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".bank-amt-input").forEach(function (inp) {
+        inp.addEventListener("blur", function () {
+            saveBankAmt(inp.dataset.id, parseFloat(inp.value) || 0);
+        });
+        inp.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") { inp.blur(); }
+        });
+    });
+});
+</script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/claims.css">
+<style>
+@@media print {
+    .no-print, .sidebar, nav, header { display: none !important; }
+    .bank-amt-input { display: none !important; }
+    .print-bank-amt { display: inline !important; }
+    #printArea { margin: 0; padding: 0; }
+    body { background: white; }
+    table { font-size: 11px; }
+    thead tr:first-child, tfoot tr {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+
+/* حقل المبلغ المصرفي */
+.bank-amt-input:focus {
+    outline: none;
+    border-color: #1a3a5c !important;
+    box-shadow: 0 0 0 3px rgba(26,58,92,0.15);
+}
+.bank-amt-input:hover {
+    border-color: #4a7aac !important;
+}
+</style>
+}

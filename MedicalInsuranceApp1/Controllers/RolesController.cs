@@ -1,23 +1,31 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using MedicalInsuranceApp1.Models.Identity;
+using Microsoft.EntityFrameworkCore;
+using MedicalInsuranceApp1.Data;
+using MedicalInsuranceApp1.Infrastrcture;
+using MedicalInsuranceApp1.Models.Entities;
 using MedicalInsuranceApp1.Models.ViewModels;
+using MedicalInsuranceApp1.Models.ViewModels.Identity;
 
 namespace MedicalInsuranceApp1.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Prog,Admin,SuperAdmin")]
+    [RequirePermission(AppModules.Roles)]
     public class RolesController : Controller
     {
         private readonly RoleManager<ApplicationRole> _roleManager;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly AppDbContext _db;
 
         public RolesController(
             RoleManager<ApplicationRole> roleManager,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            AppDbContext db)
         {
             _roleManager = roleManager;
             _userManager = userManager;
+            _db = db;
         }
 
         // ===== قائمة الأدوار =====
@@ -167,6 +175,135 @@ namespace MedicalInsuranceApp1.Controllers
             };
 
             return View(vm);
+        }
+
+        // ===== تفاصيل الدور =====
+        [HttpGet]
+        public async Task<IActionResult> Details(string id)
+        {
+            var role = await _roleManager.FindByIdAsync(id);
+            if (role == null) return NotFound();
+
+            var usersInRole  = await _userManager.GetUsersInRoleAsync(role.Name ?? "");
+            var allUsers     = _userManager.Users.ToList();
+            var availableUsers = allUsers
+                .Where(u => usersInRole.All(r => r.Id != u.Id))
+                .ToList();
+
+            var existingPerms = await _db.RolePermissions
+                .Where(p => p.RoleId == id)
+                .ToListAsync();
+
+            var permissions = AppModules.All.Select(m =>
+            {
+                var existing = existingPerms.FirstOrDefault(p => p.Module == m.Key);
+                return new RolePermissionVM
+                {
+                    Id          = existing?.Id ?? 0,
+                    RoleId      = id,
+                    Module      = m.Key,
+                    ModuleLabel = m.Label,
+                    CanView     = existing?.CanView   ?? false,
+                    CanAdd      = existing?.CanAdd    ?? false,
+                    CanEdit     = existing?.CanEdit   ?? false,
+                    CanDelete   = existing?.CanDelete ?? false,
+                };
+            }).ToList();
+
+            var vm = new RoleDetailsVM
+            {
+                Id          = role.Id,
+                Name        = role.Name ?? "",
+                Description = role.Description ?? "",
+                IsActive    = role.IsActive,
+                CreatedAt   = role.CreatedAt,
+                Users = usersInRole.Select(u => new UserListVM
+                {
+                    Id = u.Id, UserName = u.UserName ?? "",
+                    FullName = u.FullName, UserJob = u.UserJob, IsActive = u.IsActive
+                }).ToList(),
+                AvailableUsers = availableUsers.Select(u => new UserListVM
+                {
+                    Id = u.Id, UserName = u.UserName ?? "",
+                    FullName = u.FullName, UserJob = u.UserJob, IsActive = u.IsActive
+                }).ToList(),
+                Permissions = permissions
+            };
+
+            return View(vm);
+        }
+
+        // ===== حفظ الصلاحيات =====
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SavePermissions()
+        {
+            var form    = Request.Form;
+            var roleId  = form["roleId"].ToString();
+            var modules = form["modules"].ToList();
+
+            var role = await _roleManager.FindByIdAsync(roleId);
+            if (role == null) return NotFound();
+
+            var existing = await _db.RolePermissions
+                .Where(p => p.RoleId == roleId)
+                .ToListAsync();
+
+            // الـ checkboxes المحددة فقط تُرسل — نقرأها كـ keys
+            var checkedViews   = form["canView_idx"].Select(int.Parse).ToHashSet();
+            var checkedAdds    = form["canAdd_idx"].Select(int.Parse).ToHashSet();
+            var checkedEdits   = form["canEdit_idx"].Select(int.Parse).ToHashSet();
+            var checkedDeletes = form["canDelete_idx"].Select(int.Parse).ToHashSet();
+
+            for (int i = 0; i < modules.Count; i++)
+            {
+                var module = modules[i];
+                var perm   = existing.FirstOrDefault(p => p.Module == module);
+                if (perm == null)
+                {
+                    perm = new RolePermission { RoleId = roleId, Module = module };
+                    _db.RolePermissions.Add(perm);
+                }
+                perm.CanView   = checkedViews.Contains(i);
+                perm.CanAdd    = checkedAdds.Contains(i);
+                perm.CanEdit   = checkedEdits.Contains(i);
+                perm.CanDelete = checkedDeletes.Contains(i);
+            }
+
+            await _db.SaveChangesAsync();
+            TempData["Success"] = "تم حفظ الصلاحيات بنجاح";
+            return RedirectToAction("Details", new { id = roleId });
+        }
+
+        // ===== تعيين مستخدم للدور =====
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignUser(string roleId, string userId)
+        {
+            var role = await _roleManager.FindByIdAsync(roleId);
+            var user = await _userManager.FindByIdAsync(userId);
+            if (role == null || user == null) return NotFound();
+
+            if (!await _userManager.IsInRoleAsync(user, role.Name!))
+                await _userManager.AddToRoleAsync(user, role.Name!);
+
+            TempData["Success"] = $"تم تعيين {user.FullName} للدور {role.Name}";
+            return RedirectToAction("Details", new { id = roleId });
+        }
+
+        // ===== إزالة مستخدم من الدور =====
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveUser(string roleId, string userId)
+        {
+            var role = await _roleManager.FindByIdAsync(roleId);
+            var user = await _userManager.FindByIdAsync(userId);
+            if (role == null || user == null) return NotFound();
+
+            await _userManager.RemoveFromRoleAsync(user, role.Name!);
+
+            TempData["Success"] = $"تم إزالة {user.FullName} من الدور {role.Name}";
+            return RedirectToAction("Details", new { id = roleId });
         }
     }
 }

@@ -4,10 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using MedicalInsuranceApp1.Data;
 using MedicalInsuranceApp1.Models.Entities;
 using MedicalInsuranceApp1.Models.ViewModels;
+using MedicalInsuranceApp1.Infrastrcture;
 
 namespace MedicalInsuranceApp1.Controllers
 {
     [Authorize]
+    [RequirePermission(AppModules.Plaintiffs)]
     public class PlaintiffsController : Controller
     {
         private readonly AppDbContext _db;

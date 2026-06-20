@@ -1,9 +1,32 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 
-namespace MedicalInsuranceApp1.Models.Identity
+namespace MedicalInsuranceApp1.Models.ViewModels.Identity
 {
     public class ApplicationUser : IdentityUser
     {
+        [Range(18, 100)]
+        
+        public DateTime? LastAccessTime { get; set; }
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
+        public DateTime? ModifiedDate { get; set; }
+        public bool? Approval { get; set; }
+
+
+        [ValidateNever]
+        public UserProfile? UserProfile { get; set; }
+
+        [ValidateNever]
+        public Employee? Employee { get; set; }
+
+        //public DateTime? LastAccessTimeLocal => LastAccessTime?.ToLocalTime();
+
+        //public DateTime CreatedDateLocal => CreatedDate.ToLocalTime();
+
+        public DateTime? ModifiedDateLocal => ModifiedDate?.ToLocalTime();
+
+
         // ===== بيانات من TblUsers القديمة =====
         public string FullName { get; set; } = string.Empty;
         public string UserJob { get; set; } = string.Empty;

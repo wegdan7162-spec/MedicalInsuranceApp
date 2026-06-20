@@ -1,0 +1,110 @@
+@model MedicalInsuranceApp1.Models.Entities.SupplyOrder
+@{
+    ViewData["Title"] = $"أمر توريد رقم {Model.OrderNumber}";
+    Layout = "~/Views/Shared/_PrintLayout.cshtml";
+    var receipt = Model.Receipt;
+    var contract = Model.Contract;
+}
+
+<!-- رأس الشركة -->
+<div class="company-header">
+    <div>
+        <div class="company-name">شركة ليبيا للتأمين</div>
+        <div class="company-sub">إدارة الشئون المالية — قسم الاكتتاب</div>
+    </div>
+    <div class="company-logo">ش.ل.ت</div>
+</div>
+
+<!-- عنوان المستند -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div style="font-size:14px;font-weight:700;color:#1a3a5c">
+        أمر توريد &nbsp; <span style="border:1px solid #333;padding:2px 10px">No. @Model.OrderNumber</span>
+    </div>
+    <div style="font-size:11px">
+        تاريخ أمر التأمينة: <strong>@Model.OrderDate.ToString("yyyy/MM/dd")</strong>
+    </div>
+</div>
+
+<!-- نص التفويض -->
+<div style="border:1px solid #aaa;padding:8px 12px;margin-bottom:12px;font-size:11px;line-height:1.8">
+    يُرجى الإحاطة بأنه بموجب عقد التأمين ضد الأخطاء الطبية المبرم مع الجهة المذكورة أدناه،
+    يُوجَّه أمر التوريد هذا لاستلام القيمة المالية المحددة ودفعها للخزينة وفقاً للشروط المتفق عليها.
+    <br>
+    حسب الفاتورة الآتي:
+</div>
+
+<!-- جدول التفاصيل -->
+<table>
+    <thead>
+        <tr>
+            <th style="width:30%">المبلغ (د.ل)</th>
+            <th>البيان</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>@Model.Amount.ToString("N3")</strong></td>
+            <td class="td-desc">أقساط تأمين ضد أخطاء طبية — @(contract?.FacilityName ?? Model.FacilityName)</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td class="td-desc">من تاريخ: <strong>@Model.CoverageFrom.ToString("yyyy/MM/dd")</strong></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td class="td-desc">إلى تاريخ: <strong>@Model.CoverageTo.ToString("yyyy/MM/dd")</strong></td>
+        </tr>
+        @if (!string.IsNullOrEmpty(Model.QuarterDescription))
+        {
+            <tr>
+                <td></td>
+                <td class="td-desc">@Model.QuarterDescription</td>
+            </tr>
+        }
+        <tr class="total-row">
+            <td><strong>@Model.Amount.ToString("N3")</strong></td>
+            <td class="td-desc">
+                الإجمالي — @(ViewBag.AmountInWords ?? string.Empty)
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ملاحظات -->
+@if (!string.IsNullOrEmpty(Model.Notes))
+{
+    <div style="margin-bottom:10px;font-size:11px">
+        <strong>ملاحظات:</strong> @Model.Notes
+    </div>
+}
+
+<!-- التوقيعات -->
+<div class="signatures" style="margin-top:40px">
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        عمدة / ترميم
+    </div>
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        رئيس القسم
+    </div>
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        المدير
+    </div>
+</div>
+
+<!-- مرجع إيصال القبض -->
+@if (receipt != null)
+{
+    <div style="margin-top:20px;padding:6px 10px;border:1px dashed #1a3a5c;font-size:11px;background:#f8f9fa">
+        ✅ تم الاستلام بموجب إيصال قبض رقم: <strong>@receipt.ReceiptNumber</strong>
+        &nbsp;&nbsp; بتاريخ: <strong>@receipt.ReceiptDate.ToString("yyyy/MM/dd")</strong>
+    </div>
+}
+else
+{
+    <div style="margin-top:20px;padding:6px 10px;border:1px dashed #aaa;font-size:11px">
+        تم الاستلام بموجب إيصال قبض رقم: ________ بتاريخ: ____________
+    </div>
+}

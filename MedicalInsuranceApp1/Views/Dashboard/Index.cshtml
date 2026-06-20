@@ -1,4 +1,4 @@
-﻿@model MedicalInsuranceApp1.Models.ViewModels.DashboardVM
+@model MedicalInsuranceApp1.Models.ViewModels.DashboardVM
 @{
     ViewData["Title"] = "لوحة التحكم";
 }
@@ -11,7 +11,7 @@
     <div class="kpi-card">
         <div class="kpi-icon green"><i class="ti ti-gavel"></i></div>
         <div>
-            <div class="kpi-val">@Model.TotalCourtCases.ToString("N0")</div>
+            <div class="kpi-val">@Model.TotalOutter.ToString("N0")</div>
             <div class="kpi-label">مطالبات القضايا</div>
             <div class="kpi-trend"><i class="ti ti-trending-up"></i> إجمالي</div>
         </div>
@@ -38,6 +38,62 @@
             <div class="kpi-val">@Model.TotalReserve.ToString("N0")</div>
             <div class="kpi-label">إجمالي الاحتياطي</div>
             <div class="kpi-trend"><i class="ti ti-coin"></i> دينار</div>
+        </div>
+    </div>
+</div>
+
+<!-- KPI Cards المالية -->
+<div class="section-title" style="margin:28px 0 12px;font-size:13px;font-weight:700;color:#9a9890;text-transform:uppercase;letter-spacing:.05em">
+    <i class="ti ti-building-bank" style="margin-left:6px"></i> الجزء المالي
+</div>
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background:linear-gradient(135deg,#1a3a5c,#0d2137);color:#5bafd6">
+            <i class="ti ti-building-bank"></i>
+        </div>
+        <div>
+            <div class="kpi-val">@Model.TotalBankBalance.ToString("N3")</div>
+            <div class="kpi-label">إجمالي الأرصدة المصرفية</div>
+            <div class="kpi-trend"><i class="ti ti-coin"></i> @Model.TotalBankAccounts حساب نشط</div>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background:linear-gradient(135deg,#1B4332,#0d2a1f);color:#74c69d">
+            <i class="ti ti-trending-up"></i>
+        </div>
+        <div>
+            <div class="kpi-val">@Model.TotalCreditThisMonth.ToString("N3")</div>
+            <div class="kpi-label">دائن الشهر الحالي</div>
+            <div class="kpi-trend"><i class="ti ti-calendar"></i> هذا الشهر</div>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background:linear-gradient(135deg,#5a1a1a,#3a0d0d);color:#f5a0a0">
+            <i class="ti ti-trending-down"></i>
+        </div>
+        <div>
+            <div class="kpi-val">@Model.TotalDebitThisMonth.ToString("N3")</div>
+            <div class="kpi-label">مدين الشهر الحالي</div>
+            <div class="kpi-trend"><i class="ti ti-calendar"></i> هذا الشهر</div>
+        </div>
+    </div>
+    <div class="kpi-card">
+        <div class="kpi-icon" style="background:linear-gradient(135deg,#5a4000,#3a2900);color:#ffd166">
+            <i class="ti ti-receipt-2"></i>
+        </div>
+        <div>
+            <div class="kpi-val">@Model.TotalCommissions.ToString("N3")</div>
+            <div class="kpi-label">إجمالي العمولات المصروفة</div>
+            <div class="kpi-trend">
+                @if (Model.PendingCommissions > 0)
+                {
+                    <span style="color:#ffd166"><i class="ti ti-clock"></i> @Model.PendingCommissions قيد الصرف</span>
+                }
+                else
+                {
+                    <span><i class="ti ti-check"></i> لا توجد معلقة</span>
+                }
+            </div>
         </div>
     </div>
 </div>
@@ -74,7 +130,7 @@
                 <div class="donut-item">
                     <div class="donut-dot" style="background:#1B4332"></div>
                     <span class="donut-text">قضايا</span>
-                    <span class="donut-val">@Model.TotalCourtCases.ToString("N0")</span>
+                    <span class="donut-val">@Model.TotalOutter.ToString("N0")</span>
                 </div>
                 <div class="donut-item">
                     <div class="donut-dot" style="background:#c9a84c"></div>
@@ -89,7 +145,7 @@
             </div>
             @{
                 var total = Model.TotalClaims > 0 ? Model.TotalClaims : 1;
-                var c1 = (double)Model.TotalCourtCases / total * 314;
+                var c1 = (double)Model.TotalOutter / total * 314;
                 var c2 = (double)Model.TotalFriendly / total * 314;
             }
             <svg viewBox="0 0 100 100" width="130" height="130">
@@ -118,10 +174,10 @@
     <div class="table-hdr">
         <div class="chart-title">آخر المطالبات المسجلة</div>
         <div style="display:flex;gap:8px">
-            <a href="/CourtCases" class="btn-sm">
+            <a href="/OutterClaims" class="btn-sm">
                 <i class="ti ti-list"></i> عرض الكل
             </a>
-            <a href="/CourtCases/Create" class="btn-sm primary">
+            <a href="/OutterClaims/Create" class="btn-sm primary">
                 <i class="ti ti-plus"></i> مطالبة جديدة
             </a>
         </div>
@@ -131,7 +187,6 @@
             <tr>
                 <th>رقم المطالبة</th>
                 <th>المدعي</th>
-                <th>النوع</th>
                 <th>الفرع</th>
                 <th>الاحتياطي</th>
                 <th>الحالة</th>
@@ -146,7 +201,6 @@
                     <tr>
                         <td><strong style="color:#1B4332">@c.ClaimNumber</strong></td>
                         <td>@c.Plaintiff</td>
-                        <td><span class="badge badge-courts">@c.ClaimType</span></td>
                         <td>@c.Branch</td>
                         <td>@c.Reserve.ToString("N0")</td>
                         <td><span class="badge badge-courts">@c.Status</span></td>

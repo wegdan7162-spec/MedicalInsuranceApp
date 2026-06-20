@@ -5,7 +5,7 @@
 
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
     <div>
-        <h2 style="font-size:18px;font-weight:700;color:#1B4332">الأدوار والصلاحيات</h2>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">الأدوار والصلاحيات</h2>
         <p style="font-size:13px;color:#9a9890;margin-top:2px">إجمالي @Model.Count دور</p>
     </div>
     <a href="/Roles/Create" class="btn-primary">
@@ -42,6 +42,9 @@
             </div>
 
             <div class="role-card-footer">
+                <a href="/Roles/Details/@r.Id" class="btn-icon" title="تفاصيل وصلاحيات">
+                    <i class="ti ti-shield-check"></i>
+                </a>
                 <a href="/Roles/Users/@r.Id" class="btn-icon" title="عرض المستخدمين">
                     <i class="ti ti-users"></i>
                 </a>

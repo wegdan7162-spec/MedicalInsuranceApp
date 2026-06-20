@@ -1,0 +1,173 @@
+@model List<MedicalInsuranceApp1.Models.Entities.CaseFeeSettlement>
+@{
+    ViewData["Title"] = "تسوية أتعاب القضايا";
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="/Dashboard/Index" class="btn-back" title="رجوع"><i class="ti ti-arrow-right"></i></a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#ffffff">تسوية أتعاب القضايا</h2>
+            <p style="font-size:13px;color:#9a9890;margin-top:2px">إجمالي @Model.Count سجل</p>
+        </div>
+    </div>
+    <a href="/CaseFeeSettlements/Create" class="btn-primary">
+        <i class="ti ti-plus"></i> إضافة تسوية
+    </a>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+    <div class="stat-card" style="border-right:4px solid #546B41">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">الأتعاب المتفق عليها</div>
+        <div style="font-size:22px;font-weight:700;color:#546B41">@(((decimal)ViewBag.TotalAgreed).ToString("N2"))</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #2d6a4f">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">إجمالي المدفوع</div>
+        <div style="font-size:22px;font-weight:700;color:#2d6a4f">@(((decimal)ViewBag.TotalPaid).ToString("N2"))</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #c0392b">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">المتبقي</div>
+        <div style="font-size:22px;font-weight:700;color:#c0392b">@(((decimal)ViewBag.TotalRemaining).ToString("N2"))</div>
+    </div>
+</div>
+
+<div class="filter-card" style="margin-bottom:20px">
+    <form method="get">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <input type="text" name="search" value="@ViewBag.Search" class="filter-input" placeholder="بحث برقم القضية أو اسم المحامي...">
+            </div>
+            <div class="filter-group">
+                <select name="branchId" class="filter-select">
+                    <option value="">كل الفروع</option>
+                    @foreach (var b in ViewBag.Branches) {
+                        <option value="@b.Id" selected="@(ViewBag.BranchId == b.Id ? "selected" : null)">@b.BranchName</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <select name="status" class="filter-select">
+                    <option value="">كل الحالات</option>
+                    <option value="قيد الدفع" selected="@(ViewBag.Status == "قيد الدفع" ? "selected" : null)">قيد الدفع</option>
+                    <option value="مدفوع" selected="@(ViewBag.Status == "مدفوع" ? "selected" : null)">مدفوع</option>
+                    <option value="ملغى" selected="@(ViewBag.Status == "ملغى" ? "selected" : null)">ملغى</option>
+                </select>
+            </div>
+            <div class="filter-group" style="display:flex;gap:8px">
+                <button type="submit" class="btn-primary" style="flex:1"><i class="ti ti-search"></i> بحث</button>
+                <a href="/CaseFeeSettlements" class="btn-cancel" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px">
+                    <i class="ti ti-x"></i> إعادة
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@Html.AntiForgeryToken()
+
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>رقم القضية</th>
+                <th>السنة</th>
+                <th>المحكمة</th>
+                <th>الفرع</th>
+                <th>اسم المحامي</th>
+                <th>الأتعاب المتفق عليها</th>
+                <th>المدفوع</th>
+                <th>المتبقي</th>
+                <th>تاريخ العقد</th>
+                <th>الحالة</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="12" style="text-align:center;padding:40px;color:#9a9890">
+                        <i class="ti ti-inbox" style="font-size:32px;display:block;margin-bottom:8px"></i>
+                        لا توجد تسويات — أضف تسوية جديدة
+                    </td>
+                </tr>
+            }
+            else
+            {
+                int i = 1;
+                @foreach (var item in Model)
+                {
+                    var rem = item.AgreeAmount - item.PaidAmount;
+                    <tr>
+                        <td style="color:#9a9890">@(i++)</td>
+                        <td><strong>@item.CaseNumber</strong></td>
+                        <td>@item.Year</td>
+                        <td>@(item.Court?.CourtName ?? "—")</td>
+                        <td>@(item.Branch?.BranchName ?? "—")</td>
+                        <td>@item.LawyerName</td>
+                        <td style="font-weight:600;color:#546B41">@item.AgreeAmount.ToString("N2")</td>
+                        <td style="font-weight:600;color:#2d6a4f">@item.PaidAmount.ToString("N2")</td>
+                        <td style="font-weight:600;color:@(rem > 0 ? "#c0392b" : "#2d6a4f")">@rem.ToString("N2")</td>
+                        <td style="color:#6a6a50">@(item.ContractDate?.ToString("yyyy/MM/dd") ?? "—")</td>
+                        <td>@Html.Raw(StatusBadge(item.Status))</td>
+                        <td>
+                            <div style="display:flex;gap:6px">
+                                <a href="/CaseFeeSettlements/Edit/@item.Id" class="btn-icon" style="display:inline-flex;align-items:center;gap:4px">
+                                    <i class="ti ti-edit"></i> <span style="font-size:12px">تعديل</span>
+                                </a>
+                                <button type="button" class="btn-icon danger"
+                                        onclick="showDelete(@item.Id,'@item.CaseNumber','/CaseFeeSettlements/Delete')"
+                                        style="display:inline-flex;align-items:center;gap:4px">
+                                    <i class="ti ti-trash"></i> <span style="font-size:12px">حذف</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@functions {
+    string StatusBadge(string status) => status switch {
+        "مدفوع" => "<span style='background:#e8f5ee;color:#2d6a4f;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600'>مدفوع</span>",
+        "ملغى"  => "<span style='background:#fde8e8;color:#c0392b;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600'>ملغى</span>",
+        _       => "<span style='background:#fff8e8;color:#92711a;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600'>قيد الدفع</span>"
+    };
+}
+
+<div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:28px;width:420px;max-width:90vw">
+        <h3 style="font-size:16px;font-weight:700;color:#1B4332;margin-bottom:8px">تأكيد الحذف</h3>
+        <p style="font-size:13px;color:#6a6a50;margin-bottom:16px">هل أنت متأكد من حذف <strong id="deleteName"></strong>؟</p>
+        <form id="deleteForm" method="post">
+            <input type="hidden" name="id" id="deleteId"/>
+            @Html.AntiForgeryToken()
+            <div style="margin-bottom:16px">
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">سبب الحذف</label>
+                <input type="text" name="reason" placeholder="أدخل سبب الحذف..." style="width:100%;padding:10px 12px;border:1px solid #e0e0d8;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;box-sizing:border-box"/>
+            </div>
+            <div style="display:flex;gap:10px">
+                <button type="submit" style="flex:1;padding:10px;background:#c0392b;color:#fff;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-weight:600;cursor:pointer">حذف</button>
+                <button type="button" onclick="closeModal()" style="flex:1;padding:10px;background:#f5f5f0;color:#3a4a28;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-weight:600;cursor:pointer">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+function showDelete(id,name,action){
+    document.getElementById("deleteName").textContent=name;
+    document.getElementById("deleteId").value=id;
+    document.getElementById("deleteForm").action=action;
+    document.getElementById("deleteModal").style.display="flex";
+}
+function closeModal(){document.getElementById("deleteModal").style.display="none";}
+</script>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>.stat-card{background:var(--card-bg,#fff);border-radius:12px;padding:18px 20px;border:1px solid #e8e8e0;}</style>
+}

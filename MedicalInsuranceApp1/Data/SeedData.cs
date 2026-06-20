@@ -1,5 +1,7 @@
-﻿using MedicalInsuranceApp1.Models.Identity;
+﻿using MedicalInsuranceApp1.Models.Entities;
+using MedicalInsuranceApp1.Models.ViewModels.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace MedicalInsuranceApp1.Data
 {
@@ -7,7 +9,8 @@ namespace MedicalInsuranceApp1.Data
     {
         public static async Task InitializeAsync(
             RoleManager<ApplicationRole> roleManager,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            AppDbContext db)
         {
             // ===== الأدوار الأساسية =====
             var roles = new[]
@@ -58,6 +61,25 @@ namespace MedicalInsuranceApp1.Data
                 if (result.Succeeded)
                     await userManager.AddToRoleAsync(admin, "SuperAdmin");
             }
+
+            // ===== أنواع المصروفات الافتراضية =====
+            var defaultExpenseTypes = new[]
+            {
+                "اتعاب إدارة القضايا",
+                "مصاريف أخرى",
+                "اتعاب المحاماة",
+                "مصاريف اللجنة"
+            };
+
+            foreach (var typeName in defaultExpenseTypes)
+            {
+                if (!await db.ExpenseTypes.AnyAsync(e => e.ExpenseName == typeName))
+                {
+                    db.ExpenseTypes.Add(new ExpenseType { ExpenseName = typeName });
+                }
+            }
+
+            await db.SaveChangesAsync();
         }
     }
 }

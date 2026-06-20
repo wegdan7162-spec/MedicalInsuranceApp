@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using MedicalInsuranceApp1.Models.Identity;
 using MedicalInsuranceApp1.Models.ViewModels;
+using MedicalInsuranceApp1.Infrastrcture;
+using MedicalInsuranceApp1.Models.ViewModels.Identity;
 
 namespace MedicalInsuranceApp1.Controllers
 {
     [Authorize]
+    [RequirePermission(AppModules.Users)]
     public class UsersController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;

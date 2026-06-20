@@ -1,0 +1,101 @@
+@model MedicalInsuranceApp1.Models.Entities.PaymentAuthorization
+@{
+    ViewData["Title"] = "تعديل إذن الصرف";
+}
+
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <a href="/PaymentAuthorizations" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+    <div>
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">تعديل إذن الصرف</h2>
+        <p style="font-size:13px;color:#9a9890;margin-top:2px">@(Model.AuthorizationNumber ?? "—") — @(Model.BeneficiaryName ?? "—")</p>
+    </div>
+</div>
+
+<div class="table-card" style="max-width:720px">
+    <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+        @Html.AntiForgeryToken()
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">رقم إذن الصرف</label>
+                <input asp-for="AuthorizationNumber" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">تاريخ الإذن</label>
+                <input asp-for="AuthorizationDate" type="date" class="form-input" required />
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">اسم المستفيد <span style="color:#c0392b">*</span></label>
+                <input asp-for="BeneficiaryName" class="form-input" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">نوع المستفيد</label>
+                <select asp-for="BeneficiaryType" class="form-input">
+                    <option value="">— اختر النوع —</option>
+                    <option value="مسوق">مسوق</option>
+                    <option value="مورد">مورد</option>
+                    <option value="موظف">موظف</option>
+                    <option value="جهة حكومية">جهة حكومية</option>
+                    <option value="أخرى">أخرى</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">الحالة</label>
+                <select asp-for="Status" class="form-input">
+                    <option value="قيد التنفيذ">قيد التنفيذ</option>
+                    <option value="منفذ">منفذ</option>
+                    <option value="ملغي">ملغي</option>
+                </select>
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">البيان / الوصف</label>
+                <input asp-for="Description" class="form-input" />
+            </div>
+            <div class="form-group" style="background:#fde8e8;padding:14px;border-radius:10px;border:1px solid #f0b0b0;grid-column:1/-1">
+                <label class="form-label" style="color:#c0392b">المبلغ (د.ل) <span style="color:#c0392b">*</span></label>
+                <input asp-for="Amount" type="number" step="0.001" min="0" class="form-input"
+                       style="font-size:18px;font-weight:700;color:#c0392b" required />
+            </div>
+            <div class="form-group">
+                <label class="form-label">طريقة الصرف</label>
+                <select asp-for="PaymentMethod" class="form-input">
+                    <option value="نقدي">نقدي</option>
+                    <option value="صك">صك</option>
+                    <option value="تحويل">تحويل مصرفي</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">رقم الصك</label>
+                <input asp-for="CheckNumber" class="form-input" />
+            </div>
+            <div class="form-group">
+                <label class="form-label">الحساب المصرفي</label>
+                <select asp-for="BankAccountId" class="form-input">
+                    <option value="">— اختر الحساب —</option>
+                    @foreach (var a in (IEnumerable<MedicalInsuranceApp1.Models.Entities.BankAccount>)ViewBag.BankAccounts)
+                    {
+                        <option value="@a.Id">@a.BankName — @a.AccountNumber</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">ملاحظات</label>
+                <textarea asp-for="Notes" class="form-input" rows="2"></textarea>
+            </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:24px">
+            <button type="submit" class="btn-primary"><i class="ti ti-device-floppy"></i> حفظ التعديلات</button>
+            <a href="/PaymentAuthorizations" class="btn-cancel">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .form-group{display:flex;flex-direction:column;gap:6px;}
+    .form-label{font-size:13px;font-weight:600;}
+    .form-input{padding:10px 12px;border:1px solid #e0e0d8;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;background:var(--input-bg,#fafaf8);}
+    .form-input:focus{outline:none;border-color:#1B4332;box-shadow:0 0 0 3px rgba(27,67,50,0.1);}
+    </style>
+}

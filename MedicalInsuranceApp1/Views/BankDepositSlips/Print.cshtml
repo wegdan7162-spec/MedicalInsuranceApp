@@ -1,0 +1,130 @@
+@model MedicalInsuranceApp1.Models.Entities.BankDepositSlip
+@{
+    ViewData["Title"] = $"قسيمة إيداع {Model.SlipNumber}";
+    Layout = "~/Views/Shared/_PrintLayout.cshtml";
+    var bankName    = Model.BankAccount?.BankName    ?? string.Empty;
+    var accountNo   = Model.BankAccount?.AccountNumber ?? string.Empty;
+    var bankBranch  = Model.BankAccount?.BankBranch   ?? string.Empty;
+}
+
+<!-- رأس الشركة -->
+<div class="company-header">
+    <div>
+        <div class="company-name">شركة ليبيا للتأمين</div>
+        <div class="company-sub">إدارة الشئون المالية</div>
+    </div>
+    <div style="text-align:center">
+        <div class="doc-title" style="margin:0;font-size:15px">قسيمة إيداع</div>
+        @if (!string.IsNullOrEmpty(Model.SlipNumber))
+        {
+            <div style="font-size:14px;font-weight:800;border:2px solid #1a3a5c;padding:3px 14px">
+                رقم: @Model.SlipNumber
+            </div>
+        }
+    </div>
+    <div class="company-logo">ش.ل.ت</div>
+</div>
+
+<!-- معلومات القسيمة -->
+<div style="border:1px solid #333;padding:10px;margin-bottom:12px">
+
+    <div class="field-row">
+        <span class="field-label">تاريخ الإيداع:</span>
+        <span class="field-value"><strong>@Model.DepositDate.ToString("yyyy/MM/dd")</strong></span>
+        @if (Model.DueDate.HasValue)
+        {
+            <span class="field-label" style="margin-right:20px">تاريخ الاستحقاق:</span>
+            <span class="field-value">@Model.DueDate.Value.ToString("yyyy/MM/dd")</span>
+        }
+    </div>
+
+    <div class="field-row">
+        <span class="field-label">اسم المودِع / الشركة:</span>
+        <span class="field-value" style="font-weight:700">@Model.ClientName</span>
+    </div>
+
+    <div class="field-row">
+        <span class="field-label">المصرف المستفيد:</span>
+        <span class="field-value">@bankName</span>
+        <span class="field-label" style="margin-right:20px">رقم الحساب:</span>
+        <span class="field-value">@accountNo</span>
+    </div>
+
+    <div class="field-row">
+        <span class="field-label">الفرع المستفيد:</span>
+        <span class="field-value">@(Model.BeneficiaryBranch ?? bankBranch)</span>
+    </div>
+
+    <!-- المبلغ -->
+    <div style="margin:12px 0;padding:10px;background:#f0f4f8;border:2px solid #1a3a5c;text-align:center">
+        <div style="font-size:11px;color:#555;margin-bottom:4px">قيمة الإيداع</div>
+        <div style="font-size:22px;font-weight:800">@Model.Amount.ToString("N3")</div>
+        <div style="font-size:12px">دينار ليبي</div>
+    </div>
+
+    <div class="field-row">
+        <span class="field-label">طريقة الإيداع:</span>
+        @if (Model.PaymentMethod == "نقدي")
+        {
+            <span>☑ نقداً &nbsp;&nbsp;&nbsp; ☐ صك</span>
+        }
+        else
+        {
+            <span>☐ نقداً &nbsp;&nbsp;&nbsp; ☑ صك</span>
+        }
+        @if (Model.CheckCount > 0)
+        {
+            <span style="margin-right:20px">عدد الصكوك: <strong>@Model.CheckCount</strong></span>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Notes))
+    {
+        <div class="field-row">
+            <span class="field-label">ملاحظات:</span>
+            <span class="field-value">@Model.Notes</span>
+        </div>
+    }
+
+    @if (Model.ReceiptVoucher != null)
+    {
+        <div style="font-size:10px;color:#555;border:1px dashed #1a3a5c;padding:4px 8px;margin-top:8px">
+            مرتبط بإيصال قبض رقم: <strong>@Model.ReceiptVoucher.ReceiptNumber</strong>
+            — بتاريخ: <strong>@Model.ReceiptVoucher.ReceiptDate.ToString("yyyy/MM/dd")</strong>
+        </div>
+    }
+</div>
+
+<!-- خانة ختم المصرف -->
+<div style="display:flex;gap:20px;margin-top:10px">
+    <div style="flex:1;border:1px solid #333;min-height:70px;padding:8px;font-size:11px">
+        <div style="font-weight:700;margin-bottom:4px">ختم المصرف وتوقيع الصراف</div>
+        <div style="color:#999;font-size:10px">يُختم من قِبَل موظف المصرف عند الإيداع</div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+        <div class="field-row">
+            <span class="field-label">رقم عملية المصرف:</span>
+            <span class="field-value"></span>
+        </div>
+        <div class="field-row">
+            <span class="field-label">تاريخ الإيداع الفعلي:</span>
+            <span class="field-value"></span>
+        </div>
+    </div>
+</div>
+
+<!-- التوقيعات -->
+<div class="signatures" style="margin-top:30px">
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        أمين الخزينة
+    </div>
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        رئيس مكتب الحسابات
+    </div>
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        المدير
+    </div>
+</div>

@@ -1,0 +1,133 @@
+@model List<MedicalInsuranceApp1.Models.Entities.ReceiptVoucher>
+@{
+    ViewData["Title"] = $"كشف الحركة اليومية {ViewBag.DateDisplay}";
+    Layout = "~/Views/Shared/_PrintLayout.cshtml";
+    var totalAmount      = (decimal)(ViewBag.TotalAmount      ?? 0m);
+    var totalTreasury    = (decimal)(ViewBag.TotalTreasury    ?? 0m);
+    var totalSupervision = (decimal)(ViewBag.TotalSupervision ?? 0m);
+}
+
+<!-- رأس الشركة -->
+<div class="company-header">
+    <div>
+        <div class="company-name">شركة ليبيا للتأمين</div>
+        <div class="company-sub">إدارة الشئون المالية — قسم الاكتتاب</div>
+    </div>
+    <div style="text-align:center">
+        <div class="doc-title" style="margin:0;font-size:15px">كشف الحركة اليومية</div>
+        <div style="font-size:13px;font-weight:700">ليوم: @ViewBag.DateDisplay</div>
+    </div>
+    <div class="company-logo">ش.ل.ت</div>
+</div>
+
+<div style="height:8px"></div>
+
+<!-- جدول الحركة اليومية -->
+<table style="font-size:10px">
+    <thead>
+        <tr>
+            <th style="width:4%">ت</th>
+            <th style="width:8%">الأمد</th>
+            <th style="width:10%">رقم أمر التحصيل</th>
+            <th style="width:18%">اسم الجهة</th>
+            <th colspan="2" style="width:14%">مدة التأمين</th>
+            <th colspan="2" style="width:12%">الأقساط المباشرة</th>
+            <th style="width:8%">المقدمة</th>
+            <th style="width:7%">ر.الإشراف</th>
+            <th style="width:8%">الدفع</th>
+            <th style="width:9%">الخزينة</th>
+        </tr>
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th>من</th>
+            <th>إلى</th>
+            <th>خاص</th>
+            <th>عام</th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int rowNum = 0;
+            decimal totPrivate = 0, totPublic = 0, totSup = 0, totTreas = 0;
+        }
+        @foreach (var rv in Model)
+        {
+            rowNum++;
+            var so        = rv.SupplyOrder;
+            var isPrivate = rv.Contract?.FacilityType == FacilityType.Private;
+            var pvtAmt    = isPrivate ? rv.TreasuryAmount : 0;
+            var pubAmt    = !isPrivate ? rv.TreasuryAmount : 0;
+            totPrivate += pvtAmt;
+            totPublic  += pubAmt;
+            totSup     += rv.SupervisionFee;
+            totTreas   += rv.TreasuryAmount;
+            <tr>
+                <td>@rowNum</td>
+                <td style="font-size:9px">@rv.ReceiptDate.ToString("yyyy/MM/dd")</td>
+                <td>@(so?.OrderNumber ?? string.Empty)</td>
+                <td class="td-desc" style="font-size:9px">@(rv.FacilityName ?? rv.Contract?.FacilityName)</td>
+                <td style="font-size:9px">@(so?.CoverageFrom.ToString("yyyy/MM/dd") ?? string.Empty)</td>
+                <td style="font-size:9px">@(so?.CoverageTo.ToString("yyyy/MM/dd")   ?? string.Empty)</td>
+                <td>@(pvtAmt > 0 ? pvtAmt.ToString("N3") : string.Empty)</td>
+                <td>@(pubAmt > 0 ? pubAmt.ToString("N3") : string.Empty)</td>
+                <td></td>
+                <td>@(rv.SupervisionFee > 0 ? rv.SupervisionFee.ToString("N3") : string.Empty)</td>
+                <td style="font-size:9px">@rv.PaymentMethod</td>
+                <td>@rv.TreasuryAmount.ToString("N3")</td>
+            </tr>
+        }
+        @for (int i = rowNum + 1; i <= Math.Max(rowNum + 3, 18); i++)
+        {
+            <tr style="height:18px">
+                <td>@i</td>
+                <td></td><td></td><td></td><td></td><td></td>
+                <td></td><td></td><td></td><td></td><td></td><td></td>
+            </tr>
+        }
+        <tr class="total-row">
+            <td colspan="6">الإجمالي</td>
+            <td>@totPrivate.ToString("N3")</td>
+            <td>@totPublic.ToString("N3")</td>
+            <td>0.000</td>
+            <td>@totSup.ToString("N3")</td>
+            <td></td>
+            <td>@totTreas.ToString("N3")</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- ملخص سفلي -->
+<div style="margin-top:10px;display:flex;gap:20px;font-size:11px;border:1px solid #aaa;padding:6px;background:#f8f9fa">
+    <span><strong>عدد الإيصالات:</strong> @Model.Count</span>
+    <span><strong>إجمالي الأقساط الخاصة:</strong> @totPrivate.ToString("N3")</span>
+    <span><strong>إجمالي الأقساط العامة:</strong> @totPublic.ToString("N3")</span>
+    <span><strong>رسوم الإشراف:</strong> @totSup.ToString("N3")</span>
+    <span><strong>صافي الخزينة:</strong> @totTreas.ToString("N3") د.ل</span>
+</div>
+
+<!-- التوقيعات -->
+<div class="signatures" style="margin-top:24px">
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        معد الكشف
+    </div>
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        أمين الخزينة
+    </div>
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        رئيس مكتب الحسابات
+    </div>
+    <div class="sig-box">
+        <div class="sig-space"></div>
+        المدير
+    </div>
+</div>

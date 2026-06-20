@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 
-namespace MedicalInsuranceApp1.Models.Identity
+namespace MedicalInsuranceApp1.Models.ViewModels.Identity
 {
     public class ApplicationRole : IdentityRole
     {

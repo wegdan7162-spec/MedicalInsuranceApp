@@ -1,0 +1,212 @@
+@model List<MedicalInsuranceApp1.Models.Entities.ReceiptVoucher>
+@{
+    ViewData["Title"] = "إيصالات القبض";
+    var monthNames = new[]{"يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"};
+    var ctLabels = new Dictionary<MedicalInsuranceApp1.Models.Entities.CollectionType,string>{
+        {MedicalInsuranceApp1.Models.Entities.CollectionType.Mandatory,"إلزامي"},
+        {MedicalInsuranceApp1.Models.Entities.CollectionType.MedicalCard,"بطاقة طبية"},
+        {MedicalInsuranceApp1.Models.Entities.CollectionType.Supplemental,"تكميلي"},
+        {MedicalInsuranceApp1.Models.Entities.CollectionType.Marine,"بحري"},
+        {MedicalInsuranceApp1.Models.Entities.CollectionType.Fires,"حرائق"},
+        {MedicalInsuranceApp1.Models.Entities.CollectionType.Miscellaneous,"متنوع"},
+        {MedicalInsuranceApp1.Models.Entities.CollectionType.Various,"مختلف"},
+    };
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="/InsuranceContracts" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#ffffff">إيصالات القبض</h2>
+            <p style="font-size:13px;color:#9a9890;margin-top:2px">@monthNames[(int)ViewBag.Month - 1] @ViewBag.Year — @Model.Count إيصال</p>
+        </div>
+    </div>
+    <div style="display:flex;gap:8px">
+        <a href="/ReceiptVouchers/DailyReport" class="btn-cancel">
+            <i class="ti ti-calendar-stats"></i> الحركة اليومية
+        </a>
+        <a href="/ReceiptVouchers/Create" class="btn-primary">
+            <i class="ti ti-plus"></i> إيصال قبض جديد
+        </a>
+    </div>
+</div>
+
+<!-- بطاقات الإجماليات -->
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+    <div class="stat-card" style="border-right:4px solid #1a3a5c">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">إجمالي المبالغ المقبوضة</div>
+        <div style="font-size:18px;font-weight:700;color:#1a3a5c">@(((decimal)ViewBag.TotalAmount).ToString("N3"))</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #c9a84c">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">رسوم الإشراف</div>
+        <div style="font-size:18px;font-weight:700;color:#c9a84c">@(((decimal)ViewBag.TotalSupervision).ToString("N3"))</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #6c3483">
+        <div style="font-size:12px;color:#9a9890;margin-bottom:4px">صافي الخزينة</div>
+        <div style="font-size:18px;font-weight:700;color:#6c3483">@(((decimal)ViewBag.TotalTreasury).ToString("N3"))</div>
+    </div>
+</div>
+
+<!-- فلاتر -->
+<div class="filter-card" style="margin-bottom:20px">
+    <form method="get">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <input type="text" name="search" value="@ViewBag.Search" class="filter-input"
+                       placeholder="بحث برقم الإيصال أو المنشأة أو الصك...">
+            </div>
+            <div class="filter-group">
+                <select name="contractId" class="filter-select">
+                    <option value="">كل العقود</option>
+                    @foreach (var c in (IEnumerable<MedicalInsuranceApp1.Models.Entities.InsuranceContract>)ViewBag.Contracts)
+                    {
+                        string? _cSel = ViewBag.ContractId?.ToString() == c.Id.ToString() ? "selected" : null;
+                        <option value="@c.Id" selected="@_cSel">@c.FacilityName</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <select name="month" class="filter-select">
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        string? _mSel = (int)ViewBag.Month == m ? "selected" : null;
+                        <option value="@m" selected="@_mSel">@monthNames[m-1]</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <select name="year" class="filter-select">
+                    @for (int y = DateTime.Now.Year + 1; y >= DateTime.Now.Year - 3; y--)
+                    {
+                        string? _ySel = (int)ViewBag.Year == y ? "selected" : null;
+                        <option value="@y" selected="@_ySel">@y</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group" style="display:flex;gap:8px">
+                <button type="submit" class="btn-primary" style="flex:1"><i class="ti ti-search"></i> بحث</button>
+                <a href="/ReceiptVouchers" class="btn-cancel" style="flex:1;display:flex;align-items:center;justify-content:center;gap:4px">
+                    <i class="ti ti-x"></i> إعادة
+                </a>
+            </div>
+        </div>
+    </form>
+</div>
+
+@Html.AntiForgeryToken()
+
+<div class="table-card">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>رقم الإيصال</th>
+                <th>التاريخ</th>
+                <th>المنشأة</th>
+                <th>المبلغ (د)</th>
+                <th>المبلغ (درهم)</th>
+                <th>الإجمالي</th>
+                <th>رسوم الإشراف</th>
+                <th>الخزينة</th>
+                <th>طريقة الدفع</th>
+                <th>نوع التحصيل</th>
+                <th>إجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="12" style="text-align:center;padding:40px;color:#9a9890">
+                        <i class="ti ti-receipt" style="font-size:32px;display:block;margin-bottom:8px"></i>
+                        لا توجد إيصالات قبض في هذه الفترة
+                    </td>
+                </tr>
+            }
+            else
+            {
+                int i = 1;
+                @foreach (var item in Model)
+                {
+                <tr>
+                    <td style="color:#9a9890">@(i++)</td>
+                    <td style="font-family:monospace;font-size:12px">@(item.ReceiptNumber ?? "—")</td>
+                    <td style="font-size:12px;color:#6a6a50">@item.ReceiptDate.ToString("yyyy/MM/dd")</td>
+                    <td>
+                        <strong style="font-size:13px">@(item.FacilityName ?? item.Contract?.FacilityName ?? "—")</strong>
+                    </td>
+                    <td style="font-weight:600;color:#1a3a5c">@item.DinarAmount.ToString("N3")</td>
+                    <td style="color:#6a6a50;font-size:12px">@item.DirhamAmount.ToString("N3")</td>
+                    <td style="font-weight:700;color:#1a3a5c;font-size:14px">@item.TotalAmount.ToString("N3")</td>
+                    <td style="color:#c9a84c;font-weight:600">@item.SupervisionFee.ToString("N3")</td>
+                    <td style="font-weight:700;color:#6c3483;font-size:14px">@item.TreasuryAmount.ToString("N3")</td>
+                    <td style="font-size:12px">@(item.PaymentMethod ?? "—")</td>
+                    <td style="font-size:12px">
+                        @(ctLabels.TryGetValue(item.CollectionType, out var ctLbl) ? ctLbl : item.CollectionType.ToString())
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:4px">
+                            <a href="/ReceiptVouchers/Edit/@item.Id" class="btn-icon"
+                               style="display:inline-flex;align-items:center;gap:3px;padding:4px 8px">
+                                <i class="ti ti-edit"></i>
+                            </a>
+                            <button type="button" class="btn-icon danger"
+                                    onclick="showDelete(@item.Id,'إيصال @(item.ReceiptNumber ?? "")')"
+                                    style="display:inline-flex;align-items:center;gap:3px;padding:4px 8px">
+                                <i class="ti ti-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                }
+            }
+        </tbody>
+        @if (Model.Any())
+        {
+        <tfoot>
+            <tr style="font-weight:700;background:var(--sidebar-bg,#f5f5f0)">
+                <td colspan="6" style="text-align:left;padding:10px 14px">الإجمالي</td>
+                <td style="color:#1a3a5c;padding:10px 14px">@(((decimal)ViewBag.TotalAmount).ToString("N3"))</td>
+                <td style="color:#c9a84c;padding:10px 14px">@(((decimal)ViewBag.TotalSupervision).ToString("N3"))</td>
+                <td style="color:#6c3483;padding:10px 14px">@(((decimal)ViewBag.TotalTreasury).ToString("N3"))</td>
+                <td colspan="3"></td>
+            </tr>
+        </tfoot>
+        }
+    </table>
+</div>
+
+<!-- Delete Modal -->
+<div id="deleteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:var(--card-bg,#fff);border-radius:16px;padding:28px;width:420px;max-width:90vw">
+        <h3 style="font-size:16px;font-weight:700;color:#c0392b;margin-bottom:8px">تأكيد الحذف</h3>
+        <p style="font-size:13px;color:#6a6a50;margin-bottom:16px">هل أنت متأكد من حذف <strong id="deleteName"></strong>؟</p>
+        <form id="deleteForm" method="post" action="/ReceiptVouchers/Delete">
+            <input type="hidden" name="id" id="deleteId"/>
+            @Html.AntiForgeryToken()
+            <div style="margin-bottom:16px">
+                <input type="text" name="reason" placeholder="سبب الحذف..."
+                       style="width:100%;padding:10px 12px;border:1px solid #e0e0d8;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;box-sizing:border-box"/>
+            </div>
+            <div style="display:flex;gap:10px">
+                <button type="submit" style="flex:1;padding:10px;background:#c0392b;color:#fff;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">حذف</button>
+                <button type="button" onclick="document.getElementById('deleteModal').style.display='none'" style="flex:1;padding:10px;background:#f5f5f0;color:#3a4a28;border:none;border-radius:8px;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer">إلغاء</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+function showDelete(id, name) {
+    document.getElementById("deleteName").textContent = name;
+    document.getElementById("deleteId").value = id;
+    document.getElementById("deleteModal").style.display = "flex";
+}
+</script>
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .stat-card{background:var(--card-bg,#fff);border-radius:12px;padding:16px 20px;border:1px solid #e8e8e0;}
+    </style>
+}

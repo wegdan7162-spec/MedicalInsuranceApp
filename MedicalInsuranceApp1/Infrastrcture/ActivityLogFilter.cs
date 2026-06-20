@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Identity;
 using MedicalInsuranceApp1.Data;
 using MedicalInsuranceApp1.Models.Entities;
-using MedicalInsuranceApp1.Models.Identity;
+using MedicalInsuranceApp1.Models.ViewModels.Identity;
 
 namespace MedicalInsuranceApp1.Infrastrcture
 {
@@ -42,13 +42,13 @@ namespace MedicalInsuranceApp1.Infrastrcture
                 var pageTitle = controller switch
                 {
                     "Dashboard"     => "لوحة التحكم",
-                    "OutterClaims"  => action == "Inventory" ? "جرد أولى" : "مطالبات القضايا",
+                    "OutterClaims"  => action == "Inventory" ? "" : "مطالبات القضايا",
                     "FriendlyClaims"=> "الصلح الودي",
-                    "Users"         => "المستخدمون",
+                    "Users"         => "المستخدمين",
                     "Roles"         => "الأدوار والصلاحيات",
                     "Branches"      => "الفروع",
                     "Courts"        => "المحاكم",
-                    "Plaintiffs"    => "المدعون",
+                    "Plaintiffs"    => "المدعين",
                     "Trash"         => $"سلة المحذوفات - {action}",
                     "Activity"      => "حركة المستخدمين",
                     _               => controller

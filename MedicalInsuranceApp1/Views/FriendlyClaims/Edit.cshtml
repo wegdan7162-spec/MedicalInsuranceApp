@@ -1,4 +1,4 @@
-﻿@model MedicalInsuranceApp1.Models.ViewModels.FriendlyClaimEditVM
+@model MedicalInsuranceApp1.Models.ViewModels.FriendlyClaimEditVM
 @{
     ViewData["Title"] = "تعديل مطالبة الصلح";
 }
@@ -8,7 +8,7 @@
         <a href="/FriendlyClaims" class="btn-back">
             <i class="ti ti-arrow-right"></i>
         </a>
-        <h2 style="font-size:18px;font-weight:700;color:#1B4332">
+        <h2 style="font-size:18px;font-weight:700;color:#ffffff">
             تعديل مطالبة الصلح
         </h2>
     </div>
@@ -16,6 +16,10 @@
     <form asp-action="Edit" method="post">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id">
+        <input type="hidden" asp-for="Num">
+        <input type="hidden" asp-for="ClaimYear">
+        <input type="hidden" asp-for="RegDate">
+        <input type="hidden" asp-for="CourtId">
         <div asp-validation-summary="ModelOnly" class="error-box"></div>
 
         <div class="form-card">
@@ -25,15 +29,13 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label asp-for="PlaintiffNameId">المدعي <span class="req">*</span></label>
-                    <select asp-for="PlaintiffNameId"
-                            asp-items="Model.Plaintiffs" class="form-select">
+                    <select asp-for="PlaintiffNameId" asp-items="Model.Plaintiffs" class="form-select">
                         <option value="">-- اختر المدعي --</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label asp-for="BranchId">الفرع <span class="req">*</span></label>
-                    <select asp-for="BranchId"
-                            asp-items="Model.Branches" class="form-select">
+                    <select asp-for="BranchId" asp-items="Model.Branches" class="form-select">
                         <option value="">-- اختر الفرع --</option>
                     </select>
                 </div>
@@ -59,18 +61,16 @@
             <div class="form-grid">
                 <div class="form-group">
                     <label asp-for="Reserve">الاحتياطي</label>
-                    <input asp-for="Reserve" type="number"
-                           step="0.01" class="form-input">
+                    <input asp-for="Reserve" type="number" step="0.01" class="form-input">
                 </div>
                 <div class="form-group">
                     <label asp-for="Setteld">المسدد</label>
-                    <input asp-for="Setteld" type="number"
-                           step="0.01" class="form-input">
+                    <input asp-for="Setteld" type="number" step="0.01" class="form-input">
                 </div>
                 <div class="form-group">
                     <label asp-for="ClaimStatus">حالة المطالبة</label>
                     <select asp-for="ClaimStatus" class="form-select">
-                        @foreach (var s in Model.StatusList)
+                        @foreach (var s in Model.ClaimStatusList)
                         {
                             <option value="@s">@s</option>
                         }
@@ -79,7 +79,7 @@
                 <div class="form-group">
                     <label asp-for="FileStatus">حالة الملف</label>
                     <select asp-for="FileStatus" class="form-select">
-                        @foreach (var s in Model.FileStatusList)
+                        @foreach (var s in Model.StatusList)
                         {
                             <option value="@s">@s</option>
                         }

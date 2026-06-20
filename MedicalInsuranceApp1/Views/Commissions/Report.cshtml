@@ -1,0 +1,197 @@
+@model List<MedicalInsuranceApp1.Models.Entities.Commission>
+@{
+    ViewData["Title"] = "كشف بيان العمولات";
+    decimal totPremium    = ViewBag.TotalPremium    is decimal tp ? tp : 0m;
+    decimal totCommission = ViewBag.TotalCommission is decimal tc ? tc : 0m;
+    string  fromDisplay   = ViewBag.FromDisplay ?? "";
+    string  toDisplay     = ViewBag.ToDisplay   ?? "";
+    string  fromVal       = ViewBag.From ?? "";
+    string  toVal         = ViewBag.To   ?? "";
+    string? selStatus     = ViewBag.Status as string;
+}
+
+<!-- شريط الأدوات -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:12px">
+        <a href="/Commissions" class="btn-back"><i class="ti ti-arrow-right"></i></a>
+        <div>
+            <h2 style="font-size:18px;font-weight:700;color:#ffffff">كشف بيان العمولات المباشرة</h2>
+            <p style="font-size:13px;color:#fff;margin-top:2px">
+                الفترة من @fromDisplay حتى @toDisplay
+            </p>
+        </div>
+    </div>
+    @if (Model.Any())
+    {
+    <button onclick="window.print()" class="btn-cancel">
+        <i class="ti ti-printer"></i> طباعة الكشف
+    </button>
+    }
+</div>
+
+<!-- فلاتر -->
+<div class="filter-card no-print" style="margin-bottom:24px">
+    <form method="get">
+        <div class="filter-grid" style="grid-template-columns:repeat(4,1fr)">
+            <div class="filter-group">
+                <label class="filter-label">من تاريخ</label>
+                <input type="date" name="from" value="@fromVal" class="filter-select">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">إلى تاريخ</label>
+                <input type="date" name="to" value="@toVal" class="filter-select">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">الحالة</label>
+                @{ string? _sp = selStatus == "قيد الصرف" ? "selected" : null;
+                   string? _sm = selStatus == "مصروفة"    ? "selected" : null; }
+                <select name="status" class="filter-select">
+                    <option value="">الكل</option>
+                    <option value="قيد الصرف" selected="@_sp">قيد الصرف</option>
+                    <option value="مصروفة"    selected="@_sm">مصروفة</option>
+                </select>
+            </div>
+            <div class="filter-group" style="display:flex;align-items:flex-end">
+                <button type="submit" class="btn-primary" style="width:100%">
+                    <i class="ti ti-search"></i> عرض الكشف
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- منطقة الطباعة -->
+<div id="printArea">
+
+
+<!-- بطاقتا الملخص -->
+<div class="no-print" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
+    <div class="stat-card" style="border-right:4px solid #1a3a5c">
+        <div class="stat-label">عدد السجلات</div>
+        <div class="stat-value" style="color:#1a3a5c">@Model.Count</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #c9a84c">
+        <div class="stat-label">إجمالي الأقساط المورّدة</div>
+        <div class="stat-value" style="color:#c9a84c;font-size:16px">@totPremium.ToString("N3")</div>
+    </div>
+    <div class="stat-card" style="border-right:4px solid #6c3483">
+        <div class="stat-label">إجمالي العمولات</div>
+        <div class="stat-value" style="color:#6c3483;font-size:16px">@totCommission.ToString("N3")</div>
+    </div>
+</div>
+
+<!-- الجدول الرئيسي -->
+<div class="table-card">
+    <table class="data-table" style="font-size:12px">
+        <thead>
+            <tr>
+                <th style="width:36px">ت</th>
+                <th>أسم الجهة الموردة</th>
+                <th style="text-align:left">قيمة القسط المورّد</th>
+                <th style="text-align:left">قيمة العمولة</th>
+                <th>رقم القيد</th>
+                <th>رقم الإشعار<br><small style="font-weight:400">إذن الصرف</small></th>
+                <th>بيان المستفيد من العمولة</th>
+                <th class="no-print">الحالة</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+            <tr>
+                <td colspan="8" style="text-align:center;padding:40px;color:#9a9890">
+                    لا توجد عمولات في هذه الفترة
+                </td>
+            </tr>
+            }
+            else
+            {
+                int idx = 1;
+                @foreach (var c in Model)
+                {
+                <tr>
+                    <td style="text-align:center;color:#9a9890">@(idx++)</td>
+                    <td><strong style="font-size:12px">@c.SupplierName</strong></td>
+                    <td style="text-align:left;font-weight:600;color:#1a3a5c">
+                        @c.PremiumAmount.ToString("N3")
+                    </td>
+                    <td style="text-align:left;font-weight:700;color:#6c3483">
+                        @c.CommissionAmount.ToString("N3")
+                    </td>
+                    <td style="font-family:monospace;font-size:11px">@(c.EntryNumber ?? "—")</td>
+                    <td style="font-family:monospace;font-size:11px;text-align:center">
+                        @(c.AuthorizationNumber ?? "—")
+                    </td>
+                    <td style="font-size:11px;color:#444">
+                        @if (!string.IsNullOrWhiteSpace(c.BeneficiaryName))
+                        {
+                            <span>عمولة @(c.BeneficiaryName)</span>
+                            if (!string.IsNullOrWhiteSpace(c.Notes))
+                            { <span style="color:#9a9890"> — @c.Notes</span> }
+                        }
+                        else
+                        {
+                            <span style="color:#9a9890">@(c.Notes ?? "—")</span>
+                        }
+                    </td>
+                    <td class="no-print">
+                        @if (c.Status == "مصروفة")
+                        { <span style="background:#e8f5ee;color:#2d6a4f;padding:2px 8px;border-radius:10px;font-size:11px">مصروفة</span> }
+                        else
+                        { <span style="background:#fff3cd;color:#856404;padding:2px 8px;border-radius:10px;font-size:11px">قيد الصرف</span> }
+                    </td>
+                </tr>
+                }
+            }
+        </tbody>
+        @if (Model.Any())
+        {
+        <tfoot>
+            <tr style="font-weight:700;background:#f5f5f0;font-size:12px">
+                <td colspan="2" style="padding:10px 14px">الإجماليـات</td>
+                <td style="padding:10px 14px;text-align:left;color:#1a3a5c">@totPremium.ToString("N3")</td>
+                <td style="padding:10px 14px;text-align:left;color:#6c3483">@totCommission.ToString("N3")</td>
+                <td colspan="4" style="padding:10px 14px;color:#6a6a50;font-size:11px">
+                    الرصيد في @toDisplay م
+                </td>
+            </tr>
+        </tfoot>
+        }
+    </table>
+</div>
+
+<!-- توقيعات -->
+@if (Model.Any())
+{
+<div style="display:flex;justify-content:space-between;margin-top:48px;padding-top:16px;border-top:1px solid #e8e8e0">
+    <div style="text-align:center;min-width:180px">
+        <div style="font-size:12px;color:#666">إعداد : ـ</div>
+        <div style="margin-top:44px;border-top:1px solid #333;padding-top:4px;font-size:12px">التوقيع</div>
+    </div>
+    <div style="text-align:center;min-width:240px">
+        <div style="font-size:12px;color:#666">رئيس مكتب الحسابات والميزانية</div>
+        <div style="margin-top:44px;border-top:1px solid #333;padding-top:4px;font-size:12px">التوقيع</div>
+    </div>
+</div>
+}
+
+</div><!-- end printArea -->
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/users.css">
+    <link rel="stylesheet" href="~/css/claims.css">
+    <style>
+    .stat-card{background:var(--card-bg,#fff);border-radius:12px;padding:14px 18px;border:1px solid #e8e8e0}
+    .stat-label{font-size:11px;color:#9a9890;margin-bottom:4px}
+    .stat-value{font-size:20px;font-weight:700}
+    @@media print {
+        body *          { visibility: hidden }
+        #printArea,
+        #printArea *    { visibility: visible }
+        #printArea      { position: absolute; left: 0; top: 0; width: 100% }
+        .no-print       { display: none !important }
+        .table-card     { box-shadow: none; border: 1px solid #ccc }
+        table           { font-size: 10pt }
+    }
+    </style>
+}
